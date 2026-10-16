@@ -1,1 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectTrack Gantt - HZCProjects</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:#f8fafc;color:#0f172a;overflow:hidden}
+:root{--sidebar:340px;--row:44px;--primary:#0f172a;--blue:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444}
+.header{height:64px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
+.header h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}
+.header h1 span{font-weight:400;font-size:13px;opacity:.7;background:rgba(255,255,255,.12);padding:4px 10px;border-radius:20px}
+.btn{background:#fff;color:var(--primary);border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn:hover{opacity:.9}
+.main{display:flex;height:calc(100vh - 64px)}
+.sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;overflow:hidden}
+.sidebar-head{display:grid;grid-template-columns:2fr 80px 60px;padding:12px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;text-transform:uppercase}
+.tasks{flex:1;overflow-y:auto}
+.task-row{display:grid;grid-template-columns:2fr 80px 60px;align-items:center;height:var(--row);padding:0 12px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:13px}
+.task-row:hover{background:#f8fafc}
+.task-row.active{background:#eff6ff;border-left:3px solid var(--blue)}
+.task-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.task-duration{color:#64748b;font-size:12px}
+.progress-badge{background:#e2e8f0;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.progress-badge.done{background:#dcfce7;color:#166534}
+.gantt-area{flex:1;overflow:auto;background:#fff;position:relative}
+.timeline-header{height:80px;display:flex;position:sticky;top:0;background:#fff;z-index:5;border-bottom:1px solid #e2e8f0}
+.month-cell{min-width:120px;border-right:1px solid #f1f5f9;padding:8px 8px 0 8px}
+.month-cell .m{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase}
+.month-cell .y{font-size:10px;color:#94a3b8}
+.days{display:flex;margin-top:6px}
+.day{width:24px;text-align:center;font-size:10px;color:#94a3b8}
+.gantt-rows{position:relative}
+.gantt-row{height:var(--row);border-bottom:1px solid #f1f5f9;position:relative;display:flex;align-items:center}
+.grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;pointer-events:none}
+.vline{width:24px;border-right:1px dashed #f1f5f9;flex-shrink:0}
+.vline.month{border-right:1px solid #e2e8f0}
+.bar{position:absolute;height:22px;border-radius:6px;display:flex;align-items:center;color:#fff;font-size:11px;font-weight:600;padding:0 8px;cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.12);overflow:hidden;white-space:nowrap;transition:all .15s}
+.bar:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.18);z-index:2}
+.bar-progress{position:absolute;left:0;top:0;bottom:0;background:rgba(0,0,0,.18);border-radius:6px}
+.add-task{padding:12px;border-top:1px solid #e2e8f0}
+.add-task button{width:100%;background:#f8fafc;border:1px dashed #cbd5e1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#475569}
+.add-task button:hover{background:#f1f5f9}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:50}
+.modal.open{display:flex}
+.modal-box{background:#fff;width:460px;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-box h3{font-size:18px;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field label{font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:6px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.kpi{display:flex;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #e2e8f0;font-size:12px}
+.kpi span{color:#64748b}.kpi b{color:#0f172a;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>📊 ProjectTrack <span>HZCProjects / projecttrack</span></h1>
+<div style="display:flex;gap:8px">
+<button class="btn" onclick="exportData()">Export JSON</button>
+<button class="btn btn-primary" onclick="openModal()">+ New Task</button>
+</div>
+</div>
+<div class="kpi" id="kpi"></div>
+<div class="main">
+<div class="sidebar">
+<div class="sidebar-head"><div>Task Name</div><div>Duration</div><div>Progress</div></div>
+<div class="tasks" id="tasksList"></div>
+<div class="add-task"><button onclick="openModal()">+ Add Task</button></div>
+</div>
+<div class="gantt-area" id="ganttArea">
+<div class="timeline-header" id="timelineHeader"></div>
+<div class="gantt-rows" id="ganttRows"></div>
+</div>
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+<h3 id="modalTitle">New Task</h3>
+<div class="field"><label>Task Name</label><input id="fName" placeholder="e.g. Site Survey & Permits"></div>
+<div class="field-row">
+<div class="field"><label>Start Date</label><input type="date" id="fStart"></div>
+<div class="field"><label>End Date</label><input type="date" id="fEnd"></div>
+</div>
+<div class="field-row">
+<div class="field"><label>Progress %</label><input type="number" id="fProgress" min="0" max="100" value="0"></div>
+<div class="field"><label>Color</label><select id="fColor"><option value="#3b82f6">Blue - Planning</option><option value="#10b981">Green - Execution</option><option value="#f59e0b">Amber - Review</option><option value="#ef4444">Red - Critical</option><option value="#8b5cf6">Purple - Design</option></select></div>
+</div>
+<div class="field"><label>Assignee</label><input id="fOwner" placeholder="e.g. HZC Team"></div>
+<div class="actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Save Task</button></div>
+</div>
+</div>
+
+<script>
+const defaultTasks = [
+{name:"Project Initiation & Contract",start:"2026-01-06",end:"2026-01-16",progress:100,color:"#3b82f6",owner:"PMO"},
+{name:"Site Survey & Soil Test",start:"2026-01-13",end:"2026-01-28",progress:100,color:"#8b5cf6",owner:"Engineering"},
+{name:"Powerline Route Design",start:"2026-01-20",end:"2026-02-10",progress:85,color:"#8b5cf6",owner:"Design"},
+{name:"Material Procurement - Poles & Cables",start:"2026-02-02",end:"2026-02-28",progress:60,color:"#f59e0b",owner:"Procurement"},
+{name:"Foundation & Pole Erection",start:"2026-02-18",end:"2026-03-20",progress:40,color:"#10b981",owner:"Construction"},
+{name:"Conductor Stringing",start:"2026-03-10",end:"2026-04-05",progress:15,color:"#10b981",owner:"Construction"},
+{name:"Transformer Installation",start:"2026-03-25",end:"2026-04-15",progress:0,color:"#10b981",owner:"Electrical"},
+{name:"Testing & Commissioning",start:"2026-04-10",end:"2026-04-25",progress:0,color:"#ef4444",owner:"QA"},
+{name:"Client Handover & Documentation",start:"2026-04-22",end:"2026-04-30",progress:0,color:"#0f172a",owner:"PMO"},
+];
+let tasks = JSON.parse(localStorage.getItem('projecttrack_tasks')||'null') || defaultTasks;
+let editingIndex = -1;
+const ganttStart = new Date('2026-01-01');
+const ganttEnd = new Date('2026-05-15');
+const dayMs = 86400000;
+function daysBetween(a,b){return Math.round((b-a)/dayMs)}
+function formatDate(d){return new Date(d).toLocaleDateString('en-ZA',{day:'2-digit',month:'short'})}
+function saveLocal(){localStorage.setItem('projecttrack_tasks',JSON.stringify(tasks)); render()}
+function render(){
+ const list = document.getElementById('tasksList'); const rows = document.getElementById('ganttRows'); const header = document.getElementById('timelineHeader');
+ list.innerHTML=''; rows.innerHTML=''; header.innerHTML='';
+ const totalDays = daysBetween(ganttStart,ganttEnd);
+ // header months
+ let cur = new Date(ganttStart);
+ while(cur<ganttEnd){
+   const monthStart = new Date(cur.getFullYear(),cur.getMonth(),1);
+   const nextMonth = new Date(cur.getFullYear(),cur.getMonth()+1,1);
+   const daysInMonth = daysBetween(monthStart,nextMonth);
+   const cell = document.createElement('div'); cell.className='month-cell'; cell.style.minWidth=(daysInMonth*24)+'px';
+   cell.innerHTML=`<div class="m">${cur.toLocaleDateString('en',{month:'short'})}</div><div class="y">${cur.getFullYear()}</div><div class="days">${Array.from({length:daysInMonth},(_,i)=>`<div class="day">${i+1}</div>`).join('')}</div>`;
+   header.appendChild(cell);
+   cur = nextMonth;
+ }
+ // kpi
+ const total = tasks.length; const done = tasks.filter(t=>t.progress==100).length; const avg = Math.round(tasks.reduce((s,t)=>s+t.progress,0)/total);
+ document.getElementById('kpi').innerHTML = `<div><span>Total Tasks:</span><b>${total}</b></div><div><span>Completed:</span><b>${done}</b></div><div><span>Avg Progress:</span><b>${avg}%</b></div><div><span>Live:</span><b>projecttrack-production-4ed6.up.railway.app</b></div>`;
+ tasks.forEach((t,idx)=>{
+   const s = new Date(t.start); const e = new Date(t.end);
+   const dur = Math.max(1,daysBetween(s,e));
+   const tr = document.createElement('div'); tr.className='task-row'+(editingIndex===idx?' active':''); tr.onclick=()=>{editingIndex=idx;openModal(idx)}
+   tr.innerHTML=`<div class="task-name"><span class="dot" style="background:${t.color}"></span>${t.name}</div><div class="task-duration">${dur}d</div><div><span class="progress-badge ${t.progress==100?'done':''}">${t.progress}%</span></div>`;
+   list.appendChild(tr);
+   const gRow = document.createElement('div'); gRow.className='gantt-row';
+   const grid = document.createElement('div'); grid.className='grid-lines';
+   for(let i=0;i<totalDays;i++){ const v=document.createElement('div'); v.className='vline'+(i%30===0?' month':''); grid.appendChild(v) }
+   gRow.appendChild(grid);
+   const offset = Math.max(0,daysBetween(ganttStart,s));
+   const bar = document.createElement('div'); bar.className='bar'; bar.style.left=(offset*24+8)+'px'; bar.style.width=(dur*24-16)+'px'; bar.style.background=t.color;
+   bar.innerHTML=`<div class="bar-progress" style="width:${t.progress}%"></div><span style="position:relative">${t.name} • ${t.owner||''}</span>`;
+   bar.title = `${t.name}\n${t.start} → ${t.end}\n${t.progress}%`;
+   gRow.appendChild(bar);
+   rows.appendChild(gRow);
+ });
+}
+function openModal(idx=-1){
+ document.getElementById('modal').classList.add('open');
+ if(idx>=0){ editingIndex=idx; const t=tasks[idx]; document.getElementById('modalTitle').innerText='Edit Task'; document.getElementById('fName').value=t.name; document.getElementById('fStart').value=t.start; document.getElementById('fEnd').value=t.end; document.getElementById('fProgress').value=t.progress; document.getElementById('fColor').value=t.color; document.getElementById('fOwner').value=t.owner||'' }
+ else { editingIndex=-1; document.getElementById('modalTitle').innerText='New Task'; document.getElementById('fName').value=''; document.getElementById('fStart').value=new Date().toISOString().slice(0,10); document.getElementById('fEnd').value=new Date(Date.now()+7*dayMs).toISOString().slice(0,10); document.getElementById('fProgress').value=0; document.getElementById('fColor').value='#3b82f6'; document.getElementById('fOwner').value='HZC Team' }
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function saveTask(){
+ const name=document.getElementById('fName').value.trim(); const start=document.getElementById('fStart').value; const end=document.getElementById('fEnd').value; const progress=parseInt(document.getElementById('fProgress').value)||0; const color=document.getElementById('fColor').value; const owner=document.getElementById('fOwner').value;
+ if(!name||!start||!end)return alert('Fill name and dates');
+ const obj={name,start,end,progress,color,owner};
+ if(editingIndex>=0)tasks[editingIndex]=obj; else tasks.push(obj);
+ closeModal(); saveLocal();
+}
+function exportData(){
+ const blob=new Blob([JSON.stringify(tasks,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='projecttrack_gantt_2026.json'; a.click();
+}
+render();
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+</script>
+</body>
+</html>
 <h1>ProjectTrack Gantt - Upload your real planner later</h1>
