@@ -1,3 +1,4 @@
+
 import os, json, sqlite3
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, Response
@@ -5,14 +6,12 @@ from flask_cors import CORS
 
 try:
     import psycopg2
-    import psycopg2.extras
     HAS_PG = True
 except:
     HAS_PG = False
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
-
 DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_PG = bool(DATABASE_URL and HAS_PG)
 
@@ -54,7 +53,6 @@ def init_db():
             created_at TEXT,
             updated_at TEXT
         )''')
-        # migrate existing table if columns missing
         for col in ['structure_number','collector_number','section_number','chainage_extra']:
             try:
                 cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN {col} TEXT DEFAULT ''")
@@ -113,29 +111,163 @@ def init_db():
 
 init_db()
 
+# ========= AUTH SYSTEM =========
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+
+def init_auth():
+    conn = get_conn(); cur = conn.cursor()
+    if USE_PG:
+        cur.execute("""CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'viewer',
+            display_name TEXT DEFAULT '',
+            created_at TEXT,
+            last_login TEXT
+        )""")
+    else:
+        cur.execute("""CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'viewer',
+            display_name TEXT DEFAULT '',
+            created_at TEXT,
+            last_login TEXT
+        )""")
+    conn.commit()
+    cur.execute('SELECT COUNT(*) FROM users')
+    cnt = cur.fetchone()[0]
+    if cnt == 0:
+        now = datetime.utcnow().isoformat()
+        defaults = [
+            ('admin', generate_password_hash('HZC2026!'), 'admin', 'System Admin'),
+            ('qc_lead', generate_password_hash('QC2026!'), 'qc_manager', 'QC Lead'),
+            ('inspector', generate_password_hash('Inspect2026!'), 'inspector', 'Site Inspector'),
+            ('viewer', generate_password_hash('Viewer123'), 'viewer', 'Guest Viewer'),
+        ]
+        for u,p,r,dname in defaults:
+            if USE_PG:
+                cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s)', (u,p,r,dname,now))
+            else:
+                cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)', (u,p,r,dname,now))
+        conn.commit()
+    conn.close()
+
+init_auth()
+
+@app.route('/login')
+def login_page():
+    return send_from_directory('.', 'login.html')
+
+@app.route('/users')
+def users_page():
+    return send_from_directory('.', 'users.html')
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    data = request.json
+    username = data.get('username','').strip()
+    password = data.get('password','')
+    conn = get_conn(); cur = conn.cursor()
+    if USE_PG:
+        cur.execute('SELECT * FROM users WHERE username=%s', (username,))
+    else:
+        cur.execute('SELECT * FROM users WHERE username=?', (username,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error":"Invalid username or password"}), 401
+    # Convert row to dict
+    if USE_PG:
+        cols = [desc[0] for desc in cur.description]
+        user = dict(zip(cols, row))
+    else:
+        user = dict(row)
+    if not check_password_hash(user['password_hash'], password):
+        conn.close()
+        return jsonify({"error":"Invalid username or password"}), 401
+    now = datetime.utcnow().isoformat()
+    if USE_PG:
+        cur.execute('UPDATE users SET last_login=%s WHERE id=%s', (now, user['id']))
+    else:
+        cur.execute('UPDATE users SET last_login=? WHERE id=?', (now, user['id']))
+    conn.commit(); conn.close()
+    token = secrets.token_hex(16)
+    return jsonify({"id": user['id'],"username": user['username'],"role": user['role'],"display_name": user['display_name'],"token": token,"login_at": now})
+
+@app.route('/api/auth/users', methods=['GET'])
+def list_users():
+    conn = get_conn(); cur = conn.cursor()
+    cur.execute('SELECT id, username, role, display_name, created_at, last_login FROM users ORDER BY id')
+    rows = cur.fetchall()
+    data = rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    conn.close()
+    return jsonify(data)
+
+@app.route('/api/auth/users', methods=['POST'])
+def create_user():
+    data = request.json
+    username = data.get('username','').strip()
+    password = data.get('password','')
+    role = data.get('role','viewer')
+    display_name = data.get('display_name','')
+    if not username or not password:
+        return jsonify({"error":"Username and password required"}), 400
+    if len(password) < 6:
+        return jsonify({"error":"Password must be at least 6 chars"}), 400
+    conn = get_conn(); cur = conn.cursor()
+    now = datetime.utcnow().isoformat()
+    try:
+        if USE_PG:
+            cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s) RETURNING id',(username, generate_password_hash(password), role, display_name, now))
+            sid = cur.fetchone()[0]
+        else:
+            cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)',(username, generate_password_hash(password), role, display_name, now))
+            sid = cur.lastrowid
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": f"Username exists or error: {e}"}), 400
+    conn.close()
+    return jsonify({"id": sid})
+
+@app.route('/api/auth/users/<int:uid>', methods=['DELETE'])
+def delete_user(uid):
+    if uid == 1:
+        return jsonify({"error":"Cannot delete main admin"}), 400
+    conn = get_conn(); cur = conn.cursor()
+    if USE_PG:
+        cur.execute('DELETE FROM users WHERE id=%s', (uid,))
+    else:
+        cur.execute('DELETE FROM users WHERE id=?', (uid,))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+# ========= END AUTH =========
+
+
 @app.route('/')
 def index(): return send_from_directory('.', 'index.html')
 
 @app.route('/gantt')
-def gantt_page():
-    return send_from_directory('.', 'gantt_planner_DB.html')
+def gantt_page(): return send_from_directory('.', 'gantt_planner_DB.html')
 
 @app.route('/qc')
-def qc_page():
-    return send_from_directory('.', 'quality_check_multi.html')
+def qc_page(): return send_from_directory('.', 'quality_check_multi.html')
 
 @app.route('/quality_check_multi.html')
-def qc_multi():
-    return send_from_directory('.', 'quality_check_multi.html')
+def qc_multi(): return send_from_directory('.', 'quality_check_multi.html')
 
 @app.route('/gantt_planner_DB.html')
-def gantt_db():
-    return send_from_directory('.', 'gantt_planner_DB.html')
+def gantt_db(): return send_from_directory('.', 'gantt_planner_DB.html')
 
-@app.route('/<path:path>')
-def serve_static(path):
-    if os.path.exists(path): return send_from_directory('.', path)
-    return send_from_directory('.', 'index.html')
+@app.route('/api/debug')
+def debug():
+    import os
+    files = os.listdir('.')
+    return jsonify({"cwd": os.getcwd(), "exists_gantt": os.path.exists('gantt_planner_DB.html'), "exists_qc": os.path.exists('quality_check_multi.html'), "files": files})
 
 def rows_to_dicts(cur, rows):
     if USE_PG:
@@ -174,12 +306,10 @@ def create_qc():
 @app.route('/api/qc-sheets/<int:sid>', methods=['GET'])
 def get_qc(sid):
     conn = get_conn(); cur = conn.cursor()
-    if USE_PG:
-        cur.execute('SELECT * FROM qc_sheets WHERE id=%s', (sid,))
-    else:
-        cur.execute('SELECT * FROM qc_sheets WHERE id=?', (sid,))
+    if USE_PG: cur.execute('SELECT * FROM qc_sheets WHERE id=%s', (sid,))
+    else: cur.execute('SELECT * FROM qc_sheets WHERE id=?', (sid,))
     r = cur.fetchone()
-    if not r:
+    if not r: 
         conn.close(); return jsonify({"error":"not found"}), 404
     data = rows_to_dicts(cur, [r])[0] if USE_PG else dict(r)
     try: data['checks'] = json.loads(data['checks_json'] or '{}')
@@ -262,14 +392,12 @@ def export_excel():
     rows=cur.fetchall()
     sheets=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
     conn.close()
-
     wb = Workbook()
     ws1 = wb.active
     ws1.title = "QC Sheets Summary"
     ws1.append(["ID","Project Name","Location","Structure No","Collector No","Section No","Date","Inspector","Status","Checked","Pass","Fail","Score %","Created At","Updated At"])
     ws2 = wb.create_sheet("Checks Detail")
     ws2.append(["Sheet ID","Project","Location","Structure","Collector","Section","Check Section","Check #","Checkpoint","Depth Selected","Status","Remark"])
-
     check_names = [
         ["Foundation & Excavation","Excavation depth","Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"],
         ["Pole Erection","Pole type/height","Verticality ≤1°","Alignment","Bolt torque","Danger plate","Anti-climbing"],
@@ -278,7 +406,6 @@ def export_excel():
         ["Transformer","Rating 100/200kVA","Oil level & BDV","Bushing tightness","Cable termination","Fuse/MCB","Neutral <5Ω"],
         ["Testing","IR >50MΩ","Continuity","Polarity","Load test","Safety clearance","As-built docs"],
     ]
-
     for s in sheets:
         try: checks = json.loads(s.get('checks_json') or '{}')
         except: checks = {}
@@ -295,23 +422,22 @@ def export_excel():
                 if isinstance(v,dict):
                     depth = v.get('depth','') if si==0 and ii==0 else ''
                     ws2.append([s['id'], s['project_name'], s.get('location',''), s.get('structure_number',''), s.get('collector_number',''), s.get('section_number',''), sec_title, ii+1, cp, depth, v.get('status',''), v.get('remark','')])
-
     bio = BytesIO()
     wb.save(bio)
     bio.seek(0)
-    return Response(bio.getvalue(),
-                    mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    headers={'Content-Disposition':'attachment; filename=ProjectTrack_QC_Sheets.xlsx'})
-
-@app.route('/api/debug')
-def debug():
-    import os
-    files = os.listdir('.')
-    return jsonify({"files": files, "cwd": os.getcwd(), "exists_gantt": os.path.exists('gantt_planner_DB.html'), "exists_qc": os.path.exists('quality_check_multi.html')})
+    return Response(bio.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition':'attachment; filename=ProjectTrack_QC_Sheets.xlsx'})
 
 @app.route('/api/status')
 def status():
     return jsonify({"use_postgres": USE_PG, "has_pg_driver": HAS_PG, "db": "Postgres" if USE_PG else "SQLite", "time": datetime.utcnow().isoformat()})
+
+@app.route('/<path:path>')
+def serve_static(path):
+    # Fallback: if file exists serve it, else index
+    import os
+    if os.path.exists(path):
+        return send_from_directory('.', path)
+    return send_from_directory('.', 'index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4002))
