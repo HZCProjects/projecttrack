@@ -80,8 +80,8 @@
 </div>
 <div class="container">
 <div class="sidebar-list">
-<h3>Steel Monopoles Sheets</h3>
-<button class="btn btn-blue" style="width:100%;margin-bottom:12px" onclick="createNew()">+ New Steel Monopole</button>
+<h3>Steel Monopoles QC Sheets</h3>
+<button class="btn btn-blue" style="width:100%;margin-bottom:12px" onclick="createNew()">+ New Steel Monopole QC Sheet</button>
 <div id="list"></div>
 </div>
 <div class="main">
@@ -218,7 +218,7 @@ async function createNew(){
   }catch(e){ alert('Create failed: '+e.message); }
 }
 async function saveCurrent(){
-  if(!currentId){ alert('Create a sheet first - click + New Steel Monopole'); return; }
+  if(!currentId){ alert('Create a sheet first - click + New Steel Monopole QC Sheet'); return; }
   const btn=document.getElementById('msg'); btn.innerText='Saving...';
   const payload={
     project_name:document.getElementById('proj').value,
