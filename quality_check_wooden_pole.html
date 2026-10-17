@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wooden Pole Inspections - QC Sheet - ProjectTrack</title>
+<title>H-Pole Wooden Structures - Quality Check Sheets - ProjectTrack</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -42,7 +42,7 @@ tr:nth-child(even){background:#f8fafc}
 </head>
 <body>
 <div class="header no-print" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px">
-<div><b>🪵 Wooden Pole Inspections</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div><b>🪵 H-Pole Wooden Structures - Quality Check Sheets</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
 <a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
@@ -55,14 +55,14 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 
 <div class="card">
-<h2>Wooden Pole Inspections - Quality Check Sheet</h2>
-<div class="sub">Overberg WEF - Wooden Pole Structures • Based on site photo checklist</div>
+<h2>H-Pole Wooden Structures - Quality Check Sheets</h2>
+<div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
 
 <div class="grid">
 <div><label>Project Name</label><input id="project" value="Overberg WEF"></div>
 <div><label>Contractor</label><input id="contractor" placeholder="2671 / Contractor Name"></div>
-<div><label>Date</label><input id="date" type="date"></div>
-<div><label>Inspector</label><input id="inspector" placeholder="Inspector Name"></div>
+<div><label>Date of Inspection</label><input id="date" type="date"></div>
+<div><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name"></div>
 </div>
 
 <div class="grid">
@@ -92,6 +92,13 @@ tr:nth-child(even){background:#f8fafc}
 <tr><td><b>11</b></td><td>All lock nuts checked and fully tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="11" onchange="setPass(11)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="11" onchange="setFail(11)"></td><td><input class="comment" id="comment-11" placeholder="Comment..."></td></tr>
 <tr><td><b>12</b></td><td>Washers correctly installed where required</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="12" onchange="setPass(12)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="12" onchange="setFail(12)"></td><td><input class="comment" id="comment-12" placeholder="Comment..."></td></tr>
 <tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td><input class="comment" id="comment-13" placeholder="Comment..."></td></tr>
+
+<tr><td><b>14</b></td><td>Structure Free From Visible Defects or Damages?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="14" onchange="setPass(14)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="14" onchange="setFail(14)"></td><td><input class="comment" id="comment-14" placeholder="Comment..."></td></tr>
+<tr><td><b>15</b></td><td>Work Area Clean and Safe?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="15" onchange="setPass(15)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="15" onchange="setFail(15)"></td><td><input class="comment" id="comment-15" placeholder="Comment..."></td></tr>
+<tr><td><b>16</b></td><td>Check all pre-forms (guy grips) to be installed correctly</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="16" onchange="setPass(16)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="16" onchange="setFail(16)"></td><td><input class="comment" id="comment-16" placeholder="Comment..."></td></tr>
+<tr><td><b>17</b></td><td>Stays to be installed and tensioned with thimble and made off, including the tail</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="17" onchange="setPass(17)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="17" onchange="setFail(17)"></td><td><input class="comment" id="comment-17" placeholder="Comment..."></td></tr>
+<tr><td><b>18</b></td><td>Structure Label to be 3m from NGL and to point in the direction from the source</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="18" onchange="setPass(18)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="18" onchange="setFail(18)"></td><td><input class="comment" id="comment-18" placeholder="Comment..."></td></tr>
+
 </tbody>
 </table>
 <div style="margin-top:16px;display:flex;gap:10px" class="no-print">
@@ -134,7 +141,7 @@ async function saveSheet(){
   const u=getUser();
   if(u&&u.role==='viewer'){ alert('Viewer cannot save. Contact admin.'); return; }
   const checklist={};
-  for(let i=1;i<=13;i++){
+  for(let i=1;i<=18;i++){
     const p=document.querySelector(`.pass-check[data-row="${i}"]`).checked;
     const f=document.querySelector(`.fail-check[data-row="${i}"]`).checked;
     const c=document.getElementById(`comment-${i}`).value;
@@ -176,10 +183,10 @@ async function exportToPDF(){
   const inspector = document.getElementById('inspector').value || '';
 
   doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text('Wooden Pole Inspections - Quality Check Sheet', 10, 15);
+  doc.text('H-Pole Wooden Structures - Quality Check Sheets', 10, 15);
   doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(`Overberg WEF - Wooden Pole Structures`, 10, 21);
-  doc.text(`Project: ${project} | Contractor: ${contractor} | Date: ${date} | Inspector: ${inspector}`, 10, 27);
+  doc.text(`Overberg WEF - H-Pole Wooden Structures`, 10, 21);
+  doc.text(`Project: ${project} | Contractor: ${contractor} | Date: ${date} | Inspected By: ${inspector}`, 10, 27);
   doc.text(`Structure: ${structure} | Collector: ${collector} | Section: ${section} | Depth: ${depth}`, 10, 32);
 
   let y=40;
@@ -187,7 +194,7 @@ async function exportToPDF(){
   doc.text('ITEM',10,y); doc.text('INSPECTION REQUIREMENT',20,y); doc.text('PASS',130,y); doc.text('FAIL',145,y); doc.text('COMMENT',160,y);
   y+=3; doc.line(10,y,200,y); y+=4;
   doc.setFont('helvetica','normal');
-  for(let i=1;i<=13;i++){
+  for(let i=1;i<=18;i++){
     const req = document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText;
     const p = document.querySelector(`.pass-check[data-row="${i}"]`).checked ? 'YES' : '';
     const f = document.querySelector(`.fail-check[data-row="${i}"]`).checked ? 'YES' : '';
@@ -203,8 +210,8 @@ async function exportToPDF(){
     doc.setDrawColor(230); doc.line(10,y,200,y); y+=2;
   }
   y+=5;
-  doc.setFont('helvetica','bold'); doc.text(`Generated: ${new Date().toLocaleString()} | Inspector: ${inspector} | HZCProjects Overberg WEF`,10,y);
-  doc.save(`Wooden_Pole_${structure||'QC'}_${date}.pdf`);
+  doc.setFont('helvetica','bold'); doc.text(`Generated: ${new Date().toLocaleString()} | Inspected By: ${inspector} | HZCProjects Overberg WEF`,10,y);
+  doc.save(`H_Pole_Wooden_Structures_${structure||'QC'}_${date}.pdf`);
   document.getElementById('status').innerText='📄 PDF Exported!';
 }
 </script>
