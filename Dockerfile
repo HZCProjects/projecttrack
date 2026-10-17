@@ -1,7 +1,5 @@
-FROM python:3.11-slim
+FROM python:3-alpine
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 4002
-CMD ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:${PORT:-4002} --workers 2 --timeout 120"]
+CMD ["sh", "-c", "python -m http.server 4002 --bind 0.0.0.0"]
