@@ -222,7 +222,49 @@ def delete_user(uid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM users WHERE id=%s',(uid,))
     else: cur.execute('DELETE FROM users WHERE id=?',(uid,))
-    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/auth/users/<int:uid>', methods=['PUT'])
+@require_role('admin')
+def edit_user(uid):
+    data=request.json or {}
+    username=(data.get('username') or '').strip()
+    display_name=(data.get('display_name') or '').strip()
+    role=(data.get('role') or '').strip()
+    password=data.get('password')
+    if not username:
+        return jsonify({"error":"Username required"}),400
+    if role and role not in ['viewer','inspector','qc_manager','admin']:
+        return jsonify({"error":"Invalid role"}),400
+    conn=get_conn(); cur=conn.cursor()
+    # Check if username taken by other user
+    if USE_PG:
+        cur.execute('SELECT id FROM users WHERE username=%s AND id!=%s',(username,uid))
+    else:
+        cur.execute('SELECT id FROM users WHERE username=? AND id!=?',(username,uid))
+    if cur.fetchone():
+        conn.close(); return jsonify({"error":"Username already taken"}),400
+    # Build update
+    if password:
+        if len(password)<6:
+            conn.close(); return jsonify({"error":"Password min 6 chars"}),400
+        phash=generate_password_hash(password)
+        if USE_PG:
+            cur.execute('UPDATE users SET username=%s, display_name=%s, role=%s, password_hash=%s WHERE id=%s',(username,display_name,role,phash,uid))
+        else:
+            cur.execute('UPDATE users SET username=?, display_name=?, role=?, password_hash=? WHERE id=?',(username,display_name,role,phash,uid))
+    else:
+        if USE_PG:
+            cur.execute('UPDATE users SET username=%s, display_name=%s, role=%s WHERE id=%s',(username,display_name,role,uid))
+        else:
+            cur.execute('UPDATE users SET username=?, display_name=?, role=? WHERE id=?',(username,display_name,role,uid))
+    # Also update sessions for this user to reflect new role/name
+    if USE_PG:
+        cur.execute('UPDATE sessions SET username=%s, role=%s, display_name=%s WHERE user_id=%s',(username,role,display_name,uid))
+    else:
+        cur.execute('UPDATE sessions SET username=?, role=?, display_name=? WHERE user_id=?',(username,role,display_name,uid))
+    conn.commit(); conn.close()
+    return jsonify({"ok":True})
+
 
 # QC
 @app.route('/api/qc-sheets', methods=['GET'])
