@@ -1,1 +1,162 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quality Management - ProjectTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
+.header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
+.header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.hero{background:#fff;border-radius:20px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.hero h1{font-size:28px} .hero p{color:#64748b;font-size:14px;margin-top:6px}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge.db{background:#dcfce7;color:#166534}
+.section{margin-bottom:32px}
+.section h2{font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.section .desc{font-size:13px;color:#64748b;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #f1f5f9;cursor:pointer;transition:.15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.1);border-color:#bfdbfe}
+.card.active{border-color:#3b82f6;background:#eff6ff}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.card h3{font-size:15px} .card p{font-size:12px;color:#64748b;line-height:1.5;margin:8px 0}
+.card .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.meta span{font-size:11px;padding:4px 8px;border-radius:20px;background:#f1f5f9}
+.meta span.green{background:#dcfce7;color:#166534} .meta span.blue{background:#dbeafe;color:#1e40af}
+.meta span.amber{background:#fef3c7;color:#92400e}
+.btn{border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer}
+.btn-dark{background:#0f172a;color:#fff} .btn-blue{background:#3b82f6;color:#fff}
+.divider{height:1px;background:#e2e8f0;margin:32px 0}
+</style>
+</head>
+<body>
+<div class="header">
+<div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div>
+<div>
+<a href="./">🏠 Home</a>
+<a href="./gantt">📅 Planner</a>
+<a href="./api/export/excel">📊 Excel</a>
+<a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
+</div>
+</div>
+
+<div class="container">
+<div class="hero">
+<div>
+<h1>Quality Management</h1>
+<p>HZCProjects • Overberg WEF • All QC sheets, inspections and checklists in one hub. Select a sheet type to continue.</p>
+</div>
+<div style="display:flex;gap:8px">
+<span class="badge db">● Live DB Connected</span>
+<span id="sheetCount" class="badge" style="background:#f1f5f9">Loading...</span>
+</div>
+</div>
+
+<!-- QC SHEETS HEADING -->
+<div class="section">
+<h2>📋 QC Sheets</h2>
+<div class="desc">Quality Control check sheets for construction verification. Choose a sheet type - each is stored separately with its own checklist.</div>
+
+<div class="grid">
+<!-- EXISTING MULTI SHEETS -->
+<div class="card" onclick="go('./qc')">
+<div class="card-header">
+<h3>1️⃣ General QC Multi Sheets</h3>
+<span class="badge" style="background:#0f172a;color:#fff">EXISTING</span>
+</div>
+<p><b>6 sections</b> • Foundation & Excavation, Pole Erection, Conductor Stringing, Earthing, Transformer, Testing. Unlimited sheets: Pole 12, Pole 13, etc.</p>
+<div class="meta">
+<span>📦 Foundation</span><span>🪵 Pole Erection</span><span>🔌 Conductor</span><span>⚡ Earthing</span><span>🔋 Transformer</span><span>🧪 Testing</span>
+</div>
+<div class="meta">
+<span class="green">● Database stored</span><span class="blue" id="multiCount">0 sheets</span><span>Pass/Fail/NA + Remarks</span>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px">
+<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')">Open Multi Sheets →</button>
+<button class="btn" style="background:#f1f5f9" onclick="event.stopPropagation(); go('./qc')">+ New Sheet</button>
+</div>
+</div>
+
+<!-- NEW WOODEN POLE SHEET -->
+<div class="card" style="border-color:#f59e0b" onclick="go('./quality_check_wooden_pole.html')">
+<div class="card-header">
+<h3>2️⃣ Wooden Pole Inspections</h3>
+<span class="badge" style="background:#f59e0b;color:#fff">NEW • From Photo</span>
+</div>
+<p><b>13 checks</b> from site photo: Pole location, Straight/Plumb, H-pole bisectors, Bill cut, PVC 2.5m, Bonding clips, Bonding continuous, Bolts, Eye bolts, Stay wire 100mm, Lock nuts, Washers, Cross-arms.</p>
+<div class="meta">
+<span>📍 Location</span><span>📏 Plumb</span><span>🔩 Bolts</span><span>⚡ Bonding</span><span>🪵 Bill cut</span><span>🔧 Stay wire</span>
+</div>
+<div class="meta">
+<span class="amber">● 13 items • Pass/Fail + Comment</span><span class="green">● Saves to same DB</span><span>Sheet type: wooden_pole</span>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px">
+<button class="btn btn-blue" onclick="event.stopPropagation(); go('./quality_check_wooden_pole.html')">Open Wooden Pole Sheet →</button>
+<button class="btn" style="background:#fef3c7" onclick="event.stopPropagation(); go('./quality_check_wooden_pole.html')">New Inspection</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- OTHER QUALITY HEADINGS (Future) -->
+<div class="section">
+<h2>🔍 Inspections</h2>
+<div class="desc">Site inspections and hold points (coming soon - you can add more sheets here)</div>
+<div class="grid">
+<div class="card" style="opacity:.6;cursor:not-allowed">
+<div class="card-header"><h3>Transformer Inspections</h3><span class="badge">SOON</span></div>
+<p>100/200kVA, Oil BDV, Bushing, Termination, Fuse/MCB checks</p>
+</div>
+<div class="card" style="opacity:.6;cursor:not-allowed">
+<div class="card-header"><h3>Earthing Tests</h3><span class="badge">SOON</span></div>
+<p>Earth resistance <10Ω, Electrode 3m, GI 25x3mm, Pit marking</p>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>📊 Reports</h2>
+<div class="desc">Export and overview</div>
+<div class="grid">
+<div class="card" onclick="go('./api/export/excel')">
+<h3>📥 Export All QC to Excel</h3>
+<p>Download all sheets (General + Wooden Pole) into one Excel file for client submission.</p>
+<div style="margin-top:12px"><button class="btn btn-dark">Download Excel →</button></div>
+</div>
+<div class="card" onclick="go('./api/status')">
+<h3>🔧 API Status / Debug</h3>
+<p>Check DB connection, file existence, Postgres vs SQLite, token sessions.</p>
+<div style="margin-top:12px"><button class="btn" style="background:#f1f5f9">Check Status →</button></div>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
+function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
+function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
+function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
+function go(url){window.location.href=url;}
+guard();
+const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
+
+async function loadCounts(){
+  try{
+    const r=await fetch('./api/qc-sheets',{headers:authHeader()}); const data=await r.json();
+    const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
+    const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
+    document.getElementById('multiCount').innerText=multi+' sheets';
+    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
+  }catch{}
+}
+loadCounts();
+</script>
+</body>
+</html>
