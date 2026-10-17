@@ -3,7 +3,6 @@ from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 
-# Try import postgres driver
 try:
     import psycopg2
     import psycopg2.extras
@@ -14,34 +13,12 @@ except:
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-DATABASE_URL = os.environ.get('DATABASE_URL')  # Railway provides this when you add Postgres plugin
+DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_PG = bool(DATABASE_URL and HAS_PG)
-
-
-def migrate_qc_sheets():
-    conn = get_conn()
-    cur = conn.cursor()
-    try:
-        for col in ['structure_number','collector_number','section_number','chainage_extra']:
-            try:
-                cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN {col} TEXT DEFAULT ''")
-            except Exception:
-                pass
-        conn.commit()
-    except Exception as e:
-        print(f"Migration warning: {e}")
-    finally:
-        try: cur.close()
-        except: pass
-        try: conn.close()
-        except: pass
-migrate_qc_sheets()
-
 
 def get_conn():
     if USE_PG:
-        conn = psycopg2.connect(DATABASE_URL)
-        return conn
+        return psycopg2.connect(DATABASE_URL)
     else:
         conn = sqlite3.connect('projecttrack.db')
         conn.row_factory = sqlite3.Row
@@ -55,10 +32,10 @@ def init_db():
             id SERIAL PRIMARY KEY,
             project_name TEXT,
             location TEXT,
-    structure_number TEXT DEFAULT '',
-    collector_number TEXT DEFAULT '',
-    section_number TEXT DEFAULT '',
-    chainage_extra TEXT DEFAULT '',
+            structure_number TEXT DEFAULT '',
+            collector_number TEXT DEFAULT '',
+            section_number TEXT DEFAULT '',
+            chainage_extra TEXT DEFAULT '',
             date TEXT,
             inspector TEXT,
             status TEXT DEFAULT 'draft',
@@ -77,15 +54,21 @@ def init_db():
             created_at TEXT,
             updated_at TEXT
         )''')
+        # migrate existing table if columns missing
+        for col in ['structure_number','collector_number','section_number','chainage_extra']:
+            try:
+                cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN {col} TEXT DEFAULT ''")
+            except:
+                pass
     else:
         cur.execute('''CREATE TABLE IF NOT EXISTS qc_sheets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_name TEXT,
             location TEXT,
-    structure_number TEXT DEFAULT '',
-    collector_number TEXT DEFAULT '',
-    section_number TEXT DEFAULT '',
-    chainage_extra TEXT DEFAULT '',
+            structure_number TEXT DEFAULT '',
+            collector_number TEXT DEFAULT '',
+            section_number TEXT DEFAULT '',
+            chainage_extra TEXT DEFAULT '',
             date TEXT,
             inspector TEXT,
             status TEXT DEFAULT 'draft',
@@ -105,9 +88,8 @@ def init_db():
             updated_at TEXT
         )''')
     conn.commit()
-    # Seed default gantt tasks if empty
     cur.execute('SELECT COUNT(*) FROM gantt_tasks')
-    count = cur.fetchone()[0] if not USE_PG else cur.fetchone()[0]
+    count = cur.fetchone()[0]
     if count == 0:
         defaults = [
             ("Project Initiation & Contract","2026-01-06","2026-01-16",100,"#3b82f6","PMO"),
@@ -139,7 +121,6 @@ def serve_static(path):
     if os.path.exists(path): return send_from_directory('.', path)
     return send_from_directory('.', 'index.html')
 
-# ---------- Helpers ----------
 def rows_to_dicts(cur, rows):
     if USE_PG:
         cols = [desc[0] for desc in cur.description]
@@ -147,7 +128,6 @@ def rows_to_dicts(cur, rows):
     else:
         return [dict(r) for r in rows]
 
-# ---------- QC Sheets ----------
 @app.route('/api/qc-sheets', methods=['GET'])
 def list_qc():
     conn = get_conn(); cur = conn.cursor()
@@ -165,12 +145,12 @@ def create_qc():
     d = request.json
     conn = get_conn(); cur = conn.cursor(); now = datetime.utcnow().isoformat()
     if USE_PG:
-        cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checks_json,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id',
-                    (d.get('project_name',''), d.get('location',''), d.get('date',''), d.get('inspector','HZC QC Team'), d.get('status','draft'), json.dumps(d.get('checks',{})), now, now))
+        cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,checks_json,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id',
+                    (d.get('project_name',''), d.get('location',''), d.get('structure_number',''), d.get('collector_number',''), d.get('section_number',''), d.get('chainage_extra',''), d.get('date',''), d.get('inspector','HZC QC Team'), d.get('status','draft'), json.dumps(d.get('checks',{})), now, now))
         sid = cur.fetchone()[0]
     else:
-        cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checks_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)',
-                    (d.get('project_name',''), d.get('location',''), d.get('date',''), d.get('inspector','HZC QC Team'), d.get('status','draft'), json.dumps(d.get('checks',{})), now, now))
+        cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,checks_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                    (d.get('project_name',''), d.get('location',''), d.get('structure_number',''), d.get('collector_number',''), d.get('section_number',''), d.get('chainage_extra',''), d.get('date',''), d.get('inspector','HZC QC Team'), d.get('status','draft'), json.dumps(d.get('checks',{})), now, now))
         sid = cur.lastrowid
     conn.commit(); conn.close()
     return jsonify({"id": sid})
@@ -196,11 +176,11 @@ def update_qc(sid):
     d = request.json; now = datetime.utcnow().isoformat()
     conn = get_conn(); cur = conn.cursor()
     if USE_PG:
-        cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, date=%s, inspector=%s, status=%s, checks_json=%s, updated_at=%s WHERE id=%s',
-                    (d.get('project_name'), d.get('location'), d.get('date'), d.get('inspector'), d.get('status'), json.dumps(d.get('checks',{})), now, sid))
+        cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, structure_number=%s, collector_number=%s, section_number=%s, chainage_extra=%s, date=%s, inspector=%s, status=%s, checks_json=%s, updated_at=%s WHERE id=%s',
+                    (d.get('project_name'), d.get('location'), d.get('structure_number',''), d.get('collector_number',''), d.get('section_number',''), d.get('chainage_extra',''), d.get('date'), d.get('inspector'), d.get('status'), json.dumps(d.get('checks',{})), now, sid))
     else:
-        cur.execute('UPDATE qc_sheets SET project_name=?, location=?, date=?, inspector=?, status=?, checks_json=?, updated_at=? WHERE id=?',
-                    (d.get('project_name'), d.get('location'), d.get('date'), d.get('inspector'), d.get('status'), json.dumps(d.get('checks',{})), now, sid))
+        cur.execute('UPDATE qc_sheets SET project_name=?, location=?, structure_number=?, collector_number=?, section_number=?, chainage_extra=?, date=?, inspector=?, status=?, checks_json=?, updated_at=? WHERE id=?',
+                    (d.get('project_name'), d.get('location'), d.get('structure_number',''), d.get('collector_number',''), d.get('section_number',''), d.get('chainage_extra',''), d.get('date'), d.get('inspector'), d.get('status'), json.dumps(d.get('checks',{})), now, sid))
     conn.commit(); conn.close()
     return jsonify({"ok":True})
 
@@ -212,7 +192,6 @@ def delete_qc(sid):
     conn.commit(); conn.close()
     return jsonify({"ok":True})
 
-# ---------- Gantt Tasks in DB ----------
 @app.route('/api/gantt-tasks', methods=['GET'])
 def list_gantt():
     conn=get_conn(); cur=conn.cursor()
@@ -258,7 +237,6 @@ def delete_gantt(tid):
     conn.commit(); conn.close()
     return jsonify({"ok":True})
 
-# ---------- Export All Sheets to Excel ----------
 @app.route('/api/export/excel')
 def export_excel():
     from openpyxl import Workbook
@@ -272,12 +250,12 @@ def export_excel():
     wb = Workbook()
     ws1 = wb.active
     ws1.title = "QC Sheets Summary"
-    ws1.append(["ID","Project Name","Location","Date","Inspector","Status","Checked","Pass","Fail","Score %","Created At","Updated At"])
+    ws1.append(["ID","Project Name","Location","Structure No","Collector No","Section No","Date","Inspector","Status","Checked","Pass","Fail","Score %","Created At","Updated At"])
     ws2 = wb.create_sheet("Checks Detail")
-    ws2.append(["Sheet ID","Project","Location","Section","Check #","Checkpoint","Status","Remark"])
+    ws2.append(["Sheet ID","Project","Location","Structure","Collector","Section","Check Section","Check #","Checkpoint","Depth Selected","Status","Remark"])
 
     check_names = [
-        ["Foundation & Excavation","Excavation depth 1.8m","Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"],
+        ["Foundation & Excavation","Excavation depth","Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"],
         ["Pole Erection","Pole type/height","Verticality ≤1°","Alignment","Bolt torque","Danger plate","Anti-climbing"],
         ["Conductor Stringing","ACSR type","Sag & tension","Jumper connections","Earth continuity","Insulator cleaning","Clearance ≥2.5m"],
         ["Earthing","Earth resistance <10Ω","Electrode depth 3m","GI size 25x3mm","Lightning arrester","Bonding","Pit marking"],
@@ -288,20 +266,19 @@ def export_excel():
     for s in sheets:
         try: checks = json.loads(s.get('checks_json') or '{}')
         except: checks = {}
-        total = len(checks)
         passed = sum(1 for v in checks.values() if isinstance(v,dict) and v.get('status')=='pass')
         failed = sum(1 for v in checks.values() if isinstance(v,dict) and v.get('status')=='fail')
         checked = sum(1 for v in checks.values() if isinstance(v,dict) and v.get('status'))
         score = round(passed/checked*100) if checked else 0
-        ws1.append([s['id'], s['project_name'], s['location'], s['date'], s['inspector'], s['status'], checked, passed, failed, score, s['created_at'], s['updated_at']])
-        # detail rows
+        ws1.append([s['id'], s['project_name'], s.get('location',''), s.get('structure_number',''), s.get('collector_number',''), s.get('section_number',''), s['date'], s['inspector'], s['status'], checked, passed, failed, score, s['created_at'], s['updated_at']])
         for si, sec in enumerate(check_names):
             sec_title = sec[0]
             for ii, cp in enumerate(sec[1:]):
                 key = f"{si}_{ii}"
                 v = checks.get(key, {})
                 if isinstance(v,dict):
-                    ws2.append([s['id'], s['project_name'], s['location'], sec_title, ii+1, cp, v.get('status',''), v.get('remark','')])
+                    depth = v.get('depth','') if si==0 and ii==0 else ''
+                    ws2.append([s['id'], s['project_name'], s.get('location',''), s.get('structure_number',''), s.get('collector_number',''), s.get('section_number',''), sec_title, ii+1, cp, depth, v.get('status',''), v.get('remark','')])
 
     bio = BytesIO()
     wb.save(bio)
