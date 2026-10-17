@@ -142,11 +142,9 @@ function renderChecks(){
     div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span>${sec.items.length}</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
   });
-  // FIX: Score based on TOTAL (36), not just checked - 3/36 checked can't be 100%
-  const scoreTotal = total ? Math.round(pass/total*100) : 0;
-  const scoreChecked = checked ? Math.round(pass/checked*100) : 0;
   const progress = total ? Math.round(checked/total*100) : 0;
-  document.getElementById('score').innerText=`Checked ${checked}/${total} (${progress}%) • Pass ${pass} • Fail ${fail} • Score ${scoreTotal}% (of total) • ${scoreChecked}% of checked`;
+  const unchecked = total - checked;
+  document.getElementById('score').innerText=`Checked ${checked}/${total} (${progress}%) • Pass ${pass} • Fail ${fail} • Uncheck ${unchecked}`;
 }
 function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];

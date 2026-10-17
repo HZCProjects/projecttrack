@@ -415,11 +415,10 @@ function updateScore(){
     if(f) fail++;
   }
   // FIX: Score can't be 100% when only 3/18 checked - based on TOTAL not checked
-  const scoreTotal = total ? Math.round(pass/total*100) : 0;
-  const scoreChecked = checked ? Math.round(pass/checked*100) : 0;
   const progress = total ? Math.round(checked/total*100) : 0;
+  const unchecked = total - checked;
   const el=document.getElementById('score');
-  if(el) el.innerText=`Checked ${checked}/${total} (${progress}%) • Pass ${pass} • Fail ${fail} • Score ${scoreTotal}% (of total ${total}) • ${scoreChecked}% of checked`;
+  if(el) el.innerText=`Checked ${checked}/${total} (${progress}%) • Pass ${pass} • Fail ${fail} • Uncheck ${unchecked}`;
 }
 function clearAll(){
   const contEl=document.getElementById('contractor'); if(contEl) contEl.value='AKC';
