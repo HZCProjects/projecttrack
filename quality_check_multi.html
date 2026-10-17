@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ProjectTrack - Steel Monopoles QC - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
 .header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
@@ -114,7 +115,7 @@ window.fetch=function(url,opts){
 <div id="score" style="font-size:12px;font-weight:700;margin:12px 0"></div>
 <div id="sections"></div>
 
-<div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-dark" onclick="saveCurrent()">Save to Database</button><button class="btn btn-light" onclick="window.print()">Print PDF</button></div>
+<div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-dark" onclick="saveCurrent()">Save to Database</button><button class="btn btn-light" onclick="window.print()">🖨️ Print</button><button class="btn" style="background:#dc2626;color:#fff" onclick="exportSteelPDF()">📄 Export to PDF</button></div>
 </div>
 </div>
 
@@ -207,6 +208,34 @@ async function deleteSheet(){
   if(!currentId) return;
   if(!confirm('Delete sheet ID '+currentId+'?')) return;
   await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; loadList();
+}
+function exportSteelPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const proj = document.getElementById('proj').value || '';
+  const loc = document.getElementById('loc').value || '';
+  const date = document.getElementById('date').value || '';
+  const ins = document.getElementById('ins').value || '';
+  const status = document.getElementById('status').value || '';
+  doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('Steel Monopoles QC - Quality Check Sheet',10,15);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`Project: ${proj} | Location: ${loc} | Date: ${date} | Inspector: ${ins} | Status: ${status}`,10,22);
+  let y=30;
+  checksData.forEach((sec,si)=>{
+    if(y>250){ doc.addPage(); y=15; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text(sec.title,10,y); y+=6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    sec.items.forEach((it,ii)=>{
+      const key=`${si}_${ii}`; const val=currentChecks[key]||{status:'',remark:''};
+      if(y>270){ doc.addPage(); y=15; }
+      doc.text(`${ii+1}. ${it} [${val.status||' '}] Remark: ${val.remark||''}`,12,y,{maxWidth:185});
+      y+=5;
+    });
+    y+=3;
+  });
+  doc.save(`Steel_Monopole_${loc||'QC'}_${date||new Date().toISOString().slice(0,10)}.pdf`);
 }
 loadList();
 </script>

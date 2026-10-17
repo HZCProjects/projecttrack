@@ -4,6 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wooden Pole Inspections - QC Sheet - ProjectTrack</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
 .header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px}
@@ -95,7 +97,8 @@ tr:nth-child(even){background:#f8fafc}
 <div style="margin-top:16px;display:flex;gap:10px" class="no-print">
 <button class="btn btn-primary" onclick="saveSheet()">💾 Save to ProjectTrack</button>
 <button class="btn sec" onclick="clearAll()" style="background:#f1f5f9">Clear</button>
-<button class="btn" onclick="window.print()" style="background:#e2e8f0">Print</button>
+<button class="btn" onclick="window.print()" style="background:#e2e8f0">🖨️ Print</button>
+<button class="btn" onclick="exportToPDF()" style="background:#dc2626;color:#fff">📄 Export to PDF</button>
 <span id="status" style="font-size:12px;color:#64748b;padding:10px"></span>
 </div>
 </div>
@@ -159,6 +162,51 @@ async function saveSheet(){
   }catch(e){ document.getElementById('status').innerText='Error '+e.message; }
 }
 document.getElementById('date').valueAsDate=new Date();
+
+async function exportToPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const project = document.getElementById('project').value || 'Overberg WEF';
+  const contractor = document.getElementById('contractor').value || '';
+  const structure = document.getElementById('structure').value || '';
+  const collector = document.getElementById('collector').value || '';
+  const section = document.getElementById('section').value || '';
+  const depth = document.getElementById('depth').value || '';
+  const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
+  const inspector = document.getElementById('inspector').value || '';
+
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('Wooden Pole Inspections - Quality Check Sheet', 10, 15);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`Overberg WEF - Wooden Pole Structures`, 10, 21);
+  doc.text(`Project: ${project} | Contractor: ${contractor} | Date: ${date} | Inspector: ${inspector}`, 10, 27);
+  doc.text(`Structure: ${structure} | Collector: ${collector} | Section: ${section} | Depth: ${depth}`, 10, 32);
+
+  let y=40;
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('ITEM',10,y); doc.text('INSPECTION REQUIREMENT',20,y); doc.text('PASS',130,y); doc.text('FAIL',145,y); doc.text('COMMENT',160,y);
+  y+=3; doc.line(10,y,200,y); y+=4;
+  doc.setFont('helvetica','normal');
+  for(let i=1;i<=13;i++){
+    const req = document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText;
+    const p = document.querySelector(`.pass-check[data-row="${i}"]`).checked ? 'YES' : '';
+    const f = document.querySelector(`.fail-check[data-row="${i}"]`).checked ? 'YES' : '';
+    const c = document.getElementById(`comment-${i}`).value || '';
+    if(y>270){ doc.addPage(); y=15; }
+    const lines = doc.splitTextToSize(req, 100);
+    doc.text(String(i),10,y);
+    doc.text(lines,20,y);
+    doc.text(p,130,y);
+    doc.text(f,145,y);
+    doc.text(doc.splitTextToSize(c,35),160,y);
+    y+= Math.max(6, lines.length*4);
+    doc.setDrawColor(230); doc.line(10,y,200,y); y+=2;
+  }
+  y+=5;
+  doc.setFont('helvetica','bold'); doc.text(`Generated: ${new Date().toLocaleString()} | Inspector: ${inspector} | HZCProjects Overberg WEF`,10,y);
+  doc.save(`Wooden_Pole_${structure||'QC'}_${date}.pdf`);
+  document.getElementById('status').innerText='📄 PDF Exported!';
+}
 </script>
 
 <div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
