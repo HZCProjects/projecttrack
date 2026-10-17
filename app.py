@@ -64,7 +64,28 @@ def init_db():
         cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
             token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
             display_name TEXT, created_at TEXT)''')
-    conn.commit(); conn.close()
+    # Migration: Add missing columns to old tables (if table existed before)
+    try:
+        if USE_PG:
+            # Check and add columns that might be missing in old DB
+            for col, coltype in [
+                ('structure_number', 'TEXT DEFAULT \'\''),
+                ('collector_number', 'TEXT DEFAULT \'\''),
+                ('section_number', 'TEXT DEFAULT \'\''),
+                ('chainage_extra', 'TEXT DEFAULT \'\''),
+                ('sheet_type', 'TEXT DEFAULT \'trench\''),
+                ('status', 'TEXT DEFAULT \'draft\'')
+            ]:
+                try:
+                    cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN IF NOT EXISTS {col} {coltype}")
+                except Exception as e:
+                    print(f"Migration add {col}: {e}")
+            conn.commit()
+    except Exception as e:
+        print(f"Migration error: {e}")
+        try: conn.commit()
+        except: pass
+    conn.close()
 
 def init_users():
     conn = get_conn(); cur = conn.cursor()
@@ -179,8 +200,23 @@ def public_save_qc():
         conn.commit(); conn.close()
         return jsonify({"id":sid, "warning": "Saved via public endpoint - please restore Postgres for auth"})
     except Exception as e:
-        conn.close()
-        return jsonify({"error": str(e)}), 500
+        print(f"public-save error (trying fallback without sheet_type): {e}")
+        try:
+            # Fallback: try without sheet_type and other new columns if they don't exist
+            conn.rollback()
+            if USE_PG:
+                cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', 
+                    (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, now))
+                sid=cur.fetchone()[0]
+            else:
+                cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)', 
+                    (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, now))
+                sid=cur.lastrowid
+            conn.commit(); conn.close()
+            return jsonify({"id":sid, "warning": "Saved via fallback without new columns - DB needs migration"})
+        except Exception as e2:
+            conn.close()
+            return jsonify({"error": f"{str(e)} | Fallback: {str(e2)}"}), 500
 
 @app.route('/api/qc-sheets/public-update/<int:sid>', methods=['PUT'])
 def public_update_qc(sid):
@@ -199,8 +235,20 @@ def public_update_qc(sid):
         conn.commit(); conn.close()
         return jsonify({"id": sid, "ok": True})
     except Exception as e:
-        conn.close()
-        return jsonify({"error": str(e)}), 500
+        print(f"public-update error (fallback): {e}")
+        try:
+            conn.rollback()
+            if USE_PG:
+                cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, date=%s, inspector=%s, status=%s, checklist_data=%s, updated_at=%s WHERE id=%s',
+                    (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, sid))
+            else:
+                cur.execute('UPDATE qc_sheets SET project_name=?, location=?, date=?, inspector=?, status=?, checklist_data=?, updated_at=? WHERE id=?',
+                    (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, sid))
+            conn.commit(); conn.close()
+            return jsonify({"id": sid, "ok": True, "warning": "Updated without new columns"})
+        except Exception as e2:
+            conn.close()
+            return jsonify({"error": f"{str(e)} | Fallback: {str(e2)}"}), 500
 
 
 @app.route('/api/qc-sheets/public-get/<int:sid>')
