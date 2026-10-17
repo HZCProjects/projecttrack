@@ -473,6 +473,49 @@ def public_wooden_list():
     return wooden_list()
 
 
+
+@app.route('/api/qc-sheets/by-structure/<structure_no>')
+@require_auth
+def get_by_structure(structure_no):
+    conn=get_conn(); cur=conn.cursor()
+    try:
+        if USE_PG:
+            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+        else:
+            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
+        row=cur.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({"error": f"Structure {structure_no} not found"}), 404
+        cols=[d[0] for d in cur.description]
+        d=dict(zip(cols,row)) if USE_PG else dict(row)
+        conn.close()
+        return jsonify(d)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/qc-sheets/public-by-structure/<structure_no>')
+def public_by_structure(structure_no):
+    conn=get_conn(); cur=conn.cursor()
+    try:
+        if USE_PG:
+            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+        else:
+            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
+        row=cur.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({"error": f"Structure {structure_no} not found"}), 404
+        cols=[d[0] for d in cur.description]
+        d=dict(zip(cols,row)) if USE_PG else dict(row)
+        conn.close()
+        return jsonify(d)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 500
+
+
 # Pages
 @app.route('/')
 def home(): return send_from_directory('.', 'index.html')

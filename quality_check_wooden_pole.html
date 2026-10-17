@@ -73,8 +73,8 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 
 <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap">
-  <div><label>Load Saved ID</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 5" style="width:100px" type="number"><button onclick="loadById()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 16px">📂 Load ID</button></div></div>
-  <div style="flex:1;min-width:200px"><label>Recent H-Pole Sheets</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet...</option></select></div>
+  <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:120px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 16px">📂 Open Structure</button></div></div>
+  <div style="flex:1;min-width:260px"><label>Recent H-Pole Sheets (by Structure No)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select Structure No...</option></select></div>
   <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
   <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
   <button onclick="saveCurrent()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 20px;font-weight:700">💾 Save to ProjectTrack</button>
@@ -227,6 +227,98 @@ async function checkStructureExists(){
   }catch(e){ console.error(e); }
 }
 
+async function loadByStructure(){
+  const inputVal = document.getElementById('loadIdInput')?.value?.trim();
+  if(!inputVal){ alert('Enter Structure No e.g. 450'); return; }
+  const statusEl=document.getElementById('status');
+  if(statusEl) statusEl.innerText='Searching Structure No '+inputVal+'...';
+  try{
+    // First try to load by structure number via API
+    let data=null;
+    try{
+      // Try dedicated endpoint
+      const r=await fetch(`/api/qc-sheets/by-structure/${encodeURIComponent(inputVal)}`,{headers:authHeader()});
+      if(r.ok){ data=await r.json(); }
+    }catch{}
+    if(!data){
+      try{
+        const r=await fetch(`/api/qc-sheets/public-by-structure/${encodeURIComponent(inputVal)}`);
+        if(r.ok){ data=await r.json(); }
+      }catch{}
+    }
+    // Fallback: search in list
+    if(!data){
+      let allData=[];
+      try{
+        const r=await fetch('/api/qc-sheets',{headers:authHeader()});
+        allData=await r.json();
+      }catch{
+        const r=await fetch('/api/qc-sheets/public-list');
+        allData=await r.json();
+      }
+      // Find by structure_number (wooden only)
+      const found = allData.find(s=>{
+        const struct = String(s.structure_number||'').trim();
+        return struct===inputVal || struct.toLowerCase()===inputVal.toLowerCase();
+      });
+      if(found){ data=found; }
+    }
+    if(!data){
+      if(statusEl){ statusEl.innerText=`❌ Structure No ${inputVal} not found`; statusEl.style.color='#dc2626'; }
+      alert(`Structure No ${inputVal} not found. Create new sheet with that Structure No and Save.`);
+      return;
+    }
+    // If data is from list (not full), load full by ID
+    if(data.id && !data.checklist_data && !data.checks){
+      await loadById(data.id);
+    }else{
+      // Populate directly
+      currentId = data.id;
+      const badge=document.getElementById('currentIdBadge');
+      if(badge){ badge.style.display='inline-block'; badge.innerText='Editing ID: '+currentId+' (Struct '+inputVal+')'; }
+      document.getElementById('project').value=data.project_name||'Overberg WEF';
+      document.getElementById('contractor').value=data.location||data.contractor||'';
+      document.getElementById('structure').value=data.structure_number||inputVal;
+      document.getElementById('collector').value=data.collector_number||'';
+      document.getElementById('section').value=data.section_number||'';
+      document.getElementById('gps').value=data.chainage_extra||data.gps||'';
+      document.getElementById('date').value=data.date||new Date().toISOString().slice(0,10);
+      document.getElementById('inspector').value=data.inspector||'';
+      let checklist = data.checklist_data;
+      if(typeof checklist==='string'){ try{ checklist=JSON.parse(checklist); }catch{ checklist={}; } }
+      if(!checklist && data.checks) checklist=data.checks;
+      if(checklist){
+        for(let i=1;i<=18;i++){
+          const item = checklist[i] || checklist[String(i)];
+          if(!item) continue;
+          const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
+          const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
+          const commentEl=document.getElementById(`comment-${i}`);
+          if(item.pass!==undefined){
+            if(passEl) passEl.checked=!!item.pass;
+            if(failEl) failEl.checked=!!item.fail;
+          }else if(item.status){
+            if(passEl) passEl.checked=(item.status==='pass');
+            if(failEl) failEl.checked=(item.status==='fail');
+          }
+          if(commentEl) commentEl.value=item.comment||item.remark||'';
+          const tr=passEl?.closest('tr');
+          if(tr){
+            tr.classList.remove('pass','fail');
+            if(passEl?.checked) tr.classList.add('pass');
+            if(failEl?.checked) tr.classList.add('fail');
+          }
+        }
+      }
+      updateScore();
+      if(statusEl){ statusEl.innerText=`✅ Loaded Structure No ${inputVal} - ID ${currentId}`; statusEl.style.color='#16a34a'; }
+    }
+  }catch(e){
+    if(statusEl){ statusEl.innerText='❌ Load failed: '+e.message; statusEl.style.color='#dc2626'; }
+    console.error(e);
+  }
+}
+
 async function loadRecentList(){
   const sel=document.getElementById('recentSelect');
   if(!sel) return;
@@ -252,10 +344,12 @@ async function loadRecentList(){
       sel.innerHTML='<option value="">No H-Pole sheets yet - '+data.length+' other sheets in DB (Steel separated)</option>';
     }
     recent.forEach(s=>{
-      const label = `ID ${s.id} - ${s.structure_number||''} ${s.location||''} ${s.date||''} [${s.sheet_type||''}]`.trim();
+      const label = `Structure ${s.structure_number||'No-No'} - ID ${s.id} - ${s.collector_number?'Collector '+s.collector_number:''} ${s.date||''}`.trim();
       const opt=document.createElement('option');
       opt.value=s.id;
       opt.textContent=label;
+      // Also set data attribute for structure no search
+      opt.dataset.structure = s.structure_number||'';
       sel.appendChild(opt);
     });
     // If URL has ?id=5, auto load
