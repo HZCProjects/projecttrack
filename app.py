@@ -7,7 +7,6 @@ from functools import wraps
 
 try:
     import psycopg2
-    import psycopg2.extras
     HAS_PG = True
 except:
     HAS_PG = False
@@ -16,7 +15,6 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_PG = bool(DATABASE_URL and HAS_PG)
-TOKEN_STORE = {}
 
 def get_conn():
     if USE_PG:
@@ -34,41 +32,38 @@ def init_db():
     conn = get_conn(); cur = conn.cursor()
     if USE_PG:
         cur.execute('''CREATE TABLE IF NOT EXISTS qc_sheets (
-            id SERIAL PRIMARY KEY,
-            project_name TEXT, location TEXT,
+            id SERIAL PRIMARY KEY, project_name TEXT, location TEXT,
             structure_number TEXT DEFAULT '', collector_number TEXT DEFAULT '',
             section_number TEXT DEFAULT '', chainage_extra TEXT DEFAULT '',
             date TEXT, inspector TEXT, status TEXT DEFAULT 'draft',
-            sheet_type TEXT DEFAULT 'trench',
-            checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
+            sheet_type TEXT DEFAULT 'trench', checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS gantt_tasks (
-            id SERIAL PRIMARY KEY,
-            name TEXT, start_date TEXT, end_date TEXT,
-            progress INTEGER DEFAULT 0, assignee TEXT,
-            dependencies TEXT, color TEXT, created_at TEXT)''')
+            id SERIAL PRIMARY KEY, name TEXT, start_date TEXT, end_date TEXT,
+            progress INTEGER DEFAULT 0, assignee TEXT, dependencies TEXT, color TEXT, created_at TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL, role TEXT DEFAULT 'viewer',
             display_name TEXT DEFAULT '', created_at TEXT, last_login TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
+            display_name TEXT, created_at TEXT)''')
     else:
         cur.execute('''CREATE TABLE IF NOT EXISTS qc_sheets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_name TEXT, location TEXT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT, project_name TEXT, location TEXT,
             structure_number TEXT DEFAULT '', collector_number TEXT DEFAULT '',
             section_number TEXT DEFAULT '', chainage_extra TEXT DEFAULT '',
             date TEXT, inspector TEXT, status TEXT DEFAULT 'draft',
-            sheet_type TEXT DEFAULT 'trench',
-            checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
+            sheet_type TEXT DEFAULT 'trench', checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS gantt_tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT, start_date TEXT, end_date TEXT,
-            progress INTEGER DEFAULT 0, assignee TEXT,
-            dependencies TEXT, color TEXT, created_at TEXT)''')
+            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, start_date TEXT, end_date TEXT,
+            progress INTEGER DEFAULT 0, assignee TEXT, dependencies TEXT, color TEXT, created_at TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
+            id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL, role TEXT DEFAULT 'viewer',
             display_name TEXT DEFAULT '', created_at TEXT, last_login TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
+            display_name TEXT, created_at TEXT)''')
     conn.commit(); conn.close()
 
 def init_users():
@@ -94,15 +89,25 @@ def init_users():
 init_db()
 init_users()
 
-# ---- Auth helpers ----
+# ---- Auth helpers with persistent sessions ----
+def get_session(token):
+    if not token: return None
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('SELECT * FROM sessions WHERE token=%s',(token,))
+    else: cur.execute('SELECT * FROM sessions WHERE token=?',(token,))
+    row=cur.fetchone()
+    conn.close()
+    if not row: return None
+    return dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
+
 def require_auth(f):
     @wraps(f)
     def d(*args, **kwargs):
-        auth = request.headers.get('Authorization','')
-        token = auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
-        if not token or token not in TOKEN_STORE:
-            return jsonify({"error":"Unauthorized - Please login"}), 401
-        request.current_user = TOKEN_STORE[token]
+        auth=request.headers.get('Authorization','')
+        token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
+        sess=get_session(token)
+        if not sess: return jsonify({"error":"Unauthorized - Please login again"}), 401
+        request.current_user=sess
         return f(*args, **kwargs)
     return d
 
@@ -110,19 +115,17 @@ def require_role(*roles):
     def deco(f):
         @wraps(f)
         def d(*args, **kwargs):
-            auth = request.headers.get('Authorization','')
-            token = auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
-            if not token or token not in TOKEN_STORE:
-                return jsonify({"error":"Unauthorized - Please login"}), 401
-            user = TOKEN_STORE[token]
-            request.current_user = user
-            if user['role'] not in roles:
-                return jsonify({"error":f"Forbidden - Role '{user['role']}' cannot do this. Need: {', '.join(roles)}"}), 403
+            auth=request.headers.get('Authorization','')
+            token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
+            sess=get_session(token)
+            if not sess: return jsonify({"error":"Unauthorized - Please login"}), 401
+            request.current_user=sess
+            if sess['role'] not in roles:
+                return jsonify({"error":f"Forbidden - Role '{sess['role']}' cannot do this. Need: {', '.join(roles)}"}), 403
             return f(*args, **kwargs)
         return d
     return deco
 
-# ---- Routes ----
 @app.route('/')
 def home(): return send_from_directory('.', 'index.html')
 @app.route('/login')
@@ -135,44 +138,47 @@ def gantt_route(): return send_from_directory('.', 'gantt_planner_DB.html')
 def qc_route(): return send_from_directory('.', 'quality_check_multi.html')
 
 @app.route('/api/status')
-def status():
-    return jsonify({"db":"Postgres" if USE_PG else "SQLite","use_postgres":USE_PG,"has_pg_lib":HAS_PG,"ok":True})
+def status(): return jsonify({"db":"Postgres" if USE_PG else "SQLite","use_postgres":USE_PG,"ok":True,"persistent_sessions":True})
 
 @app.route('/api/debug')
 def debug():
     import os as _os
-    files = _os.listdir('.')
-    return jsonify({"cwd":_os.getcwd(),"use_postgres":USE_PG,"files":files[:30],"exists_gantt":_os.path.exists('gantt_planner_DB.html'),"exists_qc":_os.path.exists('quality_check_multi.html')})
+    return jsonify({"use_postgres":USE_PG,"files":_os.listdir('.')[:20]})
 
-# Auth API
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    data = request.json or {}
-    username = (data.get('username') or '').strip()
-    password = data.get('password') or ''
-    conn = get_conn(); cur = conn.cursor()
-    if USE_PG: cur.execute('SELECT * FROM users WHERE username=%s', (username,))
-    else: cur.execute('SELECT * FROM users WHERE username=?', (username,))
-    row = cur.fetchone()
+    data=request.json or {}
+    username=(data.get('username') or '').strip()
+    password=data.get('password') or ''
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('SELECT * FROM users WHERE username=%s',(username,))
+    else: cur.execute('SELECT * FROM users WHERE username=?',(username,))
+    row=cur.fetchone()
     if not row:
         conn.close(); return jsonify({"error":"Invalid username or password"}), 401
-    user = dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
+    user=dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
     if not check_password_hash(user['password_hash'], password):
         conn.close(); return jsonify({"error":"Invalid username or password"}), 401
-    now = datetime.utcnow().isoformat()
-    if USE_PG: cur.execute('UPDATE users SET last_login=%s WHERE id=%s', (now, user['id']))
-    else: cur.execute('UPDATE users SET last_login=? WHERE id=?', (now, user['id']))
+    now=datetime.utcnow().isoformat()
+    if USE_PG: cur.execute('UPDATE users SET last_login=%s WHERE id=%s',(now,user['id']))
+    else: cur.execute('UPDATE users SET last_login=? WHERE id=?',(now,user['id']))
+    token=secrets.token_hex(24)
+    if USE_PG:
+        cur.execute('INSERT INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (token) DO NOTHING',(token,user['id'],user['username'],user['role'],user['display_name'],now))
+    else:
+        cur.execute('INSERT OR REPLACE INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (?,?,?,?,?,?)',(token,user['id'],user['username'],user['role'],user['display_name'],now))
     conn.commit(); conn.close()
-    token = secrets.token_hex(24)
-    info = {"id":user['id'],"username":user['username'],"role":user['role'],"display_name":user['display_name'],"token":token,"login_at":now}
-    TOKEN_STORE[token]=info
-    return jsonify(info)
+    return jsonify({"id":user['id'],"username":user['username'],"role":user['role'],"display_name":user['display_name'],"token":token,"login_at":now})
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
-    auth = request.headers.get('Authorization','')
-    token = auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or (request.json or {}).get('token'))
-    if token in TOKEN_STORE: del TOKEN_STORE[token]
+    auth=request.headers.get('Authorization','')
+    token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or (request.json or {}).get('token'))
+    if token:
+        conn=get_conn(); cur=conn.cursor()
+        if USE_PG: cur.execute('DELETE FROM sessions WHERE token=%s',(token,))
+        else: cur.execute('DELETE FROM sessions WHERE token=?',(token,))
+        conn.commit(); conn.close()
     return jsonify({"ok":True})
 
 @app.route('/api/auth/me', methods=['GET'])
@@ -183,8 +189,7 @@ def me(): return jsonify(request.current_user)
 def list_users():
     conn=get_conn(); cur=conn.cursor()
     cur.execute('SELECT id, username, role, display_name, created_at, last_login FROM users ORDER BY id')
-    rows=cur.fetchall()
-    data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
     conn.close(); return jsonify(data)
 
 @app.route('/api/auth/users', methods=['POST'])
@@ -196,7 +201,7 @@ def create_user():
     role=data.get('role') or 'viewer'
     display_name=data.get('display_name') or ''
     if not username or not password: return jsonify({"error":"Username and password required"}),400
-    if len(password)<6: return jsonify({"error":"Password min 6 chars"}),400
+    if len(password)<6: return jsonify({"error":"Password min 6"}),400
     conn=get_conn(); cur=conn.cursor(); now=datetime.utcnow().isoformat()
     try:
         if USE_PG:
@@ -219,13 +224,12 @@ def delete_user(uid):
     else: cur.execute('DELETE FROM users WHERE id=?',(uid,))
     conn.commit(); conn.close(); return jsonify({"ok":True})
 
-# QC Sheets
+# QC
 @app.route('/api/qc-sheets', methods=['GET'])
 def get_qc():
     conn=get_conn(); cur=conn.cursor()
     cur.execute('SELECT * FROM qc_sheets ORDER BY id DESC')
-    rows=cur.fetchall()
-    data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
     conn.close(); return jsonify(data)
 
 @app.route('/api/qc-sheets', methods=['POST'])
@@ -249,7 +253,7 @@ def update_qc(sid):
     data=request.json or {}; now=datetime.utcnow().isoformat()
     conn=get_conn(); cur=conn.cursor()
     fields=('project_name','location','structure_number','collector_number','section_number','chainage_extra','date','inspector','status','sheet_type','checklist_data')
-    set_clause=', '.join([f"{f}=%s" if USE_PG else f"{f}=?" for f in fields])+ (', updated_at=%s' if USE_PG else ', updated_at=?')
+    set_clause=', '.join([f"{f}=%s" if USE_PG else f"{f}=?" for f in fields])+', updated_at=%s' if USE_PG else ', updated_at=?'
     vals=[data.get(f,'') if f!='checklist_data' else json.dumps(data.get(f,{})) for f in fields]
     vals.append(now); vals.append(sid)
     if USE_PG: cur.execute(f'UPDATE qc_sheets SET {set_clause} WHERE id=%s', vals)
@@ -269,8 +273,7 @@ def delete_qc(sid):
 def get_gantt():
     conn=get_conn(); cur=conn.cursor()
     cur.execute('SELECT * FROM gantt_tasks ORDER BY id')
-    rows=cur.fetchall()
-    data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
     conn.close(); return jsonify(data)
 
 @app.route('/api/gantt-tasks', methods=['POST'])
@@ -307,22 +310,20 @@ def delete_gantt(tid):
 @app.route('/api/export/excel')
 def export_excel():
     try:
-        import openpyxl
         from openpyxl import Workbook
         from io import BytesIO
     except:
         return jsonify({"error":"openpyxl not installed"}),500
     conn=get_conn(); cur=conn.cursor()
     cur.execute('SELECT * FROM qc_sheets')
-    rows=cur.fetchall()
-    data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
     conn.close()
     wb=Workbook(); ws=wb.active; ws.title="QC Sheets"
-    ws.append(["ID","Project","Location","Structure","Collector","Section","Chainage","Date","Inspector","Status","Type","Data"])
+    ws.append(["ID","Project","Location","Structure","Collector","Section","Chainage","Date","Inspector","Status","Type"])
     for r in data:
-        ws.append([r.get('id'),r.get('project_name'),r.get('location'),r.get('structure_number'),r.get('collector_number'),r.get('section_number'),r.get('chainage_extra'),r.get('date'),r.get('inspector'),r.get('status'),r.get('sheet_type'),str(r.get('checklist_data'))[:200]])
+        ws.append([r.get('id'),r.get('project_name'),r.get('location'),r.get('structure_number'),r.get('collector_number'),r.get('section_number'),r.get('chainage_extra'),r.get('date'),r.get('inspector'),r.get('status'),r.get('sheet_type')])
     bio=BytesIO(); wb.save(bio); bio.seek(0)
-    return app.response_class(bio.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition':'attachment; filename=ProjectTrack_QC_Export.xlsx'})
+    return app.response_class(bio.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition':'attachment; filename=QC_Export.xlsx'})
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8000)))
