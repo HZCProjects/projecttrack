@@ -87,9 +87,22 @@ async function api(path, method='GET', body=null){
 async function loadList(){
   try{
     const sheets = await api('/api/qc-sheets');
-    const filtered = sheets.filter(s=>s.sheet_type==='steel_monopole' || s.sheet_type==='general' || !s.sheet_type || s.sheet_type==='trench');
+    // STRICTLY separate - ONLY steel_monopole sheets, NOT wooden
+    const filtered = sheets.filter(s=> s.sheet_type==='steel_monopole' );
+    // Fallback: if no steel_monopole yet (old data), try public list
+    let finalList = filtered;
+    if(finalList.length===0){
+      try{
+        const r=await fetch('/api/qc-sheets/steel-list');
+        const steelOnly=await r.json();
+        if(Array.isArray(steelOnly) && steelOnly.length>0) finalList=steelOnly;
+      }catch{}
+    }
     const el=document.getElementById('list'); el.innerHTML='';
-    filtered.forEach(s=>{
+    // Show count badge
+    const badge=document.getElementById('steelCount');
+    if(badge) badge.innerText=finalList.length+' Steel Monopoles';
+    finalList.forEach(s=>{
       const div=document.createElement('div'); div.className='sheet-item'+(s.id===currentId?' active':'');
       div.innerHTML=`<b>${s.project_name||'No Project'} - ${s.location||''}</b><small>${s.date||''} • ${s.status||'draft'} • ID ${s.id}</small>`;
       div.onclick=()=>openSheet(s.id); el.appendChild(div);

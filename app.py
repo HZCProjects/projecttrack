@@ -233,12 +233,13 @@ def public_save_qc():
     vals=[data.get(f,'') for f in fields]
     struct_no = str(data.get('structure_number','')).strip()
     try:
-        # ENFORCE ONE ID PER STRUCTURE NUMBER
+        # ENFORCE ONE ID PER STRUCTURE NUMBER - SEPARATE BY TYPE (steel vs wooden)
+        sheet_type = data.get('sheet_type','')
         if struct_no:
             if USE_PG:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s LIMIT 1', (struct_no,))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND sheet_type=%s LIMIT 1', (struct_no, sheet_type))
             else:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? LIMIT 1', (struct_no,))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND sheet_type=? LIMIT 1', (struct_no, sheet_type))
             existing = cur.fetchone()
             if existing:
                 existing_id = existing[0] if USE_PG else existing[0]
@@ -425,6 +426,52 @@ def public_list_qc():
     except Exception as e:
         conn.close()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/qc-sheets/steel-list')
+def steel_list():
+    """ONLY steel monopoles - separate from wooden"""
+    conn=get_conn(); cur=conn.cursor()
+    try:
+        if USE_PG:
+            cur.execute("SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets WHERE sheet_type='steel_monopole' ORDER BY id DESC")
+        else:
+            cur.execute("SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets WHERE sheet_type='steel_monopole' ORDER BY id DESC")
+        rows=cur.fetchall()
+        cols=[d[0] for d in cur.description]
+        result=[dict(zip(cols,r)) if USE_PG else dict(r) for r in rows]
+        conn.close()
+        return jsonify(result)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/qc-sheets/wooden-list')
+def wooden_list():
+    """ONLY wooden H-Pole - separate from steel"""
+    conn=get_conn(); cur=conn.cursor()
+    try:
+        if USE_PG:
+            cur.execute("SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets WHERE sheet_type IN ('wooden_pole','wooden_h_pole','h_pole_wooden','wooden') OR sheet_type LIKE '%wood%' OR sheet_type LIKE '%h_pole%' ORDER BY id DESC")
+        else:
+            cur.execute("SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets WHERE sheet_type IN ('wooden_pole','wooden_h_pole','h_pole_wooden','wooden') OR sheet_type LIKE '%wood%' OR sheet_type LIKE '%h_pole%' ORDER BY id DESC")
+        rows=cur.fetchall()
+        cols=[d[0] for d in cur.description]
+        result=[dict(zip(cols,r)) if USE_PG else dict(r) for r in rows]
+        conn.close()
+        return jsonify(result)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/qc-sheets/public-steel-list')
+def public_steel_list():
+    return steel_list()
+
+@app.route('/api/qc-sheets/public-wooden-list')
+def public_wooden_list():
+    return wooden_list()
+
 
 # Pages
 @app.route('/')

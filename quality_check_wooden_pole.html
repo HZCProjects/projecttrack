@@ -214,7 +214,9 @@ async function checkStructureExists(){
       const r=await fetch('/api/qc-sheets/public-list');
       data=await r.json();
     }
-    const found = data.find(s=> String(s.structure_number||'').trim() === structNo);
+    // ONLY check within wooden H-Pole sheets, not steel monopoles
+    const woodenOnly = data.filter(s=>{ const t=(s.sheet_type||'').toLowerCase(); return t.includes('wood') || t.includes('h_pole'); });
+    const found = woodenOnly.find(s=> String(s.structure_number||'').trim() === structNo);
     if(found){
       if(statusEl){ statusEl.innerText=`⚠️ Structure ${structNo} already exists as ID ${found.id} - will update that ID`; statusEl.style.color='#f59e0b'; }
       // Auto-load it?
@@ -238,11 +240,17 @@ async function loadRecentList(){
       const j=await r.json();
       data=j;
     }
-    // Filter for H-Pole wooden types
-    const wooden = data.filter(d=> (d.sheet_type||'').includes('wooden') || (d.sheet_type||'').includes('h_pole') || (d.sheet_type||'').includes('wood') || d.structure_number );
-    sel.innerHTML='<option value="">Select recent sheet... ('+data.length+' total, '+wooden.length+' H-Pole)</option>';
-    // Show most recent 50
-    const recent = data.slice().reverse().slice(0,50);
+    // STRICTLY separate - ONLY wooden H-Pole sheets, NOT steel
+    const wooden = data.filter(d=> {
+      const t=(d.sheet_type||'').toLowerCase();
+      return t.includes('wood') || t.includes('h_pole') || t==='wooden_pole' || t==='wooden_h_pole';
+    });
+    sel.innerHTML='<option value="">Select recent sheet... ('+wooden.length+' H-Pole only, '+data.length+' total in DB)</option>';
+    // Show ONLY wooden, most recent 50
+    const recent = wooden.slice().reverse().slice(0,50);
+    if(recent.length===0){
+      sel.innerHTML='<option value="">No H-Pole sheets yet - '+data.length+' other sheets in DB (Steel separated)</option>';
+    }
     recent.forEach(s=>{
       const label = `ID ${s.id} - ${s.structure_number||''} ${s.location||''} ${s.date||''} [${s.sheet_type||''}]`.trim();
       const opt=document.createElement('option');
