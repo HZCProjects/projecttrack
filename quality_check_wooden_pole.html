@@ -85,12 +85,26 @@ tr:nth-child(even){background:#f8fafc}
 .search-item:hover{background:#f8fafc}
 .search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
 
+
+/* HAMBURGER MENU FOR PHONES/TABLETS */
+.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px 8px;background:rgba(255,255,255,.15);border-radius:8px;border:1px solid rgba(255,255,255,.2)}
+.hamburger span{width:18px;height:2px;background:#fff;border-radius:2px;display:block}
+.nav-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+@media(max-width:768px){
+  .hamburger{display:flex !important}
+  .nav-links{display:none !important;flex-direction:column;position:absolute;top:100%;right:0;left:0;background:#0f172a;padding:12px;border-radius:0 0 12px 12px;z-index:50;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+  .nav-links.open{display:flex !important}
+  .nav-links a, .nav-links button{width:100%;justify-content:flex-start !important;margin:2px 0 !important}
+  .header{position:relative !important;flex-wrap:wrap}
+  .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
+}
+
 </style>
 </head>
 <body>
 <div class="header no-print" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px">
-<div><b>🪵 H-Pole Wooden Structures - Quality Check Sheets</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
-<div>
+<div class="header-title"><div><b>🪵 H-Pole Wooden Structures</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
+<div class="nav-links" id="navLinks">
 <a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
 <a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
@@ -467,8 +481,13 @@ function updateScore(){
   if(el){
     const failColor = fail>0 ? '#ef4444' : '#64748b';
     const failWeight = fail>0 ? '800' : '400';
-    const bg = fail>0 ? '#fee2e2' : 'transparent';
-    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:#16a34a;font-weight:600">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${bg};padding:2px 8px;border-radius:6px;border:${fail>0?'1px solid #fecaca':''}">${fail}</span> • Uncheck ${unchecked}`;
+    const failBg = fail>0 ? '#fee2e2' : 'transparent';
+    const failBorder = fail>0 ? '1px solid #fecaca' : '1px solid transparent';
+    const passColor = pass>0 ? '#16a34a' : '#64748b';
+    const passWeight = pass>0 ? '800' : '400';
+    const passBg = pass>0 ? '#dcfce7' : 'transparent';
+    const passBorder = pass>0 ? '1px solid #bbf7d0' : '1px solid transparent';
+    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck ${unchecked}`;
   }
 }
 function clearAll(){
@@ -674,6 +693,15 @@ async function exportToPDF(){
   doc.save(`H_Pole_Wooden_Structures_${structure||'QC'}_${date}.pdf`);
   document.getElementById('status').innerText='📄 PDF Exported!';
 }
+
+function toggleNav(){ const nav=document.getElementById('navLinks'); if(nav) nav.classList.toggle('open'); }
+// Close nav when clicking outside
+document.addEventListener('click', e=>{
+  const nav=document.getElementById('navLinks');
+  const ham=document.getElementById('hamburgerBtn');
+  if(nav && ham && !nav.contains(e.target) && !ham.contains(e.target) && nav.classList.contains('open')) nav.classList.remove('open');
+});
+
 function getGPS(){
   const btn = document.querySelector('button[onclick="getGPS()"]');
   if(!navigator.geolocation){ alert('GPS not supported'); return; }
