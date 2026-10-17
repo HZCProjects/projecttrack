@@ -22,13 +22,14 @@ tr:nth-child(even){background:#f8fafc}
 tr.pass{background:#dcfce7 !important} tr.fail{background:#fee2e2 !important}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
 td:first-child{text-align:center;font-weight:700}
-#qcTable{width:1260px;table-layout:fixed}
+#qcTable{width:1316px;max-width:1316px;table-layout:fixed;border-collapse:collapse}
 #qcTable th:nth-child(1), #qcTable td:nth-child(1){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(2), #qcTable td:nth-child(2){width:500px;max-width:500px;min-width:500px;white-space:normal;word-wrap:break-word}
 #qcTable th:nth-child(3), #qcTable td:nth-child(3){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(4), #qcTable td:nth-child(4){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(5), #qcTable td:nth-child(5){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:500px;max-width:500px;min-width:500px}
+#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:556px;max-width:556px;min-width:556px}
+
 
 
 
@@ -137,21 +138,21 @@ th:first-child{text-align:center}
 <h2>H-Pole Wooden Structures - Quality Check Sheets</h2>
 <div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
 
-<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;width:1316px;max-width:1316px">
 <div style="width:320px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:320px"></div>
 <div style="width:320px"><label>Contractor</label><select id="contractor" style="width:320px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
 <div style="width:320px"><label>Date of Inspection</label><input id="date" type="date" style="width:320px"></div>
 <div style="width:320px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:320px"></div>
 </div>
 
-<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;width:1316px;max-width:1316px">
 <div style="width:320px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:320px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
 <div style="width:320px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:320px"></div>
 <div style="width:320px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:320px"></div>
 <div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
 </div>
 
-<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1300px;max-width:1300px">
+<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1316px;max-width:1316px">
   <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 420" style="width:110px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 14px">📂 Open</button></div></div>
   <div style="flex:0 0 500px;max-width:500px;min-width:500px"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:500px" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
   <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
@@ -166,9 +167,9 @@ th:first-child{text-align:center}
 <span style="font-size:14.4px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
 <span style="font-size:13.2px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
 </div>
-<table id="qcTable">
+<div style="width:1316px;max-width:1316px;overflow-x:auto"><table id="qcTable">
 <thead>
-<tr><th style="width:50px;text-align:center">Item</th><th>Inspection Requirement</th><th style="width:70px;text-align:center">Pass</th><th style="width:70px;text-align:center">Fail</th><th style="width:70px;text-align:center">N/A</th><th>Comments</th></tr>
+<tr><th style="width:65px;text-align:center">Item</th><th style="width:500px">Inspection Requirement</th><th style="width:65px;text-align:center">Pass</th><th style="width:65px;text-align:center">Fail</th><th style="width:65px;text-align:center">N/A</th><th style="width:500px">Comments</th></tr>
 </thead>
 <tbody>
 <tr><td><b>1</b></td><td>Pole(s) installed at the correct location and orientation</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="1" onchange="setPass(1)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="1" onchange="setFail(1)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="1" onchange="setNA(1)"></td><td><input class="comment" id="comment-1" placeholder="Comments..."></td></tr>
@@ -190,7 +191,7 @@ th:first-child{text-align:center}
 <tr><td><b>17</b></td><td>Stays to be installed and tensioned with thimble and made off, including the tail</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="17" onchange="setPass(17)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="17" onchange="setFail(17)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="17" onchange="setNA(17)"></td><td><input class="comment" id="comment-17" placeholder="Comments..."></td></tr>
 <tr><td><b>18</b></td><td>Structure Label to be 3m from NGL and to point in the direction from the source</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="18" onchange="setPass(18)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="18" onchange="setFail(18)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="18" onchange="setNA(18)"></td><td><input class="comment" id="comment-18" placeholder="Comments..."></td></tr>
 </tbody>
-</table>
+</table></div>
 <div style="margin-top:16px;display:flex;gap:10px" class="no-print">
 <button class="btn btn-primary" onclick="saveSheet()">💾 Save to ProjectTrack</button>
 <button class="btn sec" onclick="clearAll()" style="background:#f1f5f9">Clear</button>
