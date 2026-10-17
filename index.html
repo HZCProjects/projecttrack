@@ -1,20 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ProjectTrack - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
 <style>body{font-family:Inter,sans-serif;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:20px}
-.card{background:#fff;padding:36px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center;max-width:520px;width:100%}
-h1{font-size:32px;color:#0f172a;margin:0}p{color:#64748b;margin-top:8px;font-size:14px;line-height:1.5}
+.card{background:#fff;padding:36px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center;max-width:560px;width:100%}
+h1{font-size:32px;color:#0f172a;margin:0}p{color:#64748b;margin-top:8px;font-size:14px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
-a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;cursor:pointer;border:none;text-align:center}
-.primary{background:#0f172a;color:#fff}.secondary{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
-.green{grid-column:span 2;background:#10b981;color:#fff}
-.live{margin-top:20px;font-size:11px;color:#94a3b8;line-height:1.6}.badge{display:inline-block;background:#10b981;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:700}
+a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px}
+.primary{background:#0f172a;color:#fff} .blue{background:#3b82f6;color:#fff} .green{grid-column:span 2;background:#10b981;color:#fff}
+.secondary{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0} .badge{display:inline-block;background:#10b981;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:700}
 .userbar{margin-top:16px;padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap}
-</style>
-</head>
+</style></head>
 <body>
 <div class="card">
 <h1>📊 ProjectTrack</h1>
@@ -23,55 +19,28 @@ a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;fo
 <div class="userbar" id="userBar" style="display:none"></div>
 <div class="grid">
 <a class="btn primary" href="./gantt">1. 📅 Planner</a>
-<a class="btn primary" style="background:#3b82f6" href="./qc">2. ✅ QC Check Sheets</a>
+<a class="btn blue" href="./quality">2. 🏗️ Quality Management</a>
+<a class="btn blue" style="grid-column:span 2;background:#0f172a" href="./quality">↳ QC Sheets: General Multi + Wooden Pole (select separately)</a>
 <a class="btn green" href="./api/export/excel">3. 📊 Export to Excel</a>
 <a class="btn secondary" href="./api/status">4. 🔍 API Status</a>
 <a class="btn secondary" href="./api/debug">5. 🛠️ Debug</a>
 </div>
-<div class="live">
+<div class="live" style="margin-top:20px;font-size:11px;color:#94a3b8">
 Live: projecttrack-production-4ed6.up.railway.app<br>
-HZCProjects/projecttrack • v5.0 With Login<br>
+HZCProjects/projecttrack • v6.0 Quality Hub<br>
 <small>Login required - Structure / Collector / Section</small>
 </div>
 </div>
 <script>
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
-const u=getUser();
-if(!u){window.location.href='./login';}
-else{
-  const bar=document.getElementById('userBar');
-  bar.style.display='flex';
+const u=getUser(); if(!u){window.location.href='./login';} else {
+  const bar=document.getElementById('userBar'); bar.style.display='flex';
   bar.innerHTML=`<span style="background:#0f172a;color:#fff;padding:4px 10px;border-radius:20px">👤 ${u.display_name||u.username} (${u.role})</span><a href="./users" style="color:#3b82f6;text-decoration:none">Users</a><a href="#" onclick="logout()" style="color:#ef4444;text-decoration:none">Logout</a>`;
 }
 function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
-
 fetch('./api/status').then(r=>r.json()).then(s=>{
-  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite');
+  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite') + ' • Quality Hub';
   document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
-}).catch(()=>{
-  document.getElementById('dbStatus').innerText='DB offline - Retrying...';
-  setTimeout(()=>{fetch('./api/status').then(r=>r.json()).then(s=>{
-    document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite');
-    document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
-  }).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';})},2000);
-});
+}).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';});
 </script>
-
-<script>
-setTimeout(()=>{
-  const u=getAuth(); if(!u) return;
-  if(u.role==='viewer'){
-    const b=document.querySelector('a[href="./gantt"]'); if(b) b.style.opacity='0.8';
-    // viewer can still view, but hide user management for non-admin
-  }
-  if(u.role!=='admin'){
-    // Hide Users link for non-admin in userBar - already shown but disable
-    const ub=document.getElementById('userBar');
-    if(ub && u.role!=='admin'){
-      ub.innerHTML=ub.innerHTML.replace('Users','<span style="opacity:0.4">Users (Admin only)</span>');
-    }
-  }
-},600);
-</script>
-</body>
-</html>
+</body></html>
