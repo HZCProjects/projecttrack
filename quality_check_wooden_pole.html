@@ -138,20 +138,20 @@ th:first-child{text-align:center}
 <div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
 
 <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:330px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:330px"></div>
-<div style="width:330px"><label>Contractor</label><select id="contractor" style="width:330px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
-<div style="width:330px"><label>Date of Inspection</label><input id="date" type="date" style="width:330px"></div>
-<div style="width:330px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:330px"></div>
+<div style="width:320px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:320px"></div>
+<div style="width:320px"><label>Contractor</label><select id="contractor" style="width:320px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
+<div style="width:320px"><label>Date of Inspection</label><input id="date" type="date" style="width:320px"></div>
+<div style="width:320px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:320px"></div>
 </div>
 
 <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:330px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:330px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
-<div style="width:330px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:330px"></div>
-<div style="width:330px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:330px"></div>
-<div style="width:330px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:330px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
+<div style="width:320px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:320px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
+<div style="width:320px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:320px"></div>
+<div style="width:320px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:320px"></div>
+<div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
 </div>
 
-<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1330px;max-width:1330px">
+<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1300px;max-width:1300px">
   <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 420" style="width:110px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 14px">📂 Open</button></div></div>
   <div style="flex:0 0 500px;max-width:500px;min-width:500px"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:500px" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
   <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
