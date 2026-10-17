@@ -23,12 +23,14 @@ tr:nth-child(even){background:#f8fafc}
 .check{width:18px;height:18px}
 .comment{width:100%}
 @media print{.no-print{display:none} body{background:#fff} .card{box-shadow:none} }
+.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
 </style>
 </head>
 <body>
 <div class="header no-print" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px">
 <div><b>🪵 Wooden Pole Inspections</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
+<a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
 <a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
 <a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality Management</a>
@@ -89,6 +91,7 @@ tr:nth-child(even){background:#f8fafc}
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'}}
 function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
+function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
 function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 const me=guard();
 const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
