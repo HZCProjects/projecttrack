@@ -224,14 +224,35 @@ def check_session():
 
 @app.route('/api/qc-sheets/public-save', methods=['POST'])
 def public_save_qc():
-    """Fallback endpoint that saves without auth - for when sessions are broken"""
+    """Fallback endpoint - ONE ID PER STRUCTURE NUMBER - updates if structure_number exists"""
     data=request.json or {}; now=datetime.utcnow().isoformat()
     conn=get_conn(); cur=conn.cursor()
     cdata=data.get('checklist_data') or data.get('checks') or data.get('checklist') or {}
     if isinstance(cdata, dict): cdata=json.dumps(cdata)
     fields=('project_name','location','structure_number','collector_number','section_number','chainage_extra','date','inspector','status','sheet_type')
     vals=[data.get(f,'') for f in fields]
+    struct_no = str(data.get('structure_number','')).strip()
     try:
+        # ENFORCE ONE ID PER STRUCTURE NUMBER
+        if struct_no:
+            if USE_PG:
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s LIMIT 1', (struct_no,))
+            else:
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? LIMIT 1', (struct_no,))
+            existing = cur.fetchone()
+            if existing:
+                existing_id = existing[0] if USE_PG else existing[0]
+                print(f"Structure {struct_no} already exists as ID {existing_id} - updating instead of creating new")
+                # Update existing instead of creating new
+                if USE_PG:
+                    cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, structure_number=%s, collector_number=%s, section_number=%s, chainage_extra=%s, date=%s, inspector=%s, status=%s, sheet_type=%s, checklist_data=%s, updated_at=%s WHERE id=%s',
+                        (*vals, cdata, now, existing_id))
+                else:
+                    cur.execute('UPDATE qc_sheets SET project_name=?, location=?, structure_number=?, collector_number=?, section_number=?, chainage_extra=?, date=?, inspector=?, status=?, sheet_type=?, checklist_data=?, updated_at=? WHERE id=?',
+                        (*vals, cdata, now, existing_id))
+                conn.commit(); conn.close()
+                return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} - ID {existing_id} (One ID per Structure)"})
+        
         if USE_PG:
             cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', (*vals,cdata,now,now))
             sid=cur.fetchone()[0]
@@ -239,12 +260,29 @@ def public_save_qc():
             cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', (*vals,cdata,now,now))
             sid=cur.lastrowid
         conn.commit(); conn.close()
-        return jsonify({"id":sid, "warning": "Saved via public endpoint - please restore Postgres for auth"})
+        return jsonify({"id":sid, "created": True, "message": f"Created Structure {struct_no} - ID {sid}"})
     except Exception as e:
-        print(f"public-save error (trying fallback without sheet_type): {e}")
+        print(f"public-save error (trying fallback): {e}")
         try:
-            # Fallback: try without sheet_type and other new columns if they don't exist
             conn.rollback()
+            # Check again for existing in fallback
+            if struct_no:
+                if USE_PG:
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s LIMIT 1', (struct_no,))
+                else:
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? LIMIT 1', (struct_no,))
+                existing = cur.fetchone()
+                if existing:
+                    existing_id = existing[0] if USE_PG else existing[0]
+                    if USE_PG:
+                        cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, date=%s, inspector=%s, status=%s, checklist_data=%s, updated_at=%s WHERE id=%s',
+                            (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, existing_id))
+                    else:
+                        cur.execute('UPDATE qc_sheets SET project_name=?, location=?, date=?, inspector=?, status=?, checklist_data=?, updated_at=? WHERE id=?',
+                            (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, existing_id))
+                    conn.commit(); conn.close()
+                    return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no}"})
+            
             if USE_PG:
                 cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', 
                     (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, now))
@@ -254,7 +292,7 @@ def public_save_qc():
                     (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, now))
                 sid=cur.lastrowid
             conn.commit(); conn.close()
-            return jsonify({"id":sid, "warning": "Saved via fallback without new columns - DB needs migration"})
+            return jsonify({"id":sid, "warning": "Saved via fallback"})
         except Exception as e2:
             conn.close()
             return jsonify({"error": f"{str(e)} | Fallback: {str(e2)}"}), 500

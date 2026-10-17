@@ -66,7 +66,7 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 
 <div class="grid">
-<div><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296"></div>
+<div><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" onblur="checkStructureExists()" oninput="document.getElementById(\'loadIdInput\').value=\'\'"></div>
 <div><label>Collector No</label><input id="collector" placeholder="e.g. 420"></div>
 <div><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
 <div><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
@@ -199,6 +199,30 @@ async function loadById(idVal=null){
     console.error(e);
     alert('Failed to load ID '+inputId+': '+e.message);
   }
+}
+
+async function checkStructureExists(){
+  const structNo = document.getElementById('structure')?.value?.trim();
+  if(!structNo) return;
+  const statusEl=document.getElementById('status');
+  try{
+    let data=[];
+    try{
+      const r=await fetch('/api/qc-sheets',{headers:authHeader()});
+      data=await r.json();
+    }catch(e){
+      const r=await fetch('/api/qc-sheets/public-list');
+      data=await r.json();
+    }
+    const found = data.find(s=> String(s.structure_number||'').trim() === structNo);
+    if(found){
+      if(statusEl){ statusEl.innerText=`⚠️ Structure ${structNo} already exists as ID ${found.id} - will update that ID`; statusEl.style.color='#f59e0b'; }
+      // Auto-load it?
+      if(confirm(`Structure ${structNo} already exists as ID ${found.id}. Load it to edit?`)){
+        loadById(found.id);
+      }
+    }
+  }catch(e){ console.error(e); }
 }
 
 async function loadRecentList(){
