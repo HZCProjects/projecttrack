@@ -208,6 +208,7 @@ def list_users():
     return jsonify(data)
 
 @app.route('/api/auth/users', methods=['POST'])
+@require_role('admin')
 def create_user():
     data = request.json
     username = data.get('username','').strip()
@@ -235,6 +236,7 @@ def create_user():
     return jsonify({"id": sid})
 
 @app.route('/api/auth/users/<int:uid>', methods=['DELETE'])
+@require_role('admin')
 def delete_user(uid):
     if uid == 1:
         return jsonify({"error":"Cannot delete main admin"}), 400
@@ -289,6 +291,7 @@ def list_qc():
     return jsonify(data)
 
 @app.route('/api/qc-sheets', methods=['POST'])
+@require_role('inspector','qc_manager','admin')
 def create_qc():
     d = request.json
     conn = get_conn(); cur = conn.cursor(); now = datetime.utcnow().isoformat()
@@ -318,6 +321,7 @@ def get_qc(sid):
     return jsonify(data)
 
 @app.route('/api/qc-sheets/<int:sid>', methods=['PUT'])
+@require_role('inspector','qc_manager','admin')
 def update_qc(sid):
     d = request.json; now = datetime.utcnow().isoformat()
     conn = get_conn(); cur = conn.cursor()
@@ -331,6 +335,7 @@ def update_qc(sid):
     return jsonify({"ok":True})
 
 @app.route('/api/qc-sheets/<int:sid>', methods=['DELETE'])
+@require_role('qc_manager','admin')
 def delete_qc(sid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM qc_sheets WHERE id=%s',(sid,))
@@ -348,6 +353,7 @@ def list_gantt():
     return jsonify(data)
 
 @app.route('/api/gantt-tasks', methods=['POST'])
+@require_role('qc_manager','admin')
 def create_gantt():
     d=request.json; now=datetime.utcnow().isoformat()
     conn=get_conn(); cur=conn.cursor()
@@ -363,6 +369,7 @@ def create_gantt():
     return jsonify({"id":sid})
 
 @app.route('/api/gantt-tasks/<int:tid>', methods=['PUT'])
+@require_role('qc_manager','admin')
 def update_gantt(tid):
     d=request.json; now=datetime.utcnow().isoformat()
     conn=get_conn(); cur=conn.cursor()
@@ -376,6 +383,7 @@ def update_gantt(tid):
     return jsonify({"ok":True})
 
 @app.route('/api/gantt-tasks/<int:tid>', methods=['DELETE'])
+@require_role('qc_manager','admin')
 def delete_gantt(tid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM gantt_tasks WHERE id=%s',(tid,))
@@ -442,3 +450,93 @@ def serve_static(path):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4002))
     app.run(host='0.0.0.0', port=port)
+
+
+# ========= ROLE PROTECTION =========
+from functools import wraps
+
+# In-memory token store: token -> user dict
+TOKEN_STORE = {}
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.headers.get('Authorization','')
+        token = None
+        if auth.startswith('Bearer '):
+            token = auth[7:]
+        else:
+            # fallback: allow X-Token or ?token= for compatibility
+            token = request.headers.get('X-Token') or request.args.get('token')
+        if not token or token not in TOKEN_STORE:
+            return jsonify({"error":"Unauthorized - Please login"}), 401
+        request.current_user = TOKEN_STORE[token]
+        return f(*args, **kwargs)
+    return decorated
+
+def require_role(*allowed_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            auth = request.headers.get('Authorization','')
+            token = auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
+            if not token or token not in TOKEN_STORE:
+                return jsonify({"error":"Unauthorized - Please login"}), 401
+            user = TOKEN_STORE[token]
+            request.current_user = user
+            if user['role'] not in allowed_roles:
+                return jsonify({"error": f"Forbidden - Role '{user['role']}' cannot perform this. Required: {', '.join(allowed_roles)}"}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+# Patch login to store token
+original_login = auth_login
+# We need to override auth_login to store token
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login_with_token():
+    data = request.json
+    username = data.get('username','').strip()
+    password = data.get('password','')
+    conn = get_conn(); cur = conn.cursor()
+    if USE_PG:
+        cur.execute('SELECT * FROM users WHERE username=%s', (username,))
+    else:
+        cur.execute('SELECT * FROM users WHERE username=?', (username,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"error":"Invalid username or password"}), 401
+    if USE_PG:
+        cols = [desc[0] for desc in cur.description]
+        user = dict(zip(cols, row))
+    else:
+        user = dict(row)
+    if not check_password_hash(user['password_hash'], password):
+        conn.close()
+        return jsonify({"error":"Invalid username or password"}), 401
+    now = datetime.utcnow().isoformat()
+    if USE_PG:
+        cur.execute('UPDATE users SET last_login=%s WHERE id=%s', (now, user['id']))
+    else:
+        cur.execute('UPDATE users SET last_login=? WHERE id=?', (now, user['id']))
+    conn.commit(); conn.close()
+    token = secrets.token_hex(24)
+    user_info = {"id": user['id'],"username": user['username'],"role": user['role'],"display_name": user['display_name'],"token": token,"login_at": now}
+    TOKEN_STORE[token] = user_info
+    return jsonify(user_info)
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    auth = request.headers.get('Authorization','')
+    token = auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.json.get('token') if request.json else None)
+    if token in TOKEN_STORE:
+        del TOKEN_STORE[token]
+    return jsonify({"ok":True})
+
+@app.route('/api/auth/me', methods=['GET'])
+@require_auth
+def auth_me():
+    return jsonify(request.current_user)
+# ========= END ROLE PROTECTION =========
+
