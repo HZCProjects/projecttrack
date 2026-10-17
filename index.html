@@ -26,14 +26,14 @@ a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;fo
 </div>
 <div class="hint" style="margin-top:16px;font-size:11px;color:#94a3b8;padding:10px;background:#eff6ff;border-radius:8px;text-align:left">
 <b>Quality Management contains:</b><br>
-📋 QC Sheets → Steel Monopoles (36 checks) + H-Pole Wooden (18 checks) - GPS Coordinates<br>
+📋 QC Sheets → General Multi (existing) + Wooden Pole (new) - select separately<br>
 🔍 Inspections → Coming soon<br>
-📊 Reports → Excel export with GPS
+📊 Reports → Excel export
 </div>
 <div class="live" style="margin-top:14px;font-size:11px;color:#94a3b8">
-Live: projecttrack-production • Overberg WEF<br>
-HZCProjects/projecttrack • v7.0 - GPS Coordinates • Score 20% bigger • 18 items<br>
-<small>Login required - Structure / Collector / Section / GPS</small>
+Live: projecttrack-production-4ed6.up.railway.app<br>
+HZCProjects/projecttrack • v6.1 Quality Hub - Wooden Pole ONLY inside Quality<br>
+<small>Login required - Structure / Collector / Section</small>
 </div>
 </div>
 <script>
@@ -44,7 +44,7 @@ const u=getUser(); if(!u){window.location.href='./login';} else {
 }
 function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 fetch('./api/status').then(r=>r.json()).then(s=>{
-  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite') + ' • GPS Enabled';
+  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite') + ' • Quality Hub';
   document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
 }).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';});
 </script>
