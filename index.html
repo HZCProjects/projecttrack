@@ -5,7 +5,13 @@
 <title>MASTER DASHBOARD - ProjectTrack - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+function toggleMobileMenu(){
+  const nav=document.getElementById('navLinks');
+  if(nav){ nav.classList.toggle('open'); }
+}
+
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Inter,sans-serif;background:#e9ecef;color:#111827;font-size:13px}
@@ -66,13 +72,55 @@ body{font-family:Inter,sans-serif;background:#e9ecef;color:#111827;font-size:13p
 .pie{width:120px;height:120px;border-radius:50%;background:conic-gradient(#0f3a5f 0% 95%, #e5e7eb 95% 100%);border:1px solid #000;margin:auto;position:relative}
 .badge-db{position:absolute;top:6px;right:14px;background:#10b981;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;z-index:10}
 .user-strip{background:#fff;border:1px solid #000;margin:0 8px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+
+.show-btn{cursor:pointer;user-select:none;transition:.2s;padding:2px 10px;border-radius:12px;font-weight:700}
+.show-btn.active{background:#16a34a;color:#fff;border:1px solid #16a34a}
+.show-btn.inactive{background:#e5e7eb;color:#6b7280;border:1px solid #9ca3af}
+.icon-box.active-box{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.2)}
+.filter-box{position:relative;user-select:none}
+.filter-box.active-filter{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25);border-width:2px}
+.filter-box.active-filter::after{content:'● ACTIVE';position:absolute;top:-6px;right:-6px;background:#000;color:#fff;font-size:7px;padding:2px 5px;border-radius:10px;font-weight:800}
+
 @media(max-width:1100px){.layout{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.filter-grid{grid-template-columns:repeat(4,1fr)}.icon-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* MOBILE RESPONSIVE - Hamburger menu */
+.hamburger{display:none;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;padding:6px 12px;border-radius:8px;cursor:pointer;margin-left:8px}
+.nav-links{display:flex;align-items:center;flex-wrap:wrap}
+@media(max-width:768px){
+  body{padding:10px !important}
+  .header{height:auto !important;min-height:60px;padding:10px 14px !important;flex-wrap:wrap;gap:8px}
+  .header .nav-links{flex-direction:column;align-items:stretch;width:100%;display:none;margin-top:10px;background:rgba(255,255,255,.05);border-radius:10px;padding:10px}
+  .header .nav-links.open{display:flex !important}
+  .header .nav-links a,.header .nav-links button{margin:4px 0 !important;width:100%;justify-content:center}
+  .hamburger{display:inline-flex !important;align-items:center;justify-content:center}
+  .grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
+  .meta-grid{grid-template-columns:1fr !important}
+  .container{grid-template-columns:1fr !important;padding:12px !important}
+  .sidebar-list{position:static !important}
+  table{font-size:11px !important;display:block;overflow-x:auto;white-space:nowrap}
+  th,td{padding:6px 4px !important}
+  .card{padding:12px !important;border-radius:12px !important}
+  h2{font-size:16px !important}
+  .stats-grid{grid-template-columns:1fr !important}
+  .layout{grid-template-columns:1fr !important}
+  .filter-grid{grid-template-columns:repeat(2,1fr) !important}
+  .icon-grid{grid-template-columns:repeat(2,1fr) !important}
+  .top-black{flex-direction:column;align-items:flex-start !important}
+  .top-nav{flex-wrap:wrap}
+  .master-title{font-size:14px !important}
+  .user-strip{flex-direction:column;gap:8px}
+  .user-strip div{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr !important}
+}
+
 </style>
 </head>
 <body>
 
 <div class="top-black">
-<div class="top-nav">
+<button class="hamburger" onclick="toggleMobileMenu()" style="display:none">☰</button><div class="top-nav" id="navLinks">
 <div style="display:flex;align-items:center;gap:8px">
 <div style="background:#fff;color:#000;padding:6px 10px;font-weight:900;font-size:12px;line-height:1">INTELLIGENT<br>IoT-SOLUTIONS<br><span style="font-size:8px;font-weight:600">HZCProjects</span></div>
 </div>
@@ -114,24 +162,24 @@ body{font-family:Inter,sans-serif;background:#e9ecef;color:#111827;font-size:13p
 </div>
 <div>
 <div class="icon-grid">
-<div class="icon-box"><div style="font-size:9px;font-weight:700">Enclosure Controller<br>(Map Icon)</div><div class="ic">📍</div><div class="toggle"><span>● SHOW</span></div></div>
-<div class="icon-box"><div style="font-size:9px;font-weight:700">Steel Monopole<br>(Map Icon)</div><div class="ic">🏗️</div><div class="toggle"><span>● SHOW</span></div></div>
-<div class="icon-box"><div style="font-size:9px;font-weight:700">H-Pole Status<br>(Map Icon)</div><div class="ic">🪵</div><div class="toggle"><span>● SHOW</span></div></div>
-<div class="icon-box"><div style="font-size:9px;font-weight:700">Gateway<br>(Map Icon)</div><div class="ic">📡</div><div class="toggle"><span>● SHOW</span></div></div>
-<div class="icon-box"><div style="font-size:9px;font-weight:700">QC Sheet<br>(Map Icon)</div><div class="ic">📋</div><div class="toggle"><span>● SHOW</span></div></div>
-<div class="icon-box"><div style="font-size:9px;font-weight:700">GPS Point<br>(Map Icon)</div><div class="ic">📍</div><div class="toggle"><span>● SHOW</span></div></div>
+<div class="icon-box" id="box-enclosure"><div style="font-size:9px;font-weight:700">Enclosure Controller<br>(Map Icon)</div><div class="ic">📍</div><div class="toggle"><span id="btn-enclosure" class="show-btn active" onclick="toggleMapLayer('enclosure')">● SHOW</span></div></div>
+<div class="icon-box" id="box-steel"><div style="font-size:9px;font-weight:700">Steel Monopole<br>(Map Icon)</div><div class="ic">🏗️</div><div class="toggle"><span id="btn-steel" class="show-btn active" onclick="toggleMapLayer('steel')">● SHOW</span></div></div>
+<div class="icon-box" id="box-hpole"><div style="font-size:9px;font-weight:700">H-Pole Status<br>(Map Icon)</div><div class="ic">🪵</div><div class="toggle"><span id="btn-hpole" class="show-btn active" onclick="toggleMapLayer('hpole')">● SHOW</span></div></div>
+<div class="icon-box" id="box-gateway"><div style="font-size:9px;font-weight:700">Gateway<br>(Map Icon)</div><div class="ic">📡</div><div class="toggle"><span id="btn-gateway" class="show-btn active" onclick="toggleMapLayer('gateway')">● SHOW</span></div></div>
+<div class="icon-box" id="box-qc"><div style="font-size:9px;font-weight:700">QC Sheet<br>(Map Icon)</div><div class="ic">📋</div><div class="toggle"><span id="btn-qc" class="show-btn active" onclick="toggleMapLayer('qc')">● SHOW</span></div></div>
+<div class="icon-box" id="box-gps"><div style="font-size:9px;font-weight:700">GPS Point<br>(Map Icon)</div><div class="ic">📍</div><div class="toggle"><span id="btn-gps" class="show-btn active" onclick="toggleMapLayer('gps')">● SHOW</span></div></div>
 </div>
 <div class="status-devices">
 <div class="head"><i>🔍📈</i> <div><div style="font-size:12px">STATUS OF QC SHEETS (Refer to System Status Bars Below, and MAP Icons)</div><div style="font-size:9px;font-weight:400">Click on a status indicator below to filter according to the status only.</div></div></div>
 <div class="filter-grid">
-<div class="filter-box healthy" onclick="go('./qc')"><div class="ic">✅</div><div class="num" id="f-pass">0</div><div class="lbl">HEALTHY<br>DEVICES<br>PASS</div></div>
-<div class="filter-box alarm" onclick="go('./qc')"><div class="ic">🚨</div><div class="num" id="f-fail">0</div><div class="lbl">DEVICE<br>ALARMS<br>FAIL</div></div>
-<div class="filter-box power" onclick="go('./quality')"><div class="ic">⚡</div><div class="num" id="f-draft">0</div><div class="lbl">DEVICE<br>POWER<br>ALERTS<br>DRAFT</div></div>
-<div class="filter-box comm" onclick="go('./gantt')"><div class="ic">📶</div><div class="num" id="f-gantt">0</div><div class="lbl">DEVICE<br>COMM.<br>ALERTS<br>GANTT</div></div>
-<div class="filter-box battery" onclick="go('./quality')"><div class="ic">🔋</div><div class="num" id="f-wood">0</div><div class="lbl">DEVICE<br>BATTERY<br>ALERTS<br>H-POLE</div></div>
-<div class="filter-box lighton" onclick="go('./qc')"><div class="ic">💡</div><div class="num" id="f-steel">0</div><div class="lbl">LIGHTS ON<br>STEEL<br>MONOPOLE</div></div>
-<div class="filter-box lightoff" onclick="go('./')"><div class="ic">🌙</div><div class="num" id="f-off">0</div><div class="lbl">LIGHTS OFF<br>PENDING</div></div>
-<div class="filter-box cmd" onclick="go('./api/export/excel')"><div class="ic">📤</div><div class="num">📊</div><div class="lbl">COMMAND<br>USER<br>REQUEST<br>EXPORT</div></div>
+<div class="filter-box healthy" id="filter-pass" onclick="filterStatus('pass')"><div class="ic">✅</div><div class="num" id="f-pass">0</div><div class="lbl">HEALTHY<br>DEVICES<br>PASS</div></div>
+<div class="filter-box alarm" id="filter-fail" onclick="filterStatus('fail')"><div class="ic">🚨</div><div class="num" id="f-fail">0</div><div class="lbl">DEVICE<br>ALARMS<br>FAIL</div></div>
+<div class="filter-box power" id="filter-draft" onclick="filterStatus('draft')"><div class="ic">⚡</div><div class="num" id="f-draft">0</div><div class="lbl">DEVICE<br>POWER<br>ALERTS<br>DRAFT</div></div>
+<div class="filter-box comm" id="filter-gantt" onclick="filterStatus('gantt')"><div class="ic">📶</div><div class="num" id="f-gantt">0</div><div class="lbl">DEVICE<br>COMM.<br>ALERTS<br>GANTT</div></div>
+<div class="filter-box battery" id="filter-hpole" onclick="filterStatus('hpole')"><div class="ic">🔋</div><div class="num" id="f-wood">0</div><div class="lbl">DEVICE<br>BATTERY<br>ALERTS<br>H-POLE</div></div>
+<div class="filter-box lighton" id="filter-steel" onclick="filterStatus('steel')"><div class="ic">💡</div><div class="num" id="f-steel">0</div><div class="lbl">LIGHTS ON<br>STEEL<br>MONOPOLE</div></div>
+<div class="filter-box lightoff" id="filter-pending" onclick="filterStatus('pending')"><div class="ic">🌙</div><div class="num" id="f-off">0</div><div class="lbl">LIGHTS OFF<br>PENDING</div></div>
+<div class="filter-box cmd" id="filter-export" onclick="go('./api/export/excel')"><div class="ic">📤</div><div class="num">📊</div><div class="lbl">COMMAND<br>USER<br>REQUEST<br>EXPORT</div></div>
 </div>
 </div>
 </div>
@@ -182,6 +230,59 @@ function go(url){window.location.href=url;}
 guard();
 const _f=window.fetch;window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser();opts=opts||{};opts.headers=opts.headers||{};if(u&&u.token&&!opts.headers['Authorization'])opts.headers['Authorization']='Bearer '+u.token;}return _f(url,opts);};
 
+
+let activeLayers={enclosure:true,steel:true,hpole:true,gateway:true,qc:true,gps:true};
+let activeStatusFilter=null;
+let allQCData=[];
+
+function toggleMapLayer(layer){
+ activeLayers[layer]=!activeLayers[layer];
+ let btn=document.getElementById('btn-'+layer);
+ let box=document.getElementById('box-'+layer);
+ if(activeLayers[layer]){
+   btn.classList.add('active');btn.classList.remove('inactive');btn.innerText='● SHOW';
+   box.classList.add('active-box');
+ }else{
+   btn.classList.remove('active');btn.classList.add('inactive');btn.innerText='○ HIDE';
+   box.classList.remove('active-box');
+ }
+ filterMap();
+}
+
+function filterStatus(status){
+ let el=document.getElementById('filter-'+status);
+ if(activeStatusFilter===status){
+   activeStatusFilter=null;
+   document.querySelectorAll('.filter-box').forEach(b=>b.classList.remove('active-filter'));
+ }else{
+   activeStatusFilter=status;
+   document.querySelectorAll('.filter-box').forEach(b=>b.classList.remove('active-filter'));
+   if(el) el.classList.add('active-filter');
+ }
+ filterMap();
+}
+
+function filterMap(){
+ // Filter markers based on activeLayers and activeStatusFilter
+ markers.forEach(m=>{
+   let show=true;
+   let type=m._qcType||'qc';
+   let status=m._qcStatus||'draft';
+   // Layer filter
+   if(type==='steel' && !activeLayers.steel) show=false;
+   if(type==='hpole' && !activeLayers.hpole) show=false;
+   if(!activeLayers.qc && type==='qc') show=false;
+   if(!activeLayers.gps) show=false;
+   // Status filter
+   if(activeStatusFilter==='pass' && status!=='passed') show=false;
+   if(activeStatusFilter==='fail' && status!=='failed') show=false;
+   if(activeStatusFilter==='draft' && status!=='draft') show=false;
+   if(activeStatusFilter==='steel' && type!=='steel') show=false;
+   if(activeStatusFilter==='hpole' && type!=='hpole') show=false;
+   if(show){ if(!map.hasLayer(m)) map.addLayer(m); }else{ if(map.hasLayer(m)) map.removeLayer(m); }
+ });
+}
+
 let map = L.map('map').setView([-30.5595,22.9375],5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
 let markers=[];
@@ -210,6 +311,7 @@ async function loadQC(){
 
   // Map markers from GPS
   markers.forEach(m=>map.removeLayer(m));markers=[];
+  allQCData=data;
   data.forEach(s=>{
    let gps=s.chainage_extra||'';
    if(gps&&gps.includes(',')){
@@ -217,7 +319,9 @@ async function loadQC(){
     if(parts.length>=2&&!isNaN(parts[0])&&!isNaN(parts[1])){
      let color=s.status==='passed'?'green':s.status==='failed'?'red':'orange';
      let icon=L.divIcon({html:`<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 4px #000"></div>`,iconSize:[14,14]});
-     let m=L.marker([parts[0],parts[1]],{icon}).addTo(map).bindPopup(`<b>${s.project_name||'QC'}</b><br>Struct: ${s.structure_number||s.location||''}<br>Status: ${s.status||'draft'}<br>GPS: ${gps}<br>Type: ${s.sheet_type||''}`);
+     let m=L.marker([parts[0],parts[1]],{icon}).addTo(map).bindPopup(`<b>${s.project_name||'QC'}</b><br>Struct: ${s.structure_number||s.location||''}<br>Status: ${s.status||'draft'}<br>GPS: ${gps}<br>Type: ${s.sheet_type||''}<br><button onclick="window.location.href='./quality_check_wooden_pole.html'" style='margin-top:4px;padding:2px 6px;background:#000;color:#fff;border:none;border-radius:3px;font-size:10px'>Open QC</button>`);
+     m._qcType=(s.sheet_type==='steel_monopole'?'steel':s.sheet_type==='wooden_pole'?'hpole':'qc');
+     m._qcStatus=s.status||'draft';
      markers.push(m);
     }
    }
