@@ -1,175 +1,405 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>User Management - ProjectTrack</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
-<style>
-body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
-.header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px}
-.header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px}
-.card{background:#fff;padding:24px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);margin-bottom:20px}
-h2{font-size:18px;margin:0 0 16px} input,select{padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%;box-sizing:border-box;margin-bottom:10px}
-button{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:#0f172a;color:#fff}
-button.sec{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0} button.edit{background:#3b82f6;color:#fff} button.del{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
-table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left} th{color:#64748b;font-size:11px;text-transform:uppercase}
-.badge{padding:3px 8px;border-radius:20px;font-size:11px;background:#f1f5f9}
-.badge.admin{background:#0f172a;color:#fff} .badge.qc_manager{background:#3b82f6;color:#fff}
-.badge.inspector{background:#fef3c7;color:#92400e} .badge.viewer{background:#e0f2fe;color:#0369a1}
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:999}
-.modal.active{display:flex}
-.modal-content{background:#fff;padding:28px;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.modal-content h3{margin:0 0 16px;font-size:18px}
-.actions{display:flex;gap:10px;margin-top:12px}
-.actions button{flex:1}
-</style>
-</head>
-<body>
-<div class="header">
-<div><b>👥 User Management</b> <span style="opacity:.6;font-size:12px" id="who"></span></div>
-<div><a href="./">🏠 Home</a><a href="./gantt">📅 Planner</a><a href="./qc">✅ QC</a><a href="#" onclick="logout()">Logout</a></div>
-</div>
+import os, json, sqlite3, secrets
+from datetime import datetime
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
-<div style="display:grid;grid-template-columns:360px 1fr;gap:20px">
-<div class="card">
-<h2>Add New User</h2>
-<input id="newUser" placeholder="Username (e.g. johan)">
-<input id="newName" placeholder="Display Name (e.g. Johan Botha)">
-<input id="newPass" type="password" placeholder="Password (min 6 chars)">
-<select id="newRole">
-<option value="viewer">Viewer - View only</option>
-<option value="inspector">Inspector - Site Inspector</option>
-<option value="qc_manager">QC Manager</option>
-<option value="admin">Admin - Full Access</option>
-</select>
-<button onclick="addUser()" style="width:100%">+ Add User</button>
-<div id="msg" style="margin-top:10px;font-size:12px"></div>
-<p style="font-size:11px;color:#64748b;margin-top:12px">Roles:<br>Viewer=View only<br>Inspector=Create/Edit QC<br>QC Manager=All QC+Planner<br>Admin=Everything+Users</p>
-</div>
+try:
+    import psycopg2
+    HAS_PG = True
+except:
+    HAS_PG = False
 
-<div class="card">
-<h2>Current Users</h2>
-<table><thead><tr><th>ID</th><th>USERNAME</th><th>DISPLAY NAME</th><th>ROLE</th><th>LAST LOGIN</th><th>ACTION</th></tr></thead><tbody id="usersBody"></tbody></table>
-</div>
-</div>
+app = Flask(__name__, static_folder='.', static_url_path='')
+CORS(app)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+USE_PG = bool(DATABASE_URL and HAS_PG)
 
-<!-- Edit Modal -->
-<div class="modal" id="editModal">
-<div class="modal-content">
-<h3>✏️ Edit User</h3>
-<input type="hidden" id="editId">
-<label style="font-size:12px;color:#64748b">Username</label>
-<input id="editUser" placeholder="Username">
-<label style="font-size:12px;color:#64748b">Display Name</label>
-<input id="editName" placeholder="Display Name">
-<label style="font-size:12px;color:#64748b">Role</label>
-<select id="editRole">
-<option value="viewer">Viewer - View only</option>
-<option value="inspector">Inspector - Site Inspector</option>
-<option value="qc_manager">QC Manager</option>
-<option value="admin">Admin - Full Access</option>
-</select>
-<label style="font-size:12px;color:#64748b">New Password (leave blank to keep current)</label>
-<input id="editPass" type="password" placeholder="New password (min 6 chars)">
-<div id="editMsg" style="font-size:12px;margin-top:8px"></div>
-<div class="actions">
-<button class="sec" onclick="closeEdit()">Cancel</button>
-<button onclick="saveEdit()">💾 Save Changes</button>
-</div>
-</div>
-</div>
+def get_conn():
+    if USE_PG:
+        return psycopg2.connect(DATABASE_URL)
+    else:
+        conn = sqlite3.connect('projecttrack.db')
+        conn.row_factory = sqlite3.Row
+        return conn
 
-<script>
-function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
-function authHeader(){
-  const u=getUser();
-  return u && u.token ? {'Authorization':'Bearer '+u.token,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
-}
-function guard(){
-  const u=getUser();
-  if(!u){window.location.href='./login'; return null;}
-  document.getElementById('who').innerText='Logged as '+(u.display_name||u.username)+' ('+u.role+')';
-  if(u.role!=='admin'){ alert('Only admin can manage users. Your role: '+u.role); window.location.href='./'; return null;}
-  return u;
-}
-function logout(){
-  const u=getUser();
-  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
-  localStorage.removeItem('projecttrack_user'); window.location.href='./login';
-}
-const me=guard();
+def rows_to_dicts(cur, rows):
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in rows]
 
-async function loadUsers(){
-  if(!me) return;
-  const r=await fetch('./api/auth/users',{headers:authHeader()});
-  const data=await r.json();
-  if(!Array.isArray(data)){ document.getElementById('usersBody').innerHTML='<tr><td colspan=6>'+(data.error||'Failed')+'</td></tr>'; return; }
-  const tbody=document.getElementById('usersBody'); tbody.innerHTML='';
-  data.forEach(u=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML='<td>'+u.id+'</td><td><b>'+u.username+'</b></td><td>'+(u.display_name||'-')+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td>'+(u.last_login?new Date(u.last_login).toLocaleString():'Never')+'</td><td style="display:flex;gap:6px"><button class="edit" onclick="openEdit('+u.id+',\''+u.username+'\',\''+(u.display_name||'').replace(/'/g,"\\'")+'\',\''+u.role+'\')">Edit</button>'+(u.id===1?'<span style="font-size:11px;padding:6px">🔒 Main</span>':'<button class="del" onclick="delUser('+u.id+',\''+u.username+'\')">Delete</button>')+'</td>';
-    tbody.appendChild(tr);
-  });
-}
+def init_db():
+    conn = get_conn(); cur = conn.cursor()
+    if USE_PG:
+        cur.execute('''CREATE TABLE IF NOT EXISTS qc_sheets (
+            id SERIAL PRIMARY KEY, project_name TEXT, location TEXT,
+            structure_number TEXT DEFAULT '', collector_number TEXT DEFAULT '',
+            section_number TEXT DEFAULT '', chainage_extra TEXT DEFAULT '',
+            date TEXT, inspector TEXT, status TEXT DEFAULT 'draft',
+            sheet_type TEXT DEFAULT 'trench', checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS gantt_tasks (
+            id SERIAL PRIMARY KEY, name TEXT, start_date TEXT, end_date TEXT,
+            progress INTEGER DEFAULT 0, assignee TEXT, dependencies TEXT, color TEXT, created_at TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL, role TEXT DEFAULT 'viewer',
+            display_name TEXT DEFAULT '', created_at TEXT, last_login TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
+            display_name TEXT, created_at TEXT)''')
+    else:
+        cur.execute('''CREATE TABLE IF NOT EXISTS qc_sheets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, project_name TEXT, location TEXT,
+            structure_number TEXT DEFAULT '', collector_number TEXT DEFAULT '',
+            section_number TEXT DEFAULT '', chainage_extra TEXT DEFAULT '',
+            date TEXT, inspector TEXT, status TEXT DEFAULT 'draft',
+            sheet_type TEXT DEFAULT 'trench', checklist_data TEXT, created_at TEXT, updated_at TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS gantt_tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, start_date TEXT, end_date TEXT,
+            progress INTEGER DEFAULT 0, assignee TEXT, dependencies TEXT, color TEXT, created_at TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL, role TEXT DEFAULT 'viewer',
+            display_name TEXT DEFAULT '', created_at TEXT, last_login TEXT)''')
+        cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
+            display_name TEXT, created_at TEXT)''')
+    conn.commit(); conn.close()
 
-async function addUser(){
-  const username=document.getElementById('newUser').value.trim();
-  const display_name=document.getElementById('newName').value.trim();
-  const password=document.getElementById('newPass').value;
-  const role=document.getElementById('newRole').value;
-  const msg=document.getElementById('msg');
-  msg.innerText='Adding...'; msg.style.color='#64748b';
-  try{
-    const r=await fetch('./api/auth/users',{method:'POST',headers:authHeader(),body:JSON.stringify({username,password,role,display_name})});
-    const d=await r.json();
-    if(!r.ok){msg.innerText='❌ '+d.error; msg.style.color='#ef4444'; return;}
-    msg.innerText='✅ Added '+username; msg.style.color='#10b981';
-    document.getElementById('newUser').value=''; document.getElementById('newPass').value=''; document.getElementById('newName').value='';
-    loadUsers();
-  }catch(e){msg.innerText='Error '+e.message; msg.style.color='#ef4444';}
-}
+def init_users():
+    conn = get_conn(); cur = conn.cursor()
+    cur.execute('SELECT COUNT(*) FROM users')
+    cnt = cur.fetchone()[0]
+    if cnt == 0:
+        now = datetime.utcnow().isoformat()
+        defaults = [
+            ('admin', generate_password_hash('HZC2026!'), 'admin', 'System Admin'),
+            ('qc_lead', generate_password_hash('QC2026!'), 'qc_manager', 'QC Lead'),
+            ('inspector', generate_password_hash('Inspect2026!'), 'inspector', 'Site Inspector'),
+            ('viewer', generate_password_hash('Viewer123'), 'viewer', 'Guest Viewer'),
+        ]
+        for u,p,r,dname in defaults:
+            if USE_PG:
+                cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s)', (u,p,r,dname,now))
+            else:
+                cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)', (u,p,r,dname,now))
+        conn.commit()
+    conn.close()
 
-function openEdit(id,username,display_name,role){
-  document.getElementById('editId').value=id;
-  document.getElementById('editUser').value=username;
-  document.getElementById('editName').value=display_name;
-  document.getElementById('editRole').value=role;
-  document.getElementById('editPass').value='';
-  document.getElementById('editMsg').innerText='';
-  document.getElementById('editModal').classList.add('active');
-}
-function closeEdit(){ document.getElementById('editModal').classList.remove('active'); }
+init_db()
+init_users()
 
-async function saveEdit(){
-  const id=document.getElementById('editId').value;
-  const username=document.getElementById('editUser').value.trim();
-  const display_name=document.getElementById('editName').value.trim();
-  const role=document.getElementById('editRole').value;
-  const password=document.getElementById('editPass').value;
-  const msg=document.getElementById('editMsg');
-  msg.innerText='Saving...'; msg.style.color='#64748b';
-  try{
-    const payload={username,display_name,role};
-    if(password) payload.password=password;
-    const r=await fetch('./api/auth/users/'+id,{method:'PUT',headers:authHeader(),body:JSON.stringify(payload)});
-    const d=await r.json();
-    if(!r.ok){msg.innerText='❌ '+d.error; msg.style.color='#ef4444'; return;}
-    msg.innerText='✅ Saved'; msg.style.color='#10b981';
-    setTimeout(()=>{closeEdit(); loadUsers();},600);
-  }catch(e){msg.innerText='Error '+e.message; msg.style.color='#ef4444';}
-}
+def get_session(token):
+    if not token: return None
+    try:
+        conn=get_conn(); cur=conn.cursor()
+        if USE_PG: cur.execute('SELECT * FROM sessions WHERE token=%s',(token,))
+        else: cur.execute('SELECT * FROM sessions WHERE token=?',(token,))
+        row=cur.fetchone()
+        conn.close()
+        if not row: return None
+        return dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
+    except:
+        return None
 
-async function delUser(id,name){
-  if(!confirm('Delete user '+name+'?'))return;
-  const r=await fetch('./api/auth/users/'+id,{method:'DELETE',headers:authHeader()});
-  const d=await r.json();
-  if(!r.ok){alert(d.error); return;}
-  loadUsers();
-}
+def require_auth(f):
+    @wraps(f)
+    def d(*args, **kwargs):
+        auth=request.headers.get('Authorization','')
+        token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
+        sess=get_session(token)
+        if not sess: return jsonify({"error":"Unauthorized - Please login again"}), 401
+        request.current_user=sess
+        return f(*args, **kwargs)
+    return d
 
-if(me) loadUsers();
-document.getElementById('editModal').addEventListener('click',e=>{ if(e.target.id==='editModal') closeEdit(); });
-</script>
-</body>
-</html>
+def require_role(*roles):
+    def deco(f):
+        @wraps(f)
+        def d(*args, **kwargs):
+            auth=request.headers.get('Authorization','')
+            token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or request.args.get('token'))
+            sess=get_session(token)
+            if not sess: return jsonify({"error":"Unauthorized - Please login"}), 401
+            request.current_user=sess
+            if sess['role'] not in roles:
+                return jsonify({"error":f"Forbidden - Role '{sess['role']}' cannot do this. Need: {', '.join(roles)}"}), 403
+            return f(*args, **kwargs)
+        return d
+    return deco
+
+# Pages
+@app.route('/')
+def home(): return send_from_directory('.', 'index.html')
+@app.route('/login')
+def login_page(): return send_from_directory('.', 'login.html')
+@app.route('/users')
+def users_page(): return send_from_directory('.', 'users.html')
+@app.route('/gantt')
+def gantt_route(): return send_from_directory('.', 'gantt_planner_DB.html')
+@app.route('/qc')
+def qc_route(): return send_from_directory('.', 'quality_check_multi.html')
+@app.route('/quality')
+def quality_route(): return send_from_directory('.', 'quality_hub.html')
+@app.route('/qc-wooden')
+def qc_wooden_route(): return send_from_directory('.', 'quality_check_wooden_pole.html')
+
+# Also serve the html files directly by name
+@app.route('/quality_hub.html')
+def quality_hub_file(): return send_from_directory('.', 'quality_hub.html')
+@app.route('/quality_check_wooden_pole.html')
+def wooden_file(): return send_from_directory('.', 'quality_check_wooden_pole.html')
+@app.route('/gantt_planner_DB.html')
+def gantt_file(): return send_from_directory('.', 'gantt_planner_DB.html')
+@app.route('/quality_check_multi.html')
+def qc_multi_file(): return send_from_directory('.', 'quality_check_multi.html')
+
+@app.route('/api/status')
+def status(): return jsonify({"db":"Postgres" if USE_PG else "SQLite","use_postgres":USE_PG,"ok":True,"quality_hub":True,"persistent_sessions":True,"v":"6.1-stable"})
+
+@app.route('/api/debug')
+def debug():
+    import os as _os
+    files=_os.listdir('.')
+    return jsonify({"use_postgres":USE_PG,"files":files[:30],"has_quality_hub":'quality_hub.html' in files,"has_wooden":'quality_check_wooden_pole.html' in files})
+
+# Auth
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data=request.json or {}
+    username=(data.get('username') or '').strip()
+    password=data.get('password') or ''
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('SELECT * FROM users WHERE username=%s',(username,))
+    else: cur.execute('SELECT * FROM users WHERE username=?',(username,))
+    row=cur.fetchone()
+    if not row:
+        conn.close(); return jsonify({"error":"Invalid username or password"}), 401
+    user=dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
+    if not check_password_hash(user['password_hash'], password):
+        conn.close(); return jsonify({"error":"Invalid username or password"}), 401
+    now=datetime.utcnow().isoformat()
+    if USE_PG: cur.execute('UPDATE users SET last_login=%s WHERE id=%s',(now,user['id']))
+    else: cur.execute('UPDATE users SET last_login=? WHERE id=?',(now,user['id']))
+    token=secrets.token_hex(24)
+    if USE_PG:
+        cur.execute('INSERT INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (token) DO NOTHING',(token,user['id'],user['username'],user['role'],user['display_name'],now))
+    else:
+        cur.execute('INSERT OR REPLACE INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (?,?,?,?,?,?)',(token,user['id'],user['username'],user['role'],user['display_name'],now))
+    conn.commit(); conn.close()
+    return jsonify({"id":user['id'],"username":user['username'],"role":user['role'],"display_name":user['display_name'],"token":token,"login_at":now})
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    auth=request.headers.get('Authorization','')
+    token=auth[7:] if auth.startswith('Bearer ') else (request.headers.get('X-Token') or (request.json or {}).get('token'))
+    if token:
+        try:
+            conn=get_conn(); cur=conn.cursor()
+            if USE_PG: cur.execute('DELETE FROM sessions WHERE token=%s',(token,))
+            else: cur.execute('DELETE FROM sessions WHERE token=?',(token,))
+            conn.commit(); conn.close()
+        except: pass
+    return jsonify({"ok":True})
+
+@app.route('/api/auth/me', methods=['GET'])
+@require_auth
+def me(): return jsonify(request.current_user)
+
+@app.route('/api/auth/users', methods=['GET'])
+def list_users():
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute('SELECT id, username, role, display_name, created_at, last_login FROM users ORDER BY id')
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    conn.close(); return jsonify(data)
+
+@app.route('/api/auth/users', methods=['POST'])
+@require_role('admin')
+def create_user():
+    data=request.json or {}
+    username=(data.get('username') or '').strip()
+    password=data.get('password') or ''
+    role=data.get('role') or 'viewer'
+    display_name=data.get('display_name') or ''
+    if not username or not password: return jsonify({"error":"Username and password required"}),400
+    if len(password)<6: return jsonify({"error":"Password min 6"}),400
+    conn=get_conn(); cur=conn.cursor(); now=datetime.utcnow().isoformat()
+    try:
+        if USE_PG:
+            cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s) RETURNING id',(username,generate_password_hash(password),role,display_name,now))
+            sid=cur.fetchone()[0]
+        else:
+            cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)',(username,generate_password_hash(password),role,display_name,now))
+            sid=cur.lastrowid
+        conn.commit()
+    except Exception as e:
+        conn.close(); return jsonify({"error":f"Username exists: {e}"}),400
+    conn.close(); return jsonify({"id":sid})
+
+@app.route('/api/auth/users/<int:uid>', methods=['PUT'])
+@require_role('admin')
+def edit_user(uid):
+    data=request.json or {}
+    username=(data.get('username') or '').strip()
+    display_name=(data.get('display_name') or '').strip()
+    role=(data.get('role') or '').strip()
+    password=data.get('password')
+    if not username: return jsonify({"error":"Username required"}),400
+    if role and role not in ['viewer','inspector','qc_manager','admin']: return jsonify({"error":"Invalid role"}),400
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('SELECT id FROM users WHERE username=%s AND id!=%s',(username,uid))
+    else: cur.execute('SELECT id FROM users WHERE username=? AND id!=?',(username,uid))
+    if cur.fetchone():
+        conn.close(); return jsonify({"error":"Username already taken"}),400
+    if password:
+        if len(password)<6:
+            conn.close(); return jsonify({"error":"Password min 6"}),400
+        phash=generate_password_hash(password)
+        if USE_PG: cur.execute('UPDATE users SET username=%s, display_name=%s, role=%s, password_hash=%s WHERE id=%s',(username,display_name,role,phash,uid))
+        else: cur.execute('UPDATE users SET username=?, display_name=?, role=?, password_hash=? WHERE id=?',(username,display_name,role,phash,uid))
+    else:
+        if USE_PG: cur.execute('UPDATE users SET username=%s, display_name=%s, role=%s WHERE id=%s',(username,display_name,role,uid))
+        else: cur.execute('UPDATE users SET username=?, display_name=?, role=? WHERE id=?',(username,display_name,role,uid))
+    if USE_PG: cur.execute('UPDATE sessions SET username=%s, role=%s, display_name=%s WHERE user_id=%s',(username,role,display_name,uid))
+    else: cur.execute('UPDATE sessions SET username=?, role=?, display_name=? WHERE user_id=?',(username,role,display_name,uid))
+    conn.commit(); conn.close()
+    return jsonify({"ok":True})
+
+@app.route('/api/auth/users/<int:uid>', methods=['DELETE'])
+@require_role('admin')
+def delete_user(uid):
+    if uid==1: return jsonify({"error":"Cannot delete main admin"}),400
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('DELETE FROM users WHERE id=%s',(uid,))
+    else: cur.execute('DELETE FROM users WHERE id=?',(uid,))
+    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/qc-sheets', methods=['GET'])
+def get_qc():
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute('SELECT * FROM qc_sheets ORDER BY id DESC')
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    conn.close(); return jsonify(data)
+
+@app.route('/api/qc-sheets/<int:sid>', methods=['GET'])
+def get_qc_one(sid):
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('SELECT * FROM qc_sheets WHERE id=%s',(sid,))
+    else: cur.execute('SELECT * FROM qc_sheets WHERE id=?',(sid,))
+    row=cur.fetchone()
+    if not row:
+        conn.close(); return jsonify({"error":"Not found"}),404
+    data=dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
+    # Parse checklist_data if needed
+    try:
+        if isinstance(data.get('checklist_data'), str):
+            data['checks']=json.loads(data['checklist_data'])
+        else:
+            data['checks']=data.get('checklist_data') or {}
+    except:
+        data['checks']={}
+    conn.close(); return jsonify(data)
+
+@app.route('/api/qc-sheets', methods=['POST'])
+@require_role('inspector','qc_manager','admin')
+def create_qc():
+    data=request.json or {}; now=datetime.utcnow().isoformat()
+    conn=get_conn(); cur=conn.cursor()
+    cdata=data.get('checklist_data') or data.get('checks') or {}
+    if isinstance(cdata, dict): cdata=json.dumps(cdata)
+    fields=('project_name','location','structure_number','collector_number','section_number','chainage_extra','date','inspector','status','sheet_type')
+    vals=[data.get(f,'') for f in fields]
+    if USE_PG:
+        cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', (*vals,cdata,now,now))
+        sid=cur.fetchone()[0]
+    else:
+        cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', (*vals,cdata,now,now))
+        sid=cur.lastrowid
+    conn.commit(); conn.close(); return jsonify({"id":sid})
+
+@app.route('/api/qc-sheets/<int:sid>', methods=['PUT'])
+@require_role('inspector','qc_manager','admin')
+def update_qc(sid):
+    data=request.json or {}; now=datetime.utcnow().isoformat()
+    conn=get_conn(); cur=conn.cursor()
+    cdata=data.get('checklist_data') or data.get('checks') or {}
+    if isinstance(cdata, dict): cdata=json.dumps(cdata)
+    fields=('project_name','location','structure_number','collector_number','section_number','chainage_extra','date','inspector','status','sheet_type')
+    set_clause=', '.join([f"{f}=%s" if USE_PG else f"{f}=?" for f in fields]) + (', checklist_data=%s, updated_at=%s' if USE_PG else ', checklist_data=?, updated_at=?')
+    vals=[data.get(f,'') for f in fields]
+    vals.extend([cdata, now, sid])
+    if USE_PG: cur.execute(f'UPDATE qc_sheets SET {set_clause} WHERE id=%s', vals)
+    else: cur.execute(f'UPDATE qc_sheets SET {set_clause} WHERE id=?', vals)
+    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/qc-sheets/<int:sid>', methods=['DELETE'])
+@require_role('qc_manager','admin')
+def delete_qc(sid):
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('DELETE FROM qc_sheets WHERE id=%s',(sid,))
+    else: cur.execute('DELETE FROM qc_sheets WHERE id=?',(sid,))
+    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/gantt-tasks', methods=['GET'])
+def get_gantt():
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute('SELECT * FROM gantt_tasks ORDER BY id')
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    conn.close(); return jsonify(data)
+
+@app.route('/api/gantt-tasks', methods=['POST'])
+@require_role('qc_manager','admin')
+def create_gantt():
+    data=request.json or {}; now=datetime.utcnow().isoformat()
+    conn=get_conn(); cur=conn.cursor()
+    name=data.get('name') or data.get('project_name') or 'Task'
+    start=data.get('start_date') or data.get('start') or ''
+    end=data.get('end_date') or data.get('end') or ''
+    if USE_PG:
+        cur.execute('INSERT INTO gantt_tasks (name,start_date,end_date,progress,assignee,dependencies,color,created_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id',(name,start,end,data.get('progress',0),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),now))
+        sid=cur.fetchone()[0]
+    else:
+        cur.execute('INSERT INTO gantt_tasks (name,start_date,end_date,progress,assignee,dependencies,color,created_at) VALUES (?,?,?,?,?,?,?,?)',(name,start,end,data.get('progress',0),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),now))
+        sid=cur.lastrowid
+    conn.commit(); conn.close(); return jsonify({"id":sid})
+
+@app.route('/api/gantt-tasks/<int:tid>', methods=['PUT'])
+@require_role('qc_manager','admin')
+def update_gantt(tid):
+    data=request.json or {}; conn=get_conn(); cur=conn.cursor()
+    name=data.get('name'); start=data.get('start_date') or data.get('start'); end=data.get('end_date') or data.get('end')
+    if USE_PG:
+        cur.execute('UPDATE gantt_tasks SET name=%s,start_date=%s,end_date=%s,progress=%s,assignee=%s,dependencies=%s,color=%s WHERE id=%s',(name,start,end,data.get('progress'),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),tid))
+    else:
+        cur.execute('UPDATE gantt_tasks SET name=?,start_date=?,end_date=?,progress=?,assignee=?,dependencies=?,color=? WHERE id=?',(name,start,end,data.get('progress'),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),tid))
+    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/gantt-tasks/<int:tid>', methods=['DELETE'])
+@require_role('qc_manager','admin')
+def delete_gantt(tid):
+    conn=get_conn(); cur=conn.cursor()
+    if USE_PG: cur.execute('DELETE FROM gantt_tasks WHERE id=%s',(tid,))
+    else: cur.execute('DELETE FROM gantt_tasks WHERE id=?',(tid,))
+    conn.commit(); conn.close(); return jsonify({"ok":True})
+
+@app.route('/api/export/excel')
+def export_excel():
+    try:
+        from openpyxl import Workbook
+        from io import BytesIO
+    except:
+        return jsonify({"error":"openpyxl not installed"}),500
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute('SELECT * FROM qc_sheets')
+    rows=cur.fetchall(); data=rows_to_dicts(cur, rows) if USE_PG else [dict(r) for r in rows]
+    conn.close()
+    wb=Workbook(); ws=wb.active; ws.title="QC Sheets"
+    ws.append(["ID","Project","Location","Structure","Collector","Section","Chainage","Date","Inspector","Status","Type"])
+    for r in data:
+        ws.append([r.get('id'),r.get('project_name'),r.get('location'),r.get('structure_number'),r.get('collector_number'),r.get('section_number'),r.get('chainage_extra'),r.get('date'),r.get('inspector'),r.get('status'),r.get('sheet_type')])
+    from io import BytesIO as Bio
+    bio=Bio(); wb.save(bio); bio.seek(0)
+    return app.response_class(bio.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition':'attachment; filename=QC_Export.xlsx'})
+
+if __name__=='__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8000)))
