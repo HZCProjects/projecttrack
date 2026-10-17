@@ -41,7 +41,8 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;bor
 <body>
 <div class="header">
 <div><b>👥 User Management</b> <span style="opacity:.6;font-size:12px" id="who"></span></div>
-<div><a href="./">🏠 Home</a>
+<div><a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
+<a href="./">🏠 Home</a>
 <a href="./gantt">📅 Planner</a><a href="./qc">✅ QC</a><a href="#" onclick="logout()">Logout</a>
 <button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button></div>
 </div>
