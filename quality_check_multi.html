@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ProjectTrack - QC Multi Sheets - HZCProjects</title>
+<title>ProjectTrack - Steel Monopoles QC - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
@@ -62,11 +62,23 @@ window.fetch=function(url,opts){
   return _f(url,opts);
 };
 </script>
-<style>.badge.viewer{background:#e0f2fe;color:#0369a1}.badge.inspector{background:#fef3c7;color:#92400e}.badge.qc_manager{background:#dbeafe;color:#1e40af}.badge.admin{background:#0f172a;color:#fff}#roleBadge{padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px;background:#0f172a;color:#fff}</style>
+<style>.badge.viewer{background:#e0f2fe;color:#0369a1}.badge.inspector{background:#fef3c7;color:#92400e}.badge.qc_manager{background:#dbeafe;color:#1e40af}.badge.admin{background:#0f172a;color:#fff}#roleBadge{padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px;background:#0f172a;color:#fff}
+.search-btn{color:#fff;text-decoration:none;background:#8b5cf6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none} .search-btn:hover{background:#7c3aed}
+.search-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-start;justify-content:center;padding-top:80px;z-index:100}
+.search-overlay.open{display:flex}
+.search-box{background:#fff;width:600px;max-width:90vw;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.search-input-wrap{display:flex;align-items:center;padding:16px;border-bottom:1px solid #e2e8f0}
+.search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;padding:8px}
+.search-results{max-height:400px;overflow-y:auto;padding:8px}
+.search-item{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.search-item:hover{background:#f8fafc}
+.search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
+
+</style>
 </head>
 <body>
 <div class="header" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
-<div><b>📊 ProjectTrack QC - Multi Sheets</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF • Steel Monopole Structures</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
 <a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
@@ -74,15 +86,16 @@ window.fetch=function(url,opts){
 <a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
 <a href="./api/export/excel" style="color:#fff;text-decoration:none;background:#10b981;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📊 Excel</a>
 <a href="#" onclick="logout()" style="color:#fff;text-decoration:none;background:#ef4444;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🚪 Logout</a>
+<button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button>
 </div>
 </div>
 
 <div class="container">
 <div class="sidebar-list">
-<h3>QC Sheets (Database)</h3>
-<button class="btn btn-blue" style="width:100%;margin-bottom:12px" onclick="createNew()">+ New Sheet</button>
+<h3>Steel Monopoles Sheets</h3>
+<button class="btn btn-blue" style="width:100%;margin-bottom:12px" onclick="createNew()">+ New Steel Monopole</button>
 <div id="list"></div>
-<div style="margin-top:16px;font-size:11px;color:#94a3b8">Stored in Railway SQLite (projecttrack.db). Unlimited sheets: Pole 12, Pole 13, Transformer, etc. Persists across browsers.</div>
+<div style="margin-top:16px;font-size:11px;color:#94a3b8">Steel Monopole QC - Stored in Postgres. Each sheet: Structure, Foundation, Shaft, Bolting, Earthing, Testing.</div>
 </div>
 
 <div class="main">
@@ -107,12 +120,12 @@ window.fetch=function(url,opts){
 
 <script>
 const checksData = [
-{title:"1. Foundation & Excavation",items:["Excavation depth 1.8m","Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"]},
-{title:"2. Pole Erection",items:["Pole type/height","Verticality ≤1°","Alignment","Bolt torque","Danger plate","Anti-climbing"]},
-{title:"3. Conductor Stringing",items:["ACSR type","Sag & tension","Jumper connections","Earth continuity","Insulator cleaning","Clearance ≥2.5m"]},
-{title:"4. Earthing",items:["Earth resistance <10Ω","Electrode depth 3m","GI size 25x3mm","Lightning arrester","Bonding","Pit marking"]},
-{title:"5. Transformer",items:["Rating 100/200kVA","Oil level & BDV","Bushing tightness","Cable termination","Fuse/MCB","Neutral <5Ω"]},
-{title:"6. Testing",items:["IR >50MΩ","Continuity","Polarity","Load test","Safety clearance","As-built docs"]},
+{title:"1. Foundation & Anchor Bolts",items:["Foundation excavation 3.0m depth check","Anchor bolt cage alignment & template","Bolt projection 150mm above foundation","Concrete strength C30/37 & slump test","Curing 7 days & backfill compaction","Foundation level ±5mm tolerance"]},
+{title:"2. Monopole Shaft Sections",items:["Steel grade S355JR verification","Shaft section straightness <1/1000","Galvanizing thickness 85μm min","Welds visual + UT NDT","Section length & diameter check","Corrosion protection / paint"]},
+{title:"3. Flange Bolting & Assembly",items:["Flange bolt grade 10.9 verification","Torque 650Nm sequence star pattern","Bolt tension & gap 0-2mm","Verticality ≤0.5° check","Section alignment & overlap 1.5x dia","Danger plate & anti-climb installed"]},
+{title:"4. Earthing & Lightning",items:["Earth resistance <10Ω","Earthing electrode 3m depth","GI earth strip 40x4mm continuous","Lightning finial height 2m above top","Bonding to monopole shaft","Earth pit marking & cover"]},
+{title:"5. Cross-arms & Hardware",items:["Cross-arm bracket alignment","Insulator type & creepage distance","Conductor attachment hardware","Vibration dampers installed","Jumper clearance ≥2.5m","Hardware torque & cotter pins"]},
+{title:"6. Final Inspection & Testing",items:["IR test >50MΩ","Structure ID & height marking","Safety clearance 8m min","As-built drawing & photos","Punch list cleared","Client handover sign-off"]},
 ];
 let currentId = null;
 let currentChecks = {};
@@ -166,9 +179,9 @@ function toggleCheck(key){
 function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
 
 async function createNew(){
-  const proj=prompt('Project Name?', '132kV Overhead Line - Lot 2')||'New Project';
-  const loc=prompt('Location / Pole No?', 'Pole 12 - Soweto')||'Location';
-  const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', checks:{}});
+  const proj=prompt('Project Name?', 'Overberg WEF - Steel Monopoles')||'Overberg WEF';
+  const loc=prompt('Structure No / Location?', 'SM-12 - Steel Monopole')||'SM-12';
+  const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checks:{}});
   await loadList(); await openSheet(s.id);
 }
 async function saveCurrent(){
@@ -179,6 +192,7 @@ async function saveCurrent(){
     date:document.getElementById('date').value,
     inspector:document.getElementById('ins').value,
     status:document.getElementById('status').value,
+    sheet_type:'steel_monopole',
     checks:currentChecks
   });
   alert('Saved to database ID '+currentId); loadList();
@@ -195,6 +209,51 @@ async function deleteSheet(){
   await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; loadList();
 }
 loadList();
+</script>
+
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
+<div class="search-box">
+<div class="search-input-wrap">
+<span>🔍</span>
+<input id="globalSearchInput" type="text" placeholder="Search QC sheets, structures, planner tasks, collectors..." oninput="doGlobalSearch(this.value)" autofocus>
+<button onclick="closeSearch()" style="border:none;background:#f1f5f9;padding:6px 10px;border-radius:6px;cursor:pointer">✕</button>
+</div>
+<div class="search-results" id="searchResults">
+<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...<br><small>Searches Structure No, Collector, Location, Project, Tasks</small></div>
+</div>
+</div>
+</div>
+
+<script>
+function openSearch(){ document.getElementById('searchOverlay').classList.add('open'); document.getElementById('globalSearchInput').focus(); }
+function closeSearch(){ document.getElementById('searchOverlay').classList.remove('open'); }
+let searchCache={qc:[],gantt:[]};
+async function loadSearchCache(){
+  try{
+    const [qc,gantt]=await Promise.all([fetch('./api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('./api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
+    searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[];
+  }catch{}
+}
+loadSearchCache();
+function doGlobalSearch(q){
+  const resEl=document.getElementById('searchResults');
+  if(!q || q.trim().length<1){ resEl.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...</div>'; return; }
+  q=q.toLowerCase();
+  const matches=[];
+  searchCache.qc.forEach(s=>{
+    const hay=[s.project_name,s.location,s.structure_number,s.collector_number,s.section_number,s.inspector,s.status,s.sheet_type].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'QC',title:`${s.project_name||''} - ${s.location||''} ${s.structure_number?'(Struct '+s.structure_number+')':''}`.trim(), sub:`${s.collector_number?'Collector '+s.collector_number+' • ':''}${s.date||''} • ${s.status||''} • ID ${s.id} • ${s.sheet_type||''}`, id:s.id, go:`./qc`});
+  });
+  searchCache.gantt.forEach(t=>{
+    const hay=[t.name,t.assignee,t.start_date,t.end_date].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'Planner',title:t.name, sub:`${t.assignee||''} • ${t.start_date||''} → ${t.end_date||''} • ${t.progress||0}%`, id:t.id, go:`./gantt`});
+  });
+  if(matches.length==0){ resEl.innerHTML=`<div style="padding:20px;text-align:center;color:#94a3b8">No results for "${q}"</div>`; return; }
+  resEl.innerHTML=matches.slice(0,30).map(m=>`<div class="search-item" onclick="window.location.href='${m.go}'"><div><b>[${m.type}] ${m.title}</b><br><small>${m.sub}</small></div><span style="font-size:10px;background:#f1f5f9;padding:4px 8px;border-radius:20px">Go →</span></div>`).join('');
+  // Also filter current page list if exists
+  if(typeof filterCurrentPage==='function'){ try{filterCurrentPage(q)}catch{} }
+}
+document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()=='k'){ e.preventDefault(); openSearch(); } if(e.key=='Escape') closeSearch(); });
 </script>
 </body>
 </html>
