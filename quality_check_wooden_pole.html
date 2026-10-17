@@ -69,14 +69,14 @@ tr:nth-child(even){background:#f8fafc}
 <div><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296"></div>
 <div><label>Collector No</label><input id="collector" placeholder="e.g. 420"></div>
 <div><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
-<div><label>Depth / Height</label><select id="depth"><option>2.0m</option><option selected>2.5m</option><option>3.0m</option></select></div>
+<div><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
 </div>
 </div>
 
 <div class="card">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<span style="font-size:12px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
-<span style="font-size:11px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
+<span style="font-size:14.4px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
+<span style="font-size:13.2px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
 </div>
 <table id="qcTable">
 <thead>
@@ -173,7 +173,7 @@ async function saveSheet(){
     structure_number: document.getElementById('structure').value,
     collector_number: document.getElementById('collector').value,
     section_number: document.getElementById('section').value,
-    chainage_extra: document.getElementById('depth').value,
+    chainage_extra: document.getElementById('gps').value,
     date: document.getElementById('date').value,
     inspector: document.getElementById('inspector').value,
     status: 'submitted',
@@ -198,7 +198,7 @@ async function exportToPDF(){
   const structure = document.getElementById('structure').value || '';
   const collector = document.getElementById('collector').value || '';
   const section = document.getElementById('section').value || '';
-  const depth = document.getElementById('depth').value || '';
+  const gps = document.getElementById('gps').value || '';
   const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
   const inspector = document.getElementById('inspector').value || '';
 
@@ -207,7 +207,7 @@ async function exportToPDF(){
   doc.setFontSize(9); doc.setFont('helvetica','normal');
   doc.text(`Overberg WEF - H-Pole Wooden Structures`, 10, 21);
   doc.text(`Project: ${project} | Contractor: ${contractor} | Date: ${date} | Inspected By: ${inspector}`, 10, 27);
-  doc.text(`Structure: ${structure} | Collector: ${collector} | Section: ${section} | Depth: ${depth}`, 10, 32);
+  doc.text(`Structure: ${structure} | Collector: ${collector} | Section: ${section} | GPS: ${gps}`, 10, 32);
 
   let y=40;
   doc.setFontSize(8); doc.setFont('helvetica','bold');
@@ -233,6 +233,20 @@ async function exportToPDF(){
   doc.setFont('helvetica','bold'); doc.text(`Generated: ${new Date().toLocaleString()} | Inspected By: ${inspector} | HZCProjects Overberg WEF`,10,y);
   doc.save(`H_Pole_Wooden_Structures_${structure||'QC'}_${date}.pdf`);
   document.getElementById('status').innerText='📄 PDF Exported!';
+}
+function getGPS(){
+  const btn = document.querySelector('button[onclick="getGPS()"]');
+  if(!navigator.geolocation){ alert('GPS not supported'); return; }
+  if(btn) btn.innerText='📍 Getting GPS...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+    document.getElementById('gps').value = coords;
+    if(btn) btn.innerText='✅ GPS Captured';
+    setTimeout(()=>{ if(btn) btn.innerText='📍 Get Current GPS'; }, 2000);
+  }, err=>{
+    alert('GPS Error: '+err.message);
+    if(btn) btn.innerText='📍 Get Current GPS';
+  }, {enableHighAccuracy:true, timeout:10000});
 }
 </script>
 
