@@ -4,7 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>H-Pole Wooden Structures - Quality Check Sheets - ProjectTrack</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+function toggleMobileMenu(){const nav=document.getElementById('navLinks');if(nav){nav.classList.toggle('open');}}
+
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
@@ -38,12 +41,47 @@ tr:nth-child(even){background:#f8fafc}
 .search-item:hover{background:#f8fafc}
 .search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
 
+
+/* MOBILE RESPONSIVE - Hamburger menu */
+.hamburger{display:none;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;padding:6px 12px;border-radius:8px;cursor:pointer;margin-left:8px}
+.nav-links{display:flex;align-items:center;flex-wrap:wrap}
+@media(max-width:768px){
+  body{padding:10px !important}
+  .header{height:auto !important;min-height:60px;padding:10px 14px !important;flex-wrap:wrap;gap:8px}
+  .header .nav-links{flex-direction:column;align-items:stretch;width:100%;display:none;margin-top:10px;background:rgba(255,255,255,.05);border-radius:10px;padding:10px}
+  .header .nav-links.open{display:flex !important}
+  .header .nav-links a,.header .nav-links button{margin:4px 0 !important;width:100%;justify-content:center}
+  .hamburger{display:inline-flex !important;align-items:center;justify-content:center}
+  .grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
+  .meta-grid{grid-template-columns:1fr !important}
+  .container{grid-template-columns:1fr !important;padding:12px !important}
+  .sidebar-list{position:static !important}
+  table{font-size:11px !important;display:block;overflow-x:auto;white-space:nowrap}
+  th,td{padding:6px 4px !important}
+  .card{padding:12px !important;border-radius:12px !important}
+  h2{font-size:16px !important}
+  .stats-grid{grid-template-columns:1fr !important}
+  .layout{grid-template-columns:1fr !important}
+  .filter-grid{grid-template-columns:repeat(2,1fr) !important}
+  .icon-grid{grid-template-columns:repeat(2,1fr) !important}
+  .top-black{flex-direction:column;align-items:flex-start !important}
+  .top-nav{flex-wrap:wrap}
+  .master-title{font-size:14px !important}
+  .user-strip{flex-direction:column;gap:8px}
+  .user-strip div{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr !important}
+}
+
 </style>
 </head>
 <body>
-<div class="header no-print" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px">
-<div><b>🪵 H-Pole Wooden Structures - Quality Check Sheets</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
-<div>
+<div class="header no-print" style="background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px;flex-wrap:wrap;min-height:60px;gap:8px">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>🪵 H-Pole Wooden Structures</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div style="display:flex;align-items:center;gap:4px">
+<button class="hamburger" onclick="toggleMobileMenu()" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;padding:6px 12px;border-radius:8px;cursor:pointer">☰</button>
+<div class="nav-links" id="navLinks" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
 <a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
 <a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
@@ -53,7 +91,7 @@ tr:nth-child(even){background:#f8fafc}
 <button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button>
 </div>
 </div>
-
+</div>
 <div class="card">
 <h2>H-Pole Wooden Structures - Quality Check Sheets</h2>
 <div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
