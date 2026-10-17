@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,10 +42,84 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;bor
 </div>
 
 <script>
+
+<script>
+// === ROLE PROTECTION ===
+function getAuth(){ try{ return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
+function guardRole(){
+  const u=getAuth();
+  if(!u || !u.token){ window.location.href='./login'; return null; }
+  // Verify token still valid with server
+  fetch('./api/auth/me', {headers:{'Authorization':'Bearer '+u.token}})
+    .then(r=>{ if(!r.ok){ localStorage.removeItem('projecttrack_user'); window.location.href='./login'; }})
+    .catch(()=>{});
+  return u;
+}
+function authFetch(url, opts={}){
+  const u=getAuth();
+  opts.headers = opts.headers||{};
+  if(u && u.token){ opts.headers['Authorization']='Bearer '+u.token; }
+  opts.headers['Content-Type']=opts.headers['Content-Type']||'application/json';
+  return fetch(url, opts);
+}
+function applyRoleUI(){
+  const u=getAuth(); if(!u) return;
+  const role=u.role;
+  const badge=document.getElementById('roleBadge');
+  if(badge){ badge.innerText=`${u.display_name||u.username} (${role})`; badge.className='badge '+role; }
+  // Disable based on role
+  if(role==='viewer'){
+    // Viewer - hide all save/delete/add buttons
+    document.querySelectorAll('button').forEach(b=>{
+      const txt=(b.innerText||'').toLowerCase();
+      if(txt.includes('save')||txt.includes('add')||txt.includes('delete')||txt.includes('create')||txt.includes('update')){
+        b.disabled=true; b.title='Viewer role - view only'; b.style.opacity='0.4'; b.style.cursor='not-allowed';
+      }
+    });
+    const msg=document.createElement('div');
+    msg.style.cssText='background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:8px;font-size:12px;margin:10px 0;text-align:center';
+    msg.innerHTML='👁️ <b>Viewer Mode</b> - You can view but not edit. Contact admin for edit access.';
+    const header=document.querySelector('.header'); if(header) header.after(msg);
+  }
+  if(role==='inspector'){
+    // Inspector cannot manage Gantt
+    if(window.location.pathname.includes('gantt')){
+      document.querySelectorAll('button').forEach(b=>{
+        const txt=(b.innerText||'').toLowerCase();
+        if(txt.includes('gantt')||txt.includes('delete')||txt.includes('add task')){
+          b.disabled=true; b.title='Inspector cannot manage Planner - QC Manager/Admin only'; b.style.opacity='0.5';
+        }
+      });
+    }
+  }
+}
+function logout(){ 
+  const u=getAuth();
+  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+u.token}}); }
+  localStorage.removeItem('projecttrack_user'); window.location.href='./login'; 
+}
+// Override fetch for API calls to include token - monkey patch
+const _fetch = window.fetch;
+window.fetch = function(url, opts){
+  if(typeof url==='string' && url.includes('/api/') && !url.includes('/api/auth/login')){
+    const u=getAuth();
+    opts=opts||{}; opts.headers=opts.headers||{};
+    if(u && u.token && !opts.headers['Authorization']){ opts.headers['Authorization']='Bearer '+u.token; }
+  }
+  return _fetch(url, opts);
+};
+document.addEventListener('DOMContentLoaded',()=>{ guardRole(); setTimeout(applyRoleUI,500); });
+</script>
+<style>
+.badge.viewer{background:#e0f2fe;color:#0369a1} .badge.inspector{background:#fef3c7;color:#92400e}
+.badge.qc_manager{background:#dbeafe;color:#1e40af} .badge.admin{background:#0f172a;color:#fff}
+#roleBadge{padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px}
+</style>
+
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function guard(){const u=getUser(); if(!u){window.location.href='./login'; return null;} document.getElementById('who').innerText=`Logged as ${u.display_name||u.username} (${u.role})`; return u;}
 function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
-const me=guard();
+const me=guard(); if(me && me.role!=="admin"){ alert("Only admin can manage users. Your role: "+me.role); window.location.href="./"; }
 
 async function loadUsers(){
   const r=await fetch('./api/auth/users'); const data=await r.json();
