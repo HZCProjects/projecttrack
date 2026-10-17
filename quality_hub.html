@@ -103,22 +103,11 @@
 <div class="desc">Quality Control check sheets for construction verification. Choose a sheet type - each is stored separately with its own checklist.</div>
 
 <div class="grid">
-<!-- EXISTING MULTI SHEETS -->
-<div class="card" onclick="go('./qc')">
-<div class="card-header">
-<h3>1️⃣ Steel Monopoles QC</h3>
-<span class="badge" style="background:#0f172a;color:#fff">EXISTING</span>
-</div>
-<p><b>6 sections</b> • Foundation & Excavation, Pole Erection, Conductor Stringing, Earthing, Transformer, Testing. Unlimited sheets: Pole 12, Pole 13, etc.</p>
-<div class="meta">
-<span>📦 Foundation</span><span>🪵 Pole Erection</span><span>🔌 Conductor</span><span>⚡ Earthing</span><span>🔋 Transformer</span><span>🧪 Testing</span>
-</div>
-<div class="meta">
-<span class="green">● Database stored</span><span class="blue" id="multiCount">0 sheets</span><span>Pass/Fail/NA + Remarks</span>
-</div>
-<div style="margin-top:14px;display:flex;gap:8px">
-<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')">Open Multi Sheets →</button>
-<button class="btn" style="background:#f1f5f9" onclick="event.stopPropagation(); go('./qc')">+ New Sheet</button>
+<!-- EXISTING MULTI SHEETS - SIMPLIFIED TO MATCH REQUESTED DESIGN -->
+<div class="card" onclick="go('./qc')" style="padding:20px">
+<h3 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px">1️⃣ Steel Monopoles QC</h3>
+<div style="display:flex;justify-content:flex-start">
+<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open Multi Sheets →</button>
 </div>
 </div>
 
