@@ -22,13 +22,14 @@ tr:nth-child(even){background:#f8fafc}
 tr.pass{background:#dcfce7 !important} tr.fail{background:#fee2e2 !important}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
 td:first-child{text-align:center;font-weight:700}
-#qcTable{width:1195px;table-layout:fixed}
+#qcTable{width:1260px;table-layout:fixed}
 #qcTable th:nth-child(1), #qcTable td:nth-child(1){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(2), #qcTable td:nth-child(2){width:500px;max-width:500px;min-width:500px;white-space:normal;word-wrap:break-word}
 #qcTable th:nth-child(3), #qcTable td:nth-child(3){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(4), #qcTable td:nth-child(4){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(5), #qcTable td:nth-child(5){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(6), #qcTable td:nth-child(6){width:500px;max-width:500px;min-width:500px}
+
 
 
 
@@ -137,17 +138,17 @@ th:first-child{text-align:center}
 <div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
 
 <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:200px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:200px"></div>
-<div style="width:200px"><label>Contractor</label><select id="contractor" style="width:200px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
-<div style="width:200px"><label>Date of Inspection</label><input id="date" type="date" style="width:200px"></div>
-<div style="width:200px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:200px"></div>
+<div style="width:300px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:300px"></div>
+<div style="width:300px"><label>Contractor</label><select id="contractor" style="width:300px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
+<div style="width:300px"><label>Date of Inspection</label><input id="date" type="date" style="width:300px"></div>
+<div style="width:300px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:300px"></div>
 </div>
 
 <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:200px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:200px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
-<div style="width:200px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:200px"></div>
-<div style="width:200px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:200px"></div>
-<div style="width:200px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:200px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:200px">📍 Get Current GPS</button></div>
+<div style="width:300px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:300px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
+<div style="width:300px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:300px"></div>
+<div style="width:300px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:300px"></div>
+<div style="width:300px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:300px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
 </div>
 
 <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap">
@@ -161,7 +162,7 @@ th:first-child{text-align:center}
 </div>
 
 <div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<div style="display:flex;justify-content:flex-start;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
 <span style="font-size:14.4px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
 <span style="font-size:13.2px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
 </div>
