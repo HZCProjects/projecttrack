@@ -198,6 +198,79 @@ async function saveSheet(){
 }
 document.getElementById('date').valueAsDate=new Date();
 
+async function saveCurrent(){
+  const statusEl=document.getElementById('status');
+  const msgEl=document.getElementById('msg');
+  if(statusEl) statusEl.innerText='Saving...';
+  // Collect checklist data
+  const checklist={};
+  for(let i=1;i<=18;i++){
+    const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
+    const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
+    const commentEl=document.getElementById(`comment-${i}`);
+    let status='';
+    if(passEl && passEl.checked) status='pass';
+    else if(failEl && failEl.checked) status='fail';
+    checklist[i]={status:status, remark:commentEl?commentEl.value:''};
+  }
+  const payload={
+    project_name:document.getElementById('project')?.value||'Overberg WEF',
+    location:`Structure ${document.getElementById('structure')?.value||''} Collector ${document.getElementById('collector')?.value||''} Section ${document.getElementById('section')?.value||''}`.trim(),
+    structure_number:document.getElementById('structure')?.value||'',
+    collector_number:document.getElementById('collector')?.value||'',
+    section_number:document.getElementById('section')?.value||'',
+    chainage_extra:document.getElementById('gps')?.value||'',
+    date:document.getElementById('date')?.value||new Date().toISOString().slice(0,10),
+    inspector:document.getElementById('inspector')?.value||'',
+    status:'in_progress',
+    sheet_type:'wooden_h_pole',
+    checklist_data:checklist,
+    contractor:document.getElementById('contractor')?.value||''
+  };
+  try{
+    let result;
+    if(currentId){
+      result=await api(`/api/qc-sheets/${currentId}`,'PUT',payload);
+    }else{
+      try{
+        result=await api('/api/qc-sheets','POST',payload);
+      }catch(e){
+        console.log('Auth save failed, trying public',e);
+        const r=await fetch('/api/qc-sheets/public-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        result=await r.json();
+        if(!r.ok) throw new Error(result.error||'Save failed');
+      }
+    }
+    if(result && result.id){
+      currentId=result.id;
+      if(statusEl){ statusEl.innerText='✅ Saved ID '+result.id+' at '+new Date().toLocaleTimeString(); statusEl.style.color='#16a34a'; }
+      if(msgEl){ msgEl.innerText='View in Quality Management'; }
+      setTimeout(()=>{ if(statusEl) statusEl.innerText=''; }, 5000);
+    }
+  }catch(e){
+    console.error('Auth save failed, trying public fallback',e);
+    try{
+      let r, d;
+      if(currentId){
+        r=await fetch(`/api/qc-sheets/public-update/${currentId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        d=await r.json();
+      }else{
+        r=await fetch('/api/qc-sheets/public-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        d=await r.json();
+      }
+      if(r.ok){
+        currentId=d.id;
+        if(statusEl){ statusEl.innerText='✅ Saved (public fallback) ID '+d.id+' at '+new Date().toLocaleTimeString(); statusEl.style.color='#f59e0b'; }
+      }else{
+        throw new Error(d.error||'Save failed');
+      }
+    }catch(e2){
+      if(statusEl){ statusEl.innerText='❌ Save failed: '+e2.message; statusEl.style.color='#dc2626'; }
+      console.error(e2);
+    }
+  }
+}
+
 async function exportToPDF(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p','mm','a4');
