@@ -233,13 +233,14 @@ def public_save_qc():
     vals=[data.get(f,'') for f in fields]
     struct_no = str(data.get('structure_number','')).strip()
     try:
-        # ENFORCE ONE ID PER STRUCTURE NUMBER - SEPARATE BY TYPE (steel vs wooden)
+        # ENFORCE ONE ID PER (Structure No + Collector No + sheet_type) - handles duplicates
         sheet_type = data.get('sheet_type','')
+        collector_no = str(data.get('collector_number','')).strip()
         if struct_no:
             if USE_PG:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND sheet_type=%s LIMIT 1', (struct_no, sheet_type))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, sheet_type))
             else:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND sheet_type=? LIMIT 1', (struct_no, sheet_type))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, sheet_type))
             existing = cur.fetchone()
             if existing:
                 existing_id = existing[0] if USE_PG else existing[0]
@@ -252,7 +253,7 @@ def public_save_qc():
                     cur.execute('UPDATE qc_sheets SET project_name=?, location=?, structure_number=?, collector_number=?, section_number=?, chainage_extra=?, date=?, inspector=?, status=?, sheet_type=?, checklist_data=?, updated_at=? WHERE id=?',
                         (*vals, cdata, now, existing_id))
                 conn.commit(); conn.close()
-                return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} - ID {existing_id} (One ID per Structure)"})
+                return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} Collector {collector_no} - ID {existing_id} (One ID per Structure+Collector)"})
         
         if USE_PG:
             cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', (*vals,cdata,now,now))
@@ -267,11 +268,13 @@ def public_save_qc():
         try:
             conn.rollback()
             # Check again for existing in fallback
+            collector_no = str(data.get('collector_number','')).strip()
+            sheet_type = data.get('sheet_type','')
             if struct_no:
                 if USE_PG:
-                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s LIMIT 1', (struct_no,))
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, sheet_type))
                 else:
-                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? LIMIT 1', (struct_no,))
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, sheet_type))
                 existing = cur.fetchone()
                 if existing:
                     existing_id = existing[0] if USE_PG else existing[0]
@@ -477,12 +480,19 @@ def public_wooden_list():
 @app.route('/api/qc-sheets/by-structure/<structure_no>')
 @require_auth
 def get_by_structure(structure_no):
+    collector = request.args.get('collector','').strip()
     conn=get_conn(); cur=conn.cursor()
     try:
-        if USE_PG:
-            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+        if collector:
+            if USE_PG:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s AND collector_number=%s ORDER BY id DESC LIMIT 1', (structure_no, collector))
+            else:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? AND collector_number=? ORDER BY id DESC LIMIT 1', (structure_no, collector))
         else:
-            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
+            if USE_PG:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+            else:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
         row=cur.fetchone()
         if not row:
             conn.close()
@@ -497,12 +507,19 @@ def get_by_structure(structure_no):
 
 @app.route('/api/qc-sheets/public-by-structure/<structure_no>')
 def public_by_structure(structure_no):
+    collector = request.args.get('collector','').strip()
     conn=get_conn(); cur=conn.cursor()
     try:
-        if USE_PG:
-            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+        if collector:
+            if USE_PG:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s AND collector_number=%s ORDER BY id DESC LIMIT 1', (structure_no, collector))
+            else:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? AND collector_number=? ORDER BY id DESC LIMIT 1', (structure_no, collector))
         else:
-            cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
+            if USE_PG:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=%s ORDER BY id DESC LIMIT 1', (structure_no,))
+            else:
+                cur.execute('SELECT * FROM qc_sheets WHERE structure_number=? ORDER BY id DESC LIMIT 1', (structure_no,))
         row=cur.fetchone()
         if not row:
             conn.close()

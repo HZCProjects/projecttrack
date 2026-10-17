@@ -73,8 +73,8 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 
 <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap">
-  <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:120px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 16px">📂 Open Structure</button></div></div>
-  <div style="flex:1;min-width:260px"><label>Recent H-Pole Sheets (by Structure No)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select Structure No...</option></select></div>
+  <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 420" style="width:110px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 14px">📂 Open</button></div></div>
+  <div style="flex:1;min-width:260px"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select Structure + Collector...</option></select></div>
   <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
   <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
   <button onclick="saveCurrent()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 20px;font-weight:700">💾 Save to ProjectTrack</button>
@@ -229,24 +229,26 @@ async function checkStructureExists(){
 
 async function loadByStructure(){
   const inputVal = document.getElementById('loadIdInput')?.value?.trim();
+  const collectorVal = document.getElementById('loadCollectorInput')?.value?.trim();
   if(!inputVal){ alert('Enter Structure No e.g. 450'); return; }
   const statusEl=document.getElementById('status');
-  if(statusEl) statusEl.innerText='Searching Structure No '+inputVal+'...';
+  const displayCollector = collectorVal ? ` Collector ${collectorVal}` : '';
+  if(statusEl) statusEl.innerText='Searching Structure No '+inputVal+displayCollector+'...';
   try{
-    // First try to load by structure number via API
+    // First try to load by structure number + collector via API
     let data=null;
+    const queryCollector = collectorVal ? `?collector=${encodeURIComponent(collectorVal)}` : '';
     try{
-      // Try dedicated endpoint
-      const r=await fetch(`/api/qc-sheets/by-structure/${encodeURIComponent(inputVal)}`,{headers:authHeader()});
+      const r=await fetch(`/api/qc-sheets/by-structure/${encodeURIComponent(inputVal)}${queryCollector}`,{headers:authHeader()});
       if(r.ok){ data=await r.json(); }
     }catch{}
     if(!data){
       try{
-        const r=await fetch(`/api/qc-sheets/public-by-structure/${encodeURIComponent(inputVal)}`);
+        const r=await fetch(`/api/qc-sheets/public-by-structure/${encodeURIComponent(inputVal)}${queryCollector}`);
         if(r.ok){ data=await r.json(); }
       }catch{}
     }
-    // Fallback: search in list
+    // Fallback: search in list with collector logic
     if(!data){
       let allData=[];
       try{
@@ -256,16 +258,39 @@ async function loadByStructure(){
         const r=await fetch('/api/qc-sheets/public-list');
         allData=await r.json();
       }
-      // Find by structure_number (wooden only)
-      const found = allData.find(s=>{
+      // Filter by structure
+      let matches = allData.filter(s=>{
         const struct = String(s.structure_number||'').trim();
         return struct===inputVal || struct.toLowerCase()===inputVal.toLowerCase();
       });
-      if(found){ data=found; }
+      if(matches.length>0){
+        // If collector specified, filter further
+        if(collectorVal){
+          const exact = matches.filter(s=> String(s.collector_number||'').trim()===collectorVal);
+          if(exact.length>0) matches=exact;
+        }
+        if(matches.length===1){
+          data=matches[0];
+        }else if(matches.length>1){
+          // Multiple with same structure number - need collector to differentiate
+          const list = matches.map(m=> `ID ${m.id} - Structure ${m.structure_number} Collector ${m.collector_number||'?'}`).join('\n');
+          const choice = prompt(`Found ${matches.length} sheets with Structure No ${inputVal}:\n${list}\n\nEnter Collector No to open (e.g. 420), or ID:`);
+          if(choice){
+            // Try find by collector or ID
+            const byCollector = matches.find(m=> String(m.collector_number||'').trim()===choice.trim() || String(m.id)===choice.trim());
+            if(byCollector) data=byCollector;
+            else alert('Not found with that collector/ID');
+          }
+          if(!data) return;
+        }else{
+          data=matches[0];
+        }
+      }
     }
     if(!data){
-      if(statusEl){ statusEl.innerText=`❌ Structure No ${inputVal} not found`; statusEl.style.color='#dc2626'; }
-      alert(`Structure No ${inputVal} not found. Create new sheet with that Structure No and Save.`);
+      const dc = collectorVal ? ` Collector ${collectorVal}` : '';
+      if(statusEl){ statusEl.innerText=`❌ Structure No ${inputVal}${dc} not found`; statusEl.style.color='#dc2626'; }
+      alert(`Structure No ${inputVal}${dc} not found. Create new sheet with that Structure No and Collector and Save.`);
       return;
     }
     // If data is from list (not full), load full by ID
@@ -311,7 +336,8 @@ async function loadByStructure(){
         }
       }
       updateScore();
-      if(statusEl){ statusEl.innerText=`✅ Loaded Structure No ${inputVal} - ID ${currentId}`; statusEl.style.color='#16a34a'; }
+      const dc2 = collectorVal ? ` Collector ${collectorVal}` : (data.collector_number ? ` Collector ${data.collector_number}` : '');
+      if(statusEl){ statusEl.innerText=`✅ Loaded Structure No ${inputVal}${dc2} - ID ${currentId}`; statusEl.style.color='#16a34a'; }
     }
   }catch(e){
     if(statusEl){ statusEl.innerText='❌ Load failed: '+e.message; statusEl.style.color='#dc2626'; }
@@ -344,7 +370,8 @@ async function loadRecentList(){
       sel.innerHTML='<option value="">No H-Pole sheets yet - '+data.length+' other sheets in DB (Steel separated)</option>';
     }
     recent.forEach(s=>{
-      const label = `Structure ${s.structure_number||'No-No'} - ID ${s.id} - ${s.collector_number?'Collector '+s.collector_number:''} ${s.date||''}`.trim();
+      const collectorInfo = s.collector_number ? `Collector ${s.collector_number}` : 'No Collector';
+      const label = `Structure ${s.structure_number||'No-No'} + ${collectorInfo} - ID ${s.id} ${s.date||''}`.trim();
       const opt=document.createElement('option');
       opt.value=s.id;
       opt.textContent=label;
