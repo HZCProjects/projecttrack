@@ -10,7 +10,6 @@ h1{font-size:32px;color:#0f172a;margin:0}p{color:#64748b;margin-top:8px;font-siz
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
 a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;cursor:pointer;border:none;text-align:center}
 .primary{background:#0f172a;color:#fff}.secondary{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
-.wide{grid-column:span 2;background:#eef2ff;color:#0f172a;border:1px solid #c7d2fe}
 .green{grid-column:span 2;background:#10b981;color:#fff}
 .live{margin-top:20px;font-size:11px;color:#94a3b8;line-height:1.6}.badge{display:inline-block;background:#10b981;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:700}
 </style>
@@ -21,22 +20,29 @@ a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;fo
 <p>HZCProjects self-owned SaaS<br>Powerline & Construction Tracking</p>
 <div class="badge" id="dbStatus">Checking DB...</div>
 <div class="grid">
-<a class="btn primary" href="./gantt">1. 📈 Gantt (Shared DB) - /gantt</a>
-<a class="btn primary" style="background:#3b82f6" href="./qc">2. ✅ QC Sheets - /qc</a>
-<a class="btn green" href="./api/export/excel">5. 📊 Export Excel (works)</a>
-<a class="btn secondary" href="./api/status">6. 🔍 API Status</a>
-<a class="btn secondary" href="./api/debug">7. 🛠️ Debug - List Files</a>
+<a class="btn primary" href="./gantt">1. 📅 Planner</a>
+<a class="btn primary" style="background:#3b82f6" href="./qc">2. ✅ QC Check Sheets</a>
+<a class="btn green" href="./api/export/excel">3. 📊 Export to Excel</a>
+<a class="btn secondary" href="./api/status">4. 🔍 API Status</a>
+<a class="btn secondary" href="./api/debug">5. 🛠️ Debug - List Files</a>
 </div>
 <div class="live">
 Live: projecttrack-production-4ed6.up.railway.app<br>
-HZCProjects/projecttrack • v4.1 Final - No Duplicates<br>
+HZCProjects/projecttrack • v4.3 Clean Numbering<br>
 <small>Structure / Collector / Section + Depth 2.0m/2.5m/3.0m</small>
 </div>
 </div>
 <script>
 fetch('./api/status').then(r=>r.json()).then(s=>{
   document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite');
-}).catch(()=>{document.getElementById('dbStatus').innerText='DB offline'});
+  document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
+}).catch(()=>{
+  document.getElementById('dbStatus').innerText='DB offline - Retrying...';
+  setTimeout(()=>{fetch('./api/status').then(r=>r.json()).then(s=>{
+    document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite');
+    document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
+  }).catch(()=>{document.getElementById('dbStatus').innerText='DB offline - Check /api/status directly';})},2000);
+});
 </script>
 </body>
 </html>
