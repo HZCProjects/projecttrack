@@ -182,7 +182,7 @@ function renderChecks(){
       total++; if(val.status){checked++; if(val.status==='pass')pass++; if(val.status==='fail')fail++;}
       const badgeClass = val.status||'check'; const badgeText = val.status||'Check'; const isCheck = !val.status;
       const badgeStyle = isCheck ? 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:700' : '';
-      rows+=`<div class="check-row" style="${isCheck?'background:#fffbeb;border-left:3px solid #f97316':''}"><div style="${isCheck?'color:#ea580c;font-weight:700':''}">${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
     });
     div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span>${sec.items.length}</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
