@@ -23,6 +23,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;bor
 .modal-content h3{margin:0 0 16px;font-size:18px}
 .actions{display:flex;gap:10px;margin-top:12px}
 .actions button{flex:1}
+.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
 </style>
 </head>
 <body>
@@ -93,6 +94,7 @@ function guard(){
   if(u.role!=='admin'){ alert('Only admin can manage users. Your role: '+u.role); window.location.href='./'; return null;}
   return u;
 }
+function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
 function logout(){
   const u=getUser();
   if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
