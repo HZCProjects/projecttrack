@@ -34,6 +34,7 @@
 .field{margin-bottom:12px}.field label{font-size:12px;font-weight:600;color:#475569;display:block;margin-bottom:4px}
 .field input,.field select{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px}
 .kpi{display:flex;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #e2e8f0;font-size:12px}
+.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
 </style>
 
 <script>
@@ -49,6 +50,7 @@ function authHeader(){
   const u=getUser();
   return u && u.token ? {'Authorization':'Bearer '+u.token,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
 }
+function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
 function logout(){
   const u=getUser();
   if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
@@ -72,6 +74,7 @@ window.fetch=function(url,opts){
 <div class="header" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
 <div><b>📊 ProjectTrack Planner</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span id="dbBadge" style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">DB</span></div>
 <div>
+<a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
 <a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality Management</a>
 <a href="./api/export/excel" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📊 Excel</a>
