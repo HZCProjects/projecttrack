@@ -74,6 +74,10 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 
 <div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<span style="font-size:12px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
+<span style="font-size:11px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
+</div>
 <table id="qcTable">
 <thead>
 <tr><th style="width:40px">Item</th><th>Inspection Requirement</th><th style="width:70px">Pass</th><th style="width:70px">Fail</th><th>Comment</th></tr>
@@ -124,18 +128,34 @@ function setPass(i){
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
   if(p.checked) f.checked=false;
   const tr=p.closest('tr'); tr.classList.remove('fail'); if(p.checked) tr.classList.add('pass');
+  updateScore();
 }
 function setFail(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
   if(f.checked) p.checked=false;
   const tr=f.closest('tr'); tr.classList.remove('pass'); if(f.checked) tr.classList.add('fail');
+  updateScore();
+}
+function updateScore(){
+  let total=18, checked=0, pass=0, fail=0;
+  for(let i=1;i<=18;i++){
+    const p=document.querySelector(`.pass-check[data-row="${i}"]`)?.checked;
+    const f=document.querySelector(`.fail-check[data-row="${i}"]`)?.checked;
+    if(p||f) checked++;
+    if(p) pass++;
+    if(f) fail++;
+  }
+  const score = checked ? Math.round(pass/checked*100) : 0;
+  const el=document.getElementById('score');
+  if(el) el.innerText=`Checked ${checked}/${total} • Pass ${pass} • Fail ${fail} • Score ${score}%`;
 }
 function clearAll(){
   if(!confirm('Clear all checks?')) return;
   document.querySelectorAll('.check').forEach(c=>c.checked=false);
   document.querySelectorAll('tr').forEach(tr=>{tr.classList.remove('pass','fail')});
   document.querySelectorAll('.comment').forEach(c=>c.value='');
+  updateScore();
 }
 async function saveSheet(){
   const u=getUser();
