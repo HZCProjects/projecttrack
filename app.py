@@ -93,13 +93,25 @@ def get_session(token):
     if not token: return None
     try:
         conn=get_conn(); cur=conn.cursor()
-        if USE_PG: cur.execute('SELECT * FROM sessions WHERE token=%s',(token,))
-        else: cur.execute('SELECT * FROM sessions WHERE token=?',(token,))
+        if USE_PG: 
+            cur.execute('SELECT token, user_id, username, role, display_name FROM sessions WHERE token=%s',(token,))
+        else: 
+            cur.execute('SELECT token, user_id, username, role, display_name FROM sessions WHERE token=?',(token,))
         row=cur.fetchone()
+        if not row:
+            conn.close()
+            return None
+        # Build dict manually to avoid description issues
+        if USE_PG:
+            result = {'token': row[0], 'user_id': row[1], 'username': row[2], 'role': row[3], 'display_name': row[4]}
+        else:
+            result = dict(row) if hasattr(row, 'keys') else {'token': row[0], 'user_id': row[1], 'username': row[2], 'role': row[3], 'display_name': row[4]}
         conn.close()
-        if not row: return None
-        return dict(zip([d[0] for d in cur.description], row)) if USE_PG else dict(row)
-    except:
+        return result
+    except Exception as e:
+        try: conn.close()
+        except: pass
+        print(f"get_session error: {e}")
         return None
 
 def require_auth(f):
@@ -127,6 +139,15 @@ def require_role(*roles):
             return f(*args, **kwargs)
         return d
     return deco
+
+
+@app.route('/api/auth/check-session')
+def check_session():
+    token = request.args.get('token') or request.headers.get('Authorization','').replace('Bearer ','')
+    if not token:
+        return jsonify({"has_token": False, "use_pg": USE_PG, "db_url_set": bool(DATABASE_URL)})
+    sess = get_session(token)
+    return jsonify({"has_token": bool(token), "session_found": bool(sess), "session": sess, "use_pg": USE_PG})
 
 # Pages
 @app.route('/')
