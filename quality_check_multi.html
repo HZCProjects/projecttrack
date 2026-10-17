@@ -4,13 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ProjectTrack - Steel Monopoles QC - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-function toggleMobileMenu(){
-  const nav=document.getElementById('navLinks');
-  if(nav){ nav.classList.toggle('open'); }
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
 .header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
@@ -36,39 +30,6 @@ function toggleMobileMenu(){
 .badge.pass{background:#dcfce7;color:#166534}.badge.fail{background:#fee2e2;color:#991b1b}.badge.na{background:#f1f5f9}
 @media(max-width:900px){.container{grid-template-columns:1fr}.sidebar-list{position:static}}
 .back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
-
-/* MOBILE RESPONSIVE - Hamburger menu */
-.hamburger{display:none;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;padding:6px 12px;border-radius:8px;cursor:pointer;margin-left:8px}
-.nav-links{display:flex;align-items:center;flex-wrap:wrap}
-@media(max-width:768px){
-  body{padding:10px !important}
-  .header{height:auto !important;min-height:60px;padding:10px 14px !important;flex-wrap:wrap;gap:8px}
-  .header .nav-links{flex-direction:column;align-items:stretch;width:100%;display:none;margin-top:10px;background:rgba(255,255,255,.05);border-radius:10px;padding:10px}
-  .header .nav-links.open{display:flex !important}
-  .header .nav-links a,.header .nav-links button{margin:4px 0 !important;width:100%;justify-content:center}
-  .hamburger{display:inline-flex !important;align-items:center;justify-content:center}
-  .grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
-  .meta-grid{grid-template-columns:1fr !important}
-  .container{grid-template-columns:1fr !important;padding:12px !important}
-  .sidebar-list{position:static !important}
-  table{font-size:11px !important;display:block;overflow-x:auto;white-space:nowrap}
-  th,td{padding:6px 4px !important}
-  .card{padding:12px !important;border-radius:12px !important}
-  h2{font-size:16px !important}
-  .stats-grid{grid-template-columns:1fr !important}
-  .layout{grid-template-columns:1fr !important}
-  .filter-grid{grid-template-columns:repeat(2,1fr) !important}
-  .icon-grid{grid-template-columns:repeat(2,1fr) !important}
-  .top-black{flex-direction:column;align-items:flex-start !important}
-  .top-nav{flex-wrap:wrap}
-  .master-title{font-size:14px !important}
-  .user-strip{flex-direction:column;gap:8px}
-  .user-strip div{flex-wrap:wrap}
-}
-@media(max-width:480px){
-  .grid{grid-template-columns:1fr !important}
-}
-
 </style>
 
 <script>
@@ -87,7 +48,7 @@ function authHeader(){
 function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
 function logout(){
   const u=getUser();
-  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
+  if(u && u.token){ fetch('/api/auth/logout',{method:'POST',headers:authHeader()}); }
   localStorage.removeItem('projecttrack_user'); window.location.href='./login';
 }
 document.addEventListener('DOMContentLoaded', guardSimple);
@@ -117,22 +78,18 @@ window.fetch=function(url,opts){
 </style>
 </head>
 <body>
-<div class="header" style="background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;min-height:60px;flex-wrap:wrap;gap:8px">
-<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF • Steel Monopole Structures</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
-<div style="display:flex;align-items:center;gap:4px">
-<button class="hamburger" onclick="toggleMobileMenu()" style="display:none;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;padding:6px 12px;border-radius:8px;cursor:pointer">☰</button>
-<div class="nav-links" id="navLinks" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+<div class="header" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF • Steel Monopole Structures</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div>
 <a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
 <a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
+<a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality Management</a>
 <a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
-<a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality</a>
-<a href="#" onclick="window.print()" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🖨️ Print</a>
+<a href="./api/export/excel" style="color:#fff;text-decoration:none;background:#10b981;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📊 Excel</a>
 <a href="#" onclick="logout()" style="color:#fff;text-decoration:none;background:#ef4444;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🚪 Logout</a>
-<button onclick="openSearch()" class="search-btn" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;border:none;cursor:pointer">🔍 Search</button>
+<button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button>
 </div>
 </div>
-</div>
->
 
 <div class="container">
 <div class="sidebar-list">
@@ -389,7 +346,7 @@ function closeSearch(){ document.getElementById('searchOverlay').classList.remov
 let searchCache={qc:[],gantt:[]};
 async function loadSearchCache(){
   try{
-    const [qc,gantt]=await Promise.all([fetch('./api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('./api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
+    const [qc,gantt]=await Promise.all([fetch('/api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('/api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
     searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[];
   }catch{}
 }
