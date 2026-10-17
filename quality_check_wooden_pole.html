@@ -60,7 +60,7 @@ tr:nth-child(even){background:#f8fafc}
 
 <div class="grid">
 <div><label>Project Name</label><input id="project" value="Overberg WEF"></div>
-<div><label>Contractor</label><input id="contractor" placeholder="2671 / Contractor Name"></div>
+<div><label>Contractor</label><select id="contractor"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
 <div><label>Date of Inspection</label><input id="date" type="date"></div>
 <div><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name"></div>
 </div>
@@ -419,6 +419,8 @@ function updateScore(){
   if(el) el.innerText=`Checked ${checked}/${total} • Pass ${pass} • Fail ${fail} • Score ${score}%`;
 }
 function clearAll(){
+  const contEl=document.getElementById('contractor'); if(contEl) contEl.value='AKC';
+
   if(!confirm('Clear all checks?')) return;
   document.querySelectorAll('.check').forEach(c=>c.checked=false);
   document.querySelectorAll('tr').forEach(tr=>{tr.classList.remove('pass','fail')});

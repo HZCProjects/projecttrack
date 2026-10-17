@@ -48,6 +48,7 @@
 </div>
 <div class="meta-grid">
 <div class="f"><label>Project Name</label><input id="proj" placeholder="Overberg WEF"></div>
+<div class="f"><label>Contractor</label><select id="contractor"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
 <div class="f"><label>Location / Structure No</label><input id="loc" placeholder="Pole 100"></div>
 <div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
 <div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
@@ -116,6 +117,7 @@ async function openSheet(id){
     currentChecks=s.checks||s.checklist_data||{};
     if(typeof currentChecks==='string'){ try{ currentChecks=JSON.parse(currentChecks);}catch{ currentChecks={}; } }
     document.getElementById('proj').value=s.project_name||''; 
+    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||s.location||'AKC'; 
     document.getElementById('loc').value=s.location||'';
     document.getElementById('gps').value=s.chainage_extra||'';
     document.getElementById('date').value=s.date||''; 
