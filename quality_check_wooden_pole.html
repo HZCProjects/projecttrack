@@ -15,19 +15,20 @@ h2{margin:0 0 4px;font-size:20px} .sub{color:#64748b;font-size:13px;margin-botto
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}
 input,select{padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%;box-sizing:border-box;font-size:13px}
 label{font-size:11px;color:#64748b;text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px}
-table{width:100%;max-width:900px;border-collapse:collapse;font-size:13px;table-layout:fixed}
-th,td{padding:10px 8px;border:1px solid #e2e8f0;text-align:left;overflow:hidden}
+table{width:100%;border-collapse:collapse;border-spacing:0;font-size:13px;table-layout:auto}
+th,td{padding:10px 8px;border:1px solid #e2e8f0;text-align:left}
 th{background:#0f172a;color:#fff;font-size:11px;text-transform:uppercase}
 tr:nth-child(even){background:#f8fafc}
 tr.pass{background:#dcfce7 !important} tr.fail{background:#fee2e2 !important}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
 td:first-child{text-align:center;font-weight:700}
-#qcTable th:nth-child(1), #qcTable td:nth-child(1){width:50px;text-align:center}
-#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:280px;white-space:normal;word-wrap:break-word}
-#qcTable th:nth-child(3), #qcTable td:nth-child(3){width:60px;text-align:center}
-#qcTable th:nth-child(4), #qcTable td:nth-child(4){width:60px;text-align:center}
-#qcTable th:nth-child(5), #qcTable td:nth-child(5){width:60px;text-align:center}
-#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:auto}
+#qcTable{width:100%;max-width:850px}
+#qcTable th:nth-child(1), #qcTable td:nth-child(1){width:45px;text-align:center}
+#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:32%;white-space:normal;word-wrap:break-word}
+#qcTable th:nth-child(3), #qcTable td:nth-child(3){width:65px;text-align:center}
+#qcTable th:nth-child(4), #qcTable td:nth-child(4){width:65px;text-align:center}
+#qcTable th:nth-child(5), #qcTable td:nth-child(5){width:65px;text-align:center}
+#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:32%}
 th:first-child{text-align:center}
 /* Orange highlight for Check/unchecked boxes */
 .badge-check{background:#ffedd5 !important;color:#9a3412 !important;border:1px solid #fed7aa !important}
