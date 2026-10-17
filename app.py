@@ -17,6 +17,27 @@ CORS(app)
 DATABASE_URL = os.environ.get('DATABASE_URL')  # Railway provides this when you add Postgres plugin
 USE_PG = bool(DATABASE_URL and HAS_PG)
 
+
+def migrate_qc_sheets():
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        for col in ['structure_number','collector_number','section_number','chainage_extra']:
+            try:
+                cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN {col} TEXT DEFAULT ''")
+            except Exception:
+                pass
+        conn.commit()
+    except Exception as e:
+        print(f"Migration warning: {e}")
+    finally:
+        try: cur.close()
+        except: pass
+        try: conn.close()
+        except: pass
+migrate_qc_sheets()
+
+
 def get_conn():
     if USE_PG:
         conn = psycopg2.connect(DATABASE_URL)
@@ -34,6 +55,10 @@ def init_db():
             id SERIAL PRIMARY KEY,
             project_name TEXT,
             location TEXT,
+    structure_number TEXT DEFAULT '',
+    collector_number TEXT DEFAULT '',
+    section_number TEXT DEFAULT '',
+    chainage_extra TEXT DEFAULT '',
             date TEXT,
             inspector TEXT,
             status TEXT DEFAULT 'draft',
@@ -57,6 +82,10 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project_name TEXT,
             location TEXT,
+    structure_number TEXT DEFAULT '',
+    collector_number TEXT DEFAULT '',
+    section_number TEXT DEFAULT '',
+    chainage_extra TEXT DEFAULT '',
             date TEXT,
             inspector TEXT,
             status TEXT DEFAULT 'draft',
