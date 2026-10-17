@@ -153,28 +153,28 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 <table id="qcTable">
 <thead>
-<tr><th style="width:40px">Item</th><th>Inspection Requirement</th><th style="width:70px">Pass</th><th style="width:70px">Fail</th><th>Comment</th></tr>
+<tr><th style="width:40px">Item</th><th>Inspection Requirement</th><th style="width:70px;text-align:center">Pass</th><th style="width:70px;text-align:center">Fail</th><th style="width:70px;text-align:center">N/A</th><th>Comments</th></tr>
 </thead>
 <tbody>
-<tr><td><b>1</b></td><td>Pole(s) installed at the correct location and orientation</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="1" onchange="setPass(1)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="1" onchange="setFail(1)"></td><td><input class="comment" id="comment-1" placeholder="Comment..."></td></tr>
-<tr><td><b>2</b></td><td>Structure is straight, level and vertically plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="2" onchange="setPass(2)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="2" onchange="setFail(2)"></td><td><input class="comment" id="comment-2" placeholder="Comment..."></td></tr>
-<tr><td><b>3</b></td><td>H-pole bisectors are correctly aligned and in line</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="3" onchange="setPass(3)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="3" onchange="setFail(3)"></td><td><input class="comment" id="comment-3" placeholder="Comment..."></td></tr>
-<tr><td><b>4</b></td><td>Bill (pole top) has been cut to the specified requirement</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="4" onchange="setPass(4)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="4" onchange="setFail(4)"></td><td><input class="comment" id="comment-4" placeholder="Comment..."></td></tr>
-<tr><td><b>5</b></td><td>PVC pipe installed and at the correct specified height (2.5m) above ground level</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="5" onchange="setPass(5)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="5" onchange="setFail(5)"></td><td><input class="comment" id="comment-5" placeholder="Comment..."></td></tr>
-<tr><td><b>6</b></td><td>Bonding clips correctly fitted and securely tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="6" onchange="setPass(6)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="6" onchange="setFail(6)"></td><td><input class="comment" id="comment-6" placeholder="Comment..."></td></tr>
-<tr><td><b>7</b></td><td>Bonding is continuous with no damage or loose connections</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="7" onchange="setPass(7)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="7" onchange="setFail(7)"></td><td><input class="comment" id="comment-7" placeholder="Comment..."></td></tr>
-<tr><td><b>8</b></td><td>All bolts and nuts installed correctly and are straight</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="8" onchange="setPass(8)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="8" onchange="setFail(8)"></td><td><input class="comment" id="comment-8" placeholder="Comment..."></td></tr>
-<tr><td><b>9</b></td><td>All eye bolts are correctly installed and plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="9" onchange="setPass(9)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="9" onchange="setFail(9)"></td><td><input class="comment" id="comment-9" placeholder="Comment..."></td></tr>
-<tr><td><b>10</b></td><td>Stay wire pole top is installed 100 mm from the bottom of the BILL, cut and tied as per specification</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="10" onchange="setPass(10)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="10" onchange="setFail(10)"></td><td><input class="comment" id="comment-10" placeholder="Comment..."></td></tr>
-<tr><td><b>11</b></td><td>All lock nuts checked and fully tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="11" onchange="setPass(11)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="11" onchange="setFail(11)"></td><td><input class="comment" id="comment-11" placeholder="Comment..."></td></tr>
-<tr><td><b>12</b></td><td>Washers correctly installed where required</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="12" onchange="setPass(12)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="12" onchange="setFail(12)"></td><td><input class="comment" id="comment-12" placeholder="Comment..."></td></tr>
-<tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td><input class="comment" id="comment-13" placeholder="Comment..."></td></tr>
+<tr><td><b>1</b></td><td>Pole(s) installed at the correct location and orientation</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="1" onchange="setPass(1)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="1" onchange="setFail(1)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="1" onchange="setNA(1)"></td><td><input class="comment" id="comment-1" placeholder="Comments..."></td></tr>
+<tr><td><b>2</b></td><td>Structure is straight, level and vertically plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="2" onchange="setPass(2)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="2" onchange="setFail(2)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="2" onchange="setNA(2)"></td><td><input class="comment" id="comment-2" placeholder="Comments..."></td></tr>
+<tr><td><b>3</b></td><td>H-pole bisectors are correctly aligned and in line</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="3" onchange="setPass(3)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="3" onchange="setFail(3)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="3" onchange="setNA(3)"></td><td><input class="comment" id="comment-3" placeholder="Comments..."></td></tr>
+<tr><td><b>4</b></td><td>Bill (pole top) has been cut to the specified requirement</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="4" onchange="setPass(4)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="4" onchange="setFail(4)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="4" onchange="setNA(4)"></td><td><input class="comment" id="comment-4" placeholder="Comments..."></td></tr>
+<tr><td><b>5</b></td><td>PVC pipe installed and at the correct specified height (2.5m) above ground level</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="5" onchange="setPass(5)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="5" onchange="setFail(5)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="5" onchange="setNA(5)"></td><td><input class="comment" id="comment-5" placeholder="Comments..."></td></tr>
+<tr><td><b>6</b></td><td>Bonding clips correctly fitted and securely tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="6" onchange="setPass(6)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="6" onchange="setFail(6)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="6" onchange="setNA(6)"></td><td><input class="comment" id="comment-6" placeholder="Comments..."></td></tr>
+<tr><td><b>7</b></td><td>Bonding is continuous with no damage or loose connections</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="7" onchange="setPass(7)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="7" onchange="setFail(7)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="7" onchange="setNA(7)"></td><td><input class="comment" id="comment-7" placeholder="Comments..."></td></tr>
+<tr><td><b>8</b></td><td>All bolts and nuts installed correctly and are straight</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="8" onchange="setPass(8)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="8" onchange="setFail(8)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="8" onchange="setNA(8)"></td><td><input class="comment" id="comment-8" placeholder="Comments..."></td></tr>
+<tr><td><b>9</b></td><td>All eye bolts are correctly installed and plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="9" onchange="setPass(9)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="9" onchange="setFail(9)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="9" onchange="setNA(9)"></td><td><input class="comment" id="comment-9" placeholder="Comments..."></td></tr>
+<tr><td><b>10</b></td><td>Stay wire pole top is installed 100 mm from the bottom of the BILL, cut and tied as per specification</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="10" onchange="setPass(10)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="10" onchange="setFail(10)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="10" onchange="setNA(10)"></td><td><input class="comment" id="comment-10" placeholder="Comments..."></td></tr>
+<tr><td><b>11</b></td><td>All lock nuts checked and fully tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="11" onchange="setPass(11)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="11" onchange="setFail(11)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="11" onchange="setNA(11)"></td><td><input class="comment" id="comment-11" placeholder="Comments..."></td></tr>
+<tr><td><b>12</b></td><td>Washers correctly installed where required</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="12" onchange="setPass(12)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="12" onchange="setFail(12)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="12" onchange="setNA(12)"></td><td><input class="comment" id="comment-12" placeholder="Comments..."></td></tr>
+<tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="13" onchange="setNA(13)"></td><td><input class="comment" id="comment-13" placeholder="Comments..."></td></tr>
 
-<tr><td><b>14</b></td><td>Structure Free From Visible Defects or Damages?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="14" onchange="setPass(14)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="14" onchange="setFail(14)"></td><td><input class="comment" id="comment-14" placeholder="Comment..."></td></tr>
-<tr><td><b>15</b></td><td>Work Area Clean and Safe?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="15" onchange="setPass(15)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="15" onchange="setFail(15)"></td><td><input class="comment" id="comment-15" placeholder="Comment..."></td></tr>
-<tr><td><b>16</b></td><td>Check all pre-forms (guy grips) to be installed correctly</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="16" onchange="setPass(16)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="16" onchange="setFail(16)"></td><td><input class="comment" id="comment-16" placeholder="Comment..."></td></tr>
-<tr><td><b>17</b></td><td>Stays to be installed and tensioned with thimble and made off, including the tail</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="17" onchange="setPass(17)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="17" onchange="setFail(17)"></td><td><input class="comment" id="comment-17" placeholder="Comment..."></td></tr>
-<tr><td><b>18</b></td><td>Structure Label to be 3m from NGL and to point in the direction from the source</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="18" onchange="setPass(18)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="18" onchange="setFail(18)"></td><td><input class="comment" id="comment-18" placeholder="Comment..."></td></tr>
+<tr><td><b>14</b></td><td>Structure Free From Visible Defects or Damages?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="14" onchange="setPass(14)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="14" onchange="setFail(14)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="14" onchange="setNA(14)"></td><td><input class="comment" id="comment-14" placeholder="Comments..."></td></tr>
+<tr><td><b>15</b></td><td>Work Area Clean and Safe?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="15" onchange="setPass(15)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="15" onchange="setFail(15)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="15" onchange="setNA(15)"></td><td><input class="comment" id="comment-15" placeholder="Comments..."></td></tr>
+<tr><td><b>16</b></td><td>Check all pre-forms (guy grips) to be installed correctly</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="16" onchange="setPass(16)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="16" onchange="setFail(16)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="16" onchange="setNA(16)"></td><td><input class="comment" id="comment-16" placeholder="Comments..."></td></tr>
+<tr><td><b>17</b></td><td>Stays to be installed and tensioned with thimble and made off, including the tail</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="17" onchange="setPass(17)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="17" onchange="setFail(17)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="17" onchange="setNA(17)"></td><td><input class="comment" id="comment-17" placeholder="Comments..."></td></tr>
+<tr><td><b>18</b></td><td>Structure Label to be 3m from NGL and to point in the direction from the source</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="18" onchange="setPass(18)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="18" onchange="setFail(18)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="18" onchange="setNA(18)"></td><td><input class="comment" id="comment-18" placeholder="Comments..."></td></tr>
 
 </tbody>
 </table>
@@ -458,7 +458,8 @@ async function loadRecentList(){
 function setPass(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
-  if(p.checked) f.checked=false;
+  const n=document.querySelector(`.na-check[data-row="${i}"]`);
+  if(p.checked){ f.checked=false; if(n) n.checked=false; }
   const tr=p.closest('tr'); 
   tr.classList.remove('fail'); 
   tr.style.background='';
@@ -469,7 +470,8 @@ function setPass(i){
 function setFail(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
-  if(f.checked) p.checked=false;
+  const n=document.querySelector(`.na-check[data-row="${i}"]`);
+  if(f.checked){ p.checked=false; if(n) n.checked=false; }
   const tr=f.closest('tr'); 
   tr.classList.remove('pass');
   tr.style.background='';
@@ -477,18 +479,30 @@ function setFail(i){
   if(f.checked) tr.classList.add('fail');
   updateScore();
 }
+function setNA(i){
+  const p=document.querySelector(`.pass-check[data-row="${i}"]`);
+  const f=document.querySelector(`.fail-check[data-row="${i}"]`);
+  const n=document.querySelector(`.na-check[data-row="${i}"]`);
+  if(n && n.checked){ p.checked=false; f.checked=false; }
+  const tr=n ? n.closest('tr') : p.closest('tr');
+  tr.classList.remove('pass','fail');
+  tr.style.background='';
+  tr.style.borderLeft='';
+  updateScore();
+}
 function highlightUnchecked(){
   // Only Check block orange - no row background highlight per user request
-  // Keep rows clean, only badges in score are colored
 }
 function updateScore(){
-  let total=18, checked=0, pass=0, fail=0;
+  let total=18, checked=0, pass=0, fail=0, na=0;
   for(let i=1;i<=18;i++){
     const p=document.querySelector(`.pass-check[data-row="${i}"]`)?.checked;
     const f=document.querySelector(`.fail-check[data-row="${i}"]`)?.checked;
-    if(p||f) checked++;
+    const n=document.querySelector(`.na-check[data-row="${i}"]`)?.checked;
+    if(p||f||n) checked++;
     if(p) pass++;
     if(f) fail++;
+    if(n) na++;
   }
   const progress = total ? Math.round(checked/total*100) : 0;
   const unchecked = total - checked;
@@ -507,7 +521,7 @@ function updateScore(){
     const uncheckWeight = unchecked>0 ? '800' : '400';
     const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
     const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
-    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span>`;
+    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span> • N/A ${na}`;
   }
 }
 function clearAll(){
@@ -526,8 +540,9 @@ async function saveSheet(){
   for(let i=1;i<=18;i++){
     const p=document.querySelector(`.pass-check[data-row="${i}"]`).checked;
     const f=document.querySelector(`.fail-check[data-row="${i}"]`).checked;
+    const n=document.querySelector(`.na-check[data-row="${i}"]`)?.checked||false;
     const c=document.getElementById(`comment-${i}`).value;
-    checklist[i]={item: document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText, pass:p, fail:f, comment:c};
+    checklist[i]={item: document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText, pass:p, fail:f, na:n, comment:c};
   }
   const payload={
     project_name: document.getElementById('project').value,
@@ -690,20 +705,22 @@ async function exportToPDF(){
 
   let y=40;
   doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('ITEM',10,y); doc.text('INSPECTION REQUIREMENT',20,y); doc.text('PASS',130,y); doc.text('FAIL',145,y); doc.text('COMMENT',160,y);
+  doc.text('ITEM',10,y); doc.text('INSPECTION REQUIREMENT',20,y); doc.text('PASS',115,y); doc.text('FAIL',130,y); doc.text('N/A',145,y); doc.text('COMMENTS',160,y);
   y+=3; doc.line(10,y,200,y); y+=4;
   doc.setFont('helvetica','normal');
   for(let i=1;i<=18;i++){
     const req = document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText;
     const p = document.querySelector(`.pass-check[data-row="${i}"]`).checked ? 'YES' : '';
     const f = document.querySelector(`.fail-check[data-row="${i}"]`).checked ? 'YES' : '';
+    const n = document.querySelector(`.na-check[data-row="${i}"]`)?.checked ? 'YES' : '';
     const c = document.getElementById(`comment-${i}`).value || '';
     if(y>270){ doc.addPage(); y=15; }
     const lines = doc.splitTextToSize(req, 100);
     doc.text(String(i),10,y);
     doc.text(lines,20,y);
-    doc.text(p,130,y);
-    doc.text(f,145,y);
+    doc.text(p,115,y);
+    doc.text(f,130,y);
+    doc.text(n,145,y);
     doc.text(doc.splitTextToSize(c,35),160,y);
     y+= Math.max(6, lines.length*4);
     doc.setDrawColor(230); doc.line(10,y,200,y); y+=2;
