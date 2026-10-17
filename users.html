@@ -11,16 +11,39 @@ body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
 .card{background:#fff;padding:24px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);margin-bottom:20px}
 h2{font-size:18px;margin:0 0 16px} input,select{padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%;box-sizing:border-box;margin-bottom:10px}
 button{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer;background:#0f172a;color:#fff}
-button.sec{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
+button.sec{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0} button.edit{background:#3b82f6;color:#fff} button.del{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
 table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left} th{color:#64748b;font-size:11px;text-transform:uppercase}
 .badge{padding:3px 8px;border-radius:20px;font-size:11px;background:#f1f5f9}
 .badge.admin{background:#0f172a;color:#fff} .badge.qc_manager{background:#3b82f6;color:#fff}
+.badge.inspector{background:#fef3c7;color:#92400e} .badge.viewer{background:#e0f2fe;color:#0369a1}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:999}
+.modal.active{display:flex}
+.modal-content{background:#fff;padding:28px;border-radius:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-content h3{margin:0 0 16px;font-size:18px}
+.actions{display:flex;gap:10px;margin-top:12px}
+.actions button{flex:1}
+.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
+
+.search-btn{color:#fff;text-decoration:none;background:#8b5cf6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none} .search-btn:hover{background:#7c3aed}
+.search-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-start;justify-content:center;padding-top:80px;z-index:100}
+.search-overlay.open{display:flex}
+.search-box{background:#fff;width:600px;max-width:90vw;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.search-input-wrap{display:flex;align-items:center;padding:16px;border-bottom:1px solid #e2e8f0}
+.search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;padding:8px}
+.search-results{max-height:400px;overflow-y:auto;padding:8px}
+.search-item{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.search-item:hover{background:#f8fafc}
+.search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
+
 </style>
 </head>
 <body>
 <div class="header">
 <div><b>👥 User Management</b> <span style="opacity:.6;font-size:12px" id="who"></span></div>
-<div><a href="./">🏠 Home</a><a href="./gantt">📅 Planner</a><a href="./qc">✅ QC</a><a href="#" onclick="logout()">Logout</a></div>
+<div><a href="./">🏠 Home</a>
+<a href="./gantt">📅 Planner</a><a href="./qc">✅ QC</a><a href="#" onclick="logout()">Logout</a>
+<button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button></div>
 </div>
 
 <div style="display:grid;grid-template-columns:360px 1fr;gap:20px">
@@ -29,42 +52,92 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;bor
 <input id="newUser" placeholder="Username (e.g. johan)">
 <input id="newName" placeholder="Display Name (e.g. Johan Botha)">
 <input id="newPass" type="password" placeholder="Password (min 6 chars)">
-<select id="newRole"><option value="viewer">Viewer - View only</option><option value="inspector">Inspector - Site Inspector</option><option value="qc_manager">QC Manager</option><option value="admin">Admin - Full Access</option></select>
+<select id="newRole">
+<option value="viewer">Viewer - View only</option>
+<option value="inspector">Inspector - Site Inspector</option>
+<option value="qc_manager">QC Manager</option>
+<option value="admin">Admin - Full Access</option>
+</select>
 <button onclick="addUser()" style="width:100%">+ Add User</button>
 <div id="msg" style="margin-top:10px;font-size:12px"></div>
-<p style="font-size:11px;color:#64748b;margin-top:12px">Admin can add/delete users. Passwords are hashed (secure). New user can login immediately with /login page.</p>
+<p style="font-size:11px;color:#64748b;margin-top:12px">Roles:<br>Viewer=View only<br>Inspector=Create/Edit QC<br>QC Manager=All QC+Planner<br>Admin=Everything+Users</p>
 </div>
 
 <div class="card">
 <h2>Current Users</h2>
-<table><thead><tr><th>ID</th><th>Username</th><th>Display Name</th><th>Role</th><th>Last Login</th><th>Action</th></tr></thead><tbody id="usersBody"></tbody></table>
+<table><thead><tr><th>ID</th><th>USERNAME</th><th>DISPLAY NAME</th><th>ROLE</th><th>LAST LOGIN</th><th>ACTION</th></tr></thead><tbody id="usersBody"></tbody></table>
+</div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal" id="editModal">
+<div class="modal-content">
+<h3>✏️ Edit User</h3>
+<input type="hidden" id="editId">
+<label style="font-size:12px;color:#64748b">Username</label>
+<input id="editUser" placeholder="Username">
+<label style="font-size:12px;color:#64748b">Display Name</label>
+<input id="editName" placeholder="Display Name">
+<label style="font-size:12px;color:#64748b">Role</label>
+<select id="editRole">
+<option value="viewer">Viewer - View only</option>
+<option value="inspector">Inspector - Site Inspector</option>
+<option value="qc_manager">QC Manager</option>
+<option value="admin">Admin - Full Access</option>
+</select>
+<label style="font-size:12px;color:#64748b">New Password (leave blank to keep current)</label>
+<input id="editPass" type="password" placeholder="New password (min 6 chars)">
+<div id="editMsg" style="font-size:12px;margin-top:8px"></div>
+<div class="actions">
+<button class="sec" onclick="closeEdit()">Cancel</button>
+<button onclick="saveEdit()">💾 Save Changes</button>
+</div>
 </div>
 </div>
 
 <script>
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
-function guard(){const u=getUser(); if(!u){window.location.href='./login'; return null;} document.getElementById('who').innerText=`Logged as ${u.display_name||u.username} (${u.role})`; return u;}
-function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
+function authHeader(){
+  const u=getUser();
+  return u && u.token ? {'Authorization':'Bearer '+u.token,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
+}
+function guard(){
+  const u=getUser();
+  if(!u){window.location.href='./login'; return null;}
+  document.getElementById('who').innerText='Logged as '+(u.display_name||u.username)+' ('+u.role+')';
+  if(u.role!=='admin'){ alert('Only admin can manage users. Your role: '+u.role); window.location.href='./'; return null;}
+  return u;
+}
+function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
+function logout(){
+  const u=getUser();
+  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
+  localStorage.removeItem('projecttrack_user'); window.location.href='./login';
+}
 const me=guard();
 
 async function loadUsers(){
-  const r=await fetch('./api/auth/users'); const data=await r.json();
+  if(!me) return;
+  const r=await fetch('./api/auth/users',{headers:authHeader()});
+  const data=await r.json();
+  if(!Array.isArray(data)){ document.getElementById('usersBody').innerHTML='<tr><td colspan=6>'+(data.error||'Failed')+'</td></tr>'; return; }
   const tbody=document.getElementById('usersBody'); tbody.innerHTML='';
   data.forEach(u=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${u.id}</td><td><b>${u.username}</b></td><td>${u.display_name||'-'}</td><td><span class="badge ${u.role}">${u.role}</span></td><td>${u.last_login?new Date(u.last_login).toLocaleString(): 'Never'}</td><td>${u.id===1?'🔒 Main':'<button class="sec" onclick="delUser('+u.id+',\\'${u.username}\\')">Delete</button>'}</td>`;
+    tr.innerHTML='<td>'+u.id+'</td><td><b>'+u.username+'</b></td><td>'+(u.display_name||'-')+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td>'+(u.last_login?new Date(u.last_login).toLocaleString():'Never')+'</td><td style="display:flex;gap:6px"><button class="edit" onclick="openEdit('+u.id+',\''+u.username+'\',\''+(u.display_name||'').replace(/'/g,"\\'")+'\',\''+u.role+'\')">Edit</button>'+(u.id===1?'<span style="font-size:11px;padding:6px">🔒 Main</span>':'<button class="del" onclick="delUser('+u.id+',\''+u.username+'\')">Delete</button>')+'</td>';
     tbody.appendChild(tr);
   });
 }
+
 async function addUser(){
   const username=document.getElementById('newUser').value.trim();
   const display_name=document.getElementById('newName').value.trim();
   const password=document.getElementById('newPass').value;
   const role=document.getElementById('newRole').value;
   const msg=document.getElementById('msg');
-  msg.innerText='Adding...';
+  msg.innerText='Adding...'; msg.style.color='#64748b';
   try{
-    const r=await fetch('./api/auth/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,role,display_name})});
+    const r=await fetch('./api/auth/users',{method:'POST',headers:authHeader(),body:JSON.stringify({username,password,role,display_name})});
     const d=await r.json();
     if(!r.ok){msg.innerText='❌ '+d.error; msg.style.color='#ef4444'; return;}
     msg.innerText='✅ Added '+username; msg.style.color='#10b981';
@@ -72,14 +145,92 @@ async function addUser(){
     loadUsers();
   }catch(e){msg.innerText='Error '+e.message; msg.style.color='#ef4444';}
 }
+
+function openEdit(id,username,display_name,role){
+  document.getElementById('editId').value=id;
+  document.getElementById('editUser').value=username;
+  document.getElementById('editName').value=display_name;
+  document.getElementById('editRole').value=role;
+  document.getElementById('editPass').value='';
+  document.getElementById('editMsg').innerText='';
+  document.getElementById('editModal').classList.add('active');
+}
+function closeEdit(){ document.getElementById('editModal').classList.remove('active'); }
+
+async function saveEdit(){
+  const id=document.getElementById('editId').value;
+  const username=document.getElementById('editUser').value.trim();
+  const display_name=document.getElementById('editName').value.trim();
+  const role=document.getElementById('editRole').value;
+  const password=document.getElementById('editPass').value;
+  const msg=document.getElementById('editMsg');
+  msg.innerText='Saving...'; msg.style.color='#64748b';
+  try{
+    const payload={username,display_name,role};
+    if(password) payload.password=password;
+    const r=await fetch('./api/auth/users/'+id,{method:'PUT',headers:authHeader(),body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(!r.ok){msg.innerText='❌ '+d.error; msg.style.color='#ef4444'; return;}
+    msg.innerText='✅ Saved'; msg.style.color='#10b981';
+    setTimeout(()=>{closeEdit(); loadUsers();},600);
+  }catch(e){msg.innerText='Error '+e.message; msg.style.color='#ef4444';}
+}
+
 async function delUser(id,name){
   if(!confirm('Delete user '+name+'?'))return;
-  const r=await fetch('./api/auth/users/'+id,{method:'DELETE'});
+  const r=await fetch('./api/auth/users/'+id,{method:'DELETE',headers:authHeader()});
   const d=await r.json();
   if(!r.ok){alert(d.error); return;}
   loadUsers();
 }
-loadUsers();
+
+if(me) loadUsers();
+document.getElementById('editModal').addEventListener('click',e=>{ if(e.target.id==='editModal') closeEdit(); });
+</script>
+
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
+<div class="search-box">
+<div class="search-input-wrap">
+<span>🔍</span>
+<input id="globalSearchInput" type="text" placeholder="Search QC sheets, structures, planner tasks, collectors..." oninput="doGlobalSearch(this.value)" autofocus>
+<button onclick="closeSearch()" style="border:none;background:#f1f5f9;padding:6px 10px;border-radius:6px;cursor:pointer">✕</button>
+</div>
+<div class="search-results" id="searchResults">
+<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...<br><small>Searches Structure No, Collector, Location, Project, Tasks</small></div>
+</div>
+</div>
+</div>
+
+<script>
+function openSearch(){ document.getElementById('searchOverlay').classList.add('open'); document.getElementById('globalSearchInput').focus(); }
+function closeSearch(){ document.getElementById('searchOverlay').classList.remove('open'); }
+let searchCache={qc:[],gantt:[]};
+async function loadSearchCache(){
+  try{
+    const [qc,gantt]=await Promise.all([fetch('./api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('./api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
+    searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[];
+  }catch{}
+}
+loadSearchCache();
+function doGlobalSearch(q){
+  const resEl=document.getElementById('searchResults');
+  if(!q || q.trim().length<1){ resEl.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...</div>'; return; }
+  q=q.toLowerCase();
+  const matches=[];
+  searchCache.qc.forEach(s=>{
+    const hay=[s.project_name,s.location,s.structure_number,s.collector_number,s.section_number,s.inspector,s.status,s.sheet_type].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'QC',title:`${s.project_name||''} - ${s.location||''} ${s.structure_number?'(Struct '+s.structure_number+')':''}`.trim(), sub:`${s.collector_number?'Collector '+s.collector_number+' • ':''}${s.date||''} • ${s.status||''} • ID ${s.id} • ${s.sheet_type||''}`, id:s.id, go:`./qc`});
+  });
+  searchCache.gantt.forEach(t=>{
+    const hay=[t.name,t.assignee,t.start_date,t.end_date].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'Planner',title:t.name, sub:`${t.assignee||''} • ${t.start_date||''} → ${t.end_date||''} • ${t.progress||0}%`, id:t.id, go:`./gantt`});
+  });
+  if(matches.length==0){ resEl.innerHTML=`<div style="padding:20px;text-align:center;color:#94a3b8">No results for "${q}"</div>`; return; }
+  resEl.innerHTML=matches.slice(0,30).map(m=>`<div class="search-item" onclick="window.location.href='${m.go}'"><div><b>[${m.type}] ${m.title}</b><br><small>${m.sub}</small></div><span style="font-size:10px;background:#f1f5f9;padding:4px 8px;border-radius:20px">Go →</span></div>`).join('');
+  // Also filter current page list if exists
+  if(typeof filterCurrentPage==='function'){ try{filterCurrentPage(q)}catch{} }
+}
+document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()=='k'){ e.preventDefault(); openSearch(); } if(e.key=='Escape') closeSearch(); });
 </script>
 </body>
 </html>

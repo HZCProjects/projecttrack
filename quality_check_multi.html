@@ -4,7 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ProjectTrack - Steel Monopoles QC - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
 .header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
@@ -13,12 +12,13 @@
 .btn-blue{background:#3b82f6;color:#fff}.btn-dark{background:#0f172a;color:#fff}.btn-light{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
 .container{max-width:1100px;margin:0 auto;padding:24px;display:grid;grid-template-columns:300px 1fr;gap:20px}
 .sidebar-list{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.06);padding:16px;height:fit-content;position:sticky;top:84px}
+.sidebar-list h3{font-size:14px;margin-bottom:12px}
 .sheet-item{padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid #f1f5f9;margin-bottom:8px}
 .sheet-item:hover{background:#f8fafc}.sheet-item.active{background:#eff6ff;border-color:#bfdbfe}
 .sheet-item b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sheet-item small{font-size:11px;color:#64748b}
 .main{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.06);padding:24px}
-.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
 .f label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px}
 .f input,.f select{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
 .section{border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;overflow:hidden}
@@ -27,39 +27,97 @@
 .check-row{display:grid;grid-template-columns:30px 1fr 80px 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
 .badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;border:1px solid #e2e8f0}
 .badge.pass{background:#dcfce7;color:#166534}.badge.fail{background:#fee2e2;color:#991b1b}.badge.na{background:#f1f5f9}
-.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)}
+@media(max-width:900px){.container{grid-template-columns:1fr}.sidebar-list{position:static}}
+.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
+</style>
+
+<script>
+function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
+function guardSimple(){
+  const u=getUser();
+  if(!u || !u.token){ window.location.href='./login'; return null; }
+  // Don't call /api/auth/me on page load - token is persistent now in DB, so no need to verify every load
+  const rb=document.getElementById('roleBadge'); if(rb){ rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; rb.className='badge '+u.role; }
+  return u;
+}
+function authHeader(){
+  const u=getUser();
+  return u && u.token ? {'Authorization':'Bearer '+u.token,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
+}
+function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
+function logout(){
+  const u=getUser();
+  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
+  localStorage.removeItem('projecttrack_user'); window.location.href='./login';
+}
+document.addEventListener('DOMContentLoaded', guardSimple);
+// Patch fetch to add token automatically
+const _f=window.fetch;
+window.fetch=function(url,opts){
+  if(typeof url==='string' && url.includes('/api/') && !url.includes('/api/auth/login')){
+    const u=getUser();
+    opts=opts||{}; opts.headers=opts.headers||{};
+    if(u && u.token && !opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;
+  }
+  return _f(url,opts);
+};
+</script>
+<style>.badge.viewer{background:#e0f2fe;color:#0369a1}.badge.inspector{background:#fef3c7;color:#92400e}.badge.qc_manager{background:#dbeafe;color:#1e40af}.badge.admin{background:#0f172a;color:#fff}#roleBadge{padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px;background:#0f172a;color:#fff}
+.search-btn{color:#fff;text-decoration:none;background:#8b5cf6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none} .search-btn:hover{background:#7c3aed}
+.search-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-start;justify-content:center;padding-top:80px;z-index:100}
+.search-overlay.open{display:flex}
+.search-box{background:#fff;width:600px;max-width:90vw;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.search-input-wrap{display:flex;align-items:center;padding:16px;border-bottom:1px solid #e2e8f0}
+.search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;padding:8px}
+.search-results{max-height:400px;overflow-y:auto;padding:8px}
+.search-item{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.search-item:hover{background:#f8fafc}
+.search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
+
 </style>
 </head>
 <body>
-<div class="header">
-<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
-<div><a href="#" onclick="goBack()" class="back-btn">← Previous</a><a href="/">🏠 Home</a><a href="/gantt">📅 Planner</a><a href="/quality">🏗️ Quality</a><a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a></div>
+<div class="header" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;">
+<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF • Steel Monopole Structures</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div>
+<a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
+<a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
+<a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality Management</a>
+<a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
+<a href="./api/export/excel" style="color:#fff;text-decoration:none;background:#10b981;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📊 Excel</a>
+<a href="#" onclick="logout()" style="color:#fff;text-decoration:none;background:#ef4444;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🚪 Logout</a>
+<button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button>
 </div>
+</div>
+
 <div class="container">
 <div class="sidebar-list">
 <h3>Steel Monopoles Sheets</h3>
 <button class="btn btn-blue" style="width:100%;margin-bottom:12px" onclick="createNew()">+ New Steel Monopole</button>
 <div id="list"></div>
+<div style="margin-top:16px;font-size:11px;color:#94a3b8">Steel Monopole QC - Stored in Postgres. Each sheet: Structure, Foundation, Shaft, Bolting, Earthing, Testing.</div>
 </div>
+
 <div class="main">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
 <h2 id="sheetTitle">Select or Create a Sheet</h2>
 <div style="display:flex;gap:8px"><button class="btn btn-light" onclick="saveCurrent()">💾 Save to DB</button><button class="btn btn-light" onclick="duplicateSheet()">Duplicate</button><button class="btn btn-light" onclick="deleteSheet()" style="color:#ef4444">Delete</button></div>
 </div>
+
 <div class="meta-grid">
-<div class="f"><label>Project Name</label><input id="proj" placeholder="Overberg WEF"></div>
-<div class="f"><label>Location / Structure No</label><input id="loc" placeholder="Pole 100"></div>
-<div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
-<div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
-<div class="f"><label>Inspected By:</label><input id="ins" placeholder="Name"></div>
-<div class="f"><label>Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
+<div class="f"><label>Project Name</label><input id="proj"></div>
+<div class="f"><label>Location / Chainage</label><input id="loc"></div>
+<div class="f"><label>Date</label><input type="date" id="date"></div>
+<div class="f"><label>Inspector</label><input id="ins"><label style="margin-top:8px">Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
 </div>
-<div id="score" style="font-size:14.4px;font-weight:700;margin:12px 0"></div>
-<div id="msg" style="font-size:13px;margin:8px 0;min-height:20px"></div>
+
+<div id="score" style="font-size:12px;font-weight:700;margin:12px 0"></div>
 <div id="sections"></div>
-<div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-dark" onclick="saveCurrent()">Save to Database</button><button class="btn btn-light" onclick="window.print()">🖨️ Print</button><button class="btn" style="background:#dc2626;color:#fff" onclick="exportSteelPDF()">📄 Export to PDF</button></div>
+
+<div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-dark" onclick="saveCurrent()">Save to Database</button><button class="btn btn-light" onclick="window.print()">Print PDF</button></div>
 </div>
 </div>
+
 <script>
 const checksData = [
 {title:"1. Foundation & Anchor Bolts",items:["Foundation excavation 3.0m depth check","Anchor bolt cage alignment & template","Bolt projection 150mm above foundation","Concrete strength C30/37 & slump test","Curing 7 days & backfill compaction","Foundation level ±5mm tolerance"]},
@@ -71,48 +129,32 @@ const checksData = [
 ];
 let currentId = null;
 let currentChecks = {};
-function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
-function guardSimple(){const u=getUser();if(!u||!u.token){window.location.href='/login';return null;}const rb=document.getElementById('roleBadge');if(rb){rb.innerText=(u.display_name||u.username)+' ('+u.role+')';}return u;}
-function authHeader(){const u=getUser();return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
-function goBack(){if(document.referrer&&document.referrer.includes(window.location.host)){history.back();}else{window.location.href='/';}}
-function logout(){const u=getUser();if(u&&u.token)fetch('/api/auth/logout',{method:'POST',headers:authHeader()});localStorage.removeItem('projecttrack_user');window.location.href='/login';}
-guardSimple();
+
 async function api(path, method='GET', body=null){
-  const opts={method, headers:authHeader()};
+  const opts={method, headers:{'Content-Type':'application/json'}};
   if(body) opts.body=JSON.stringify(body);
-  const r=await fetch(path, opts);
-  const text=await r.text();
-  try{ return JSON.parse(text); }catch{ throw new Error('Session expired or API error. Please login again. Server: '+text.slice(0,200)); }
+  const r=await fetch(path, opts); return r.json();
 }
+
 async function loadList(){
-  try{
-    const sheets = await api('/api/qc-sheets');
-    const filtered = sheets.filter(s=>s.sheet_type==='steel_monopole' || s.sheet_type==='general' || !s.sheet_type || s.sheet_type==='trench');
-    const el=document.getElementById('list'); el.innerHTML='';
-    filtered.forEach(s=>{
-      const div=document.createElement('div'); div.className='sheet-item'+(s.id===currentId?' active':'');
-      div.innerHTML=`<b>${s.project_name||'No Project'} - ${s.location||''}</b><small>${s.date||''} • ${s.status||'draft'} • ID ${s.id}</small>`;
-      div.onclick=()=>openSheet(s.id); el.appendChild(div);
-    });
-  }catch(e){ document.getElementById('msg').innerText='Error loading list: '+e.message; }
+  const sheets = await api('/api/qc-sheets');
+  const el=document.getElementById('list'); el.innerHTML='';
+  sheets.forEach(s=>{
+    const div=document.createElement('div'); div.className='sheet-item'+(s.id===currentId?' active':'');
+    div.innerHTML=`<b>${s.project_name} - ${s.location}</b><small>${s.date||''} • ${s.status} • ID ${s.id}</small>`;
+    div.onclick=()=>openSheet(s.id); el.appendChild(div);
+  });
 }
+
 async function openSheet(id){
-  try{
-    const s = await api(`/api/qc-sheets/${id}`);
-    currentId=id; 
-    currentChecks=s.checks||s.checklist_data||{};
-    if(typeof currentChecks==='string'){ try{ currentChecks=JSON.parse(currentChecks);}catch{ currentChecks={}; } }
-    document.getElementById('proj').value=s.project_name||''; 
-    document.getElementById('loc').value=s.location||'';
-    document.getElementById('gps').value=s.chainage_extra||'';
-    document.getElementById('date').value=s.date||''; 
-    document.getElementById('ins').value=s.inspector||'';
-    document.getElementById('status').value=s.status||'draft'; 
-    document.getElementById('sheetTitle').innerText=`${s.project_name||''} - ${s.location||''} (ID ${s.id})`;
-    renderChecks();
-    loadList();
-  }catch(e){ alert('Error opening sheet: '+e.message); }
+  const s = await api(`/api/qc-sheets/${id}`);
+  currentId=id; currentChecks=s.checks||{};
+  document.getElementById('proj').value=s.project_name; document.getElementById('loc').value=s.location;
+  document.getElementById('date').value=s.date||''; document.getElementById('ins').value=s.inspector;
+  document.getElementById('status').value=s.status; document.getElementById('sheetTitle').innerText=`${s.project_name} - ${s.location} (ID ${s.id})`;
+  renderChecks(); loadList();
 }
+
 function renderChecks(){
   const wrap=document.getElementById('sections'); wrap.innerHTML='';
   let total=0, pass=0, fail=0, checked=0;
@@ -129,79 +171,89 @@ function renderChecks(){
   });
   document.getElementById('score').innerText=`Checked ${checked}/${total} • Pass ${pass} • Fail ${fail} • Score ${checked?Math.round(pass/checked*100):0}%`;
 }
+
 function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];
   currentChecks[key]={...cur,status:next}; renderChecks();
 }
 function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
+
 async function createNew(){
-  const proj=prompt('Project Name?', 'Overberg WEF')||'Overberg WEF';
-  const loc=prompt('Structure No / Location?', 'Pole Number 100, Section 4')||'SM-12';
-  try{
-    const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checklist_data:{}, chainage_extra:''});
-    await loadList(); await openSheet(s.id);
-  }catch(e){ alert('Create failed: '+e.message); }
+  const proj=prompt('Project Name?', 'Overberg WEF - Steel Monopoles')||'Overberg WEF';
+  const loc=prompt('Structure No / Location?', 'SM-12 - Steel Monopole')||'SM-12';
+  const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checks:{}});
+  await loadList(); await openSheet(s.id);
 }
 async function saveCurrent(){
-  if(!currentId){ alert('Create a sheet first - click + New Steel Monopole'); return; }
-  const btn=document.getElementById('msg'); btn.innerText='Saving...';
-  try{
-    await api(`/api/qc-sheets/${currentId}`,'PUT',{
-      project_name:document.getElementById('proj').value,
-      location:document.getElementById('loc').value,
-      chainage_extra:document.getElementById('gps').value,
-      date:document.getElementById('date').value,
-      inspector:document.getElementById('ins').value,
-      status:document.getElementById('status').value,
-      sheet_type:'steel_monopole',
-      checklist_data:currentChecks
-    });
-    btn.innerText='✅ Saved to database ID '+currentId+' at '+new Date().toLocaleTimeString();
-    btn.style.color='#16a34a';
-    setTimeout(()=>{ btn.innerText=''; }, 4000);
-    loadList();
-  }catch(e){
-    btn.innerText='❌ Save failed: '+e.message;
-    btn.style.color='#dc2626';
-    console.error(e);
-    if(e.message.includes('Session expired')||e.message.includes('Unauthorized')){
-      alert('Session expired. Please login again at /login');
-      window.location.href='/login';
-    }
-  }
+  if(!currentId){ alert('Create a sheet first'); return; }
+  await api(`/api/qc-sheets/${currentId}`,'PUT',{
+    project_name:document.getElementById('proj').value,
+    location:document.getElementById('loc').value,
+    date:document.getElementById('date').value,
+    inspector:document.getElementById('ins').value,
+    status:document.getElementById('status').value,
+    sheet_type:'steel_monopole',
+    checks:currentChecks
+  });
+  alert('Saved to database ID '+currentId); loadList();
 }
 async function duplicateSheet(){
   if(!currentId) return;
-  try{
-    const s=await api(`/api/qc-sheets/${currentId}`);
-    const ns=await api('/api/qc-sheets','POST',{project_name:s.project_name, location:(s.location||'')+' (Copy)', date:s.date, inspector:s.inspector, status:'draft', checklist_data:s.checks||s.checklist_data, chainage_extra:s.chainage_extra, sheet_type:'steel_monopole'});
-    loadList(); openSheet(ns.id);
-  }catch(e){ alert('Duplicate failed: '+e.message); }
+  const s=await api(`/api/qc-sheets/${currentId}`);
+  const ns=await api('/api/qc-sheets','POST',{project_name:s.project_name, location:s.location+' (Copy)', date:s.date, inspector:s.inspector, status:'draft', checks:s.checks});
+  loadList(); openSheet(ns.id);
 }
 async function deleteSheet(){
   if(!currentId) return;
   if(!confirm('Delete sheet ID '+currentId+'?')) return;
-  try{
-    await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; document.getElementById('sheetTitle').innerText='Select or Create a Sheet'; loadList();
-  }catch(e){ alert('Delete failed: '+e.message); }
+  await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; loadList();
 }
-function getSteelGPS(){
-  const btn = document.querySelector('button[onclick="getSteelGPS()"]');
-  if(!navigator.geolocation){ alert('GPS not supported'); return; }
-  if(btn) btn.innerText='📍 Getting GPS...';
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-    const el=document.getElementById('gps'); if(el) el.value=coords;
-    if(btn) btn.innerText='✅ GPS Captured';
-    setTimeout(()=>{ if(btn) btn.innerText='📍 Get Current GPS'; }, 2500);
-  }, err=>{
-    alert('GPS Error: '+err.message);
-    if(btn) btn.innerText='📍 Get Current GPS';
-  }, {enableHighAccuracy:true, timeout:15000});
-}
-function exportSteelPDF(){ alert('PDF Export: Use browser Print → Save as PDF'); window.print(); }
 loadList();
-document.getElementById('date').valueAsDate=new Date();
+</script>
+
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
+<div class="search-box">
+<div class="search-input-wrap">
+<span>🔍</span>
+<input id="globalSearchInput" type="text" placeholder="Search QC sheets, structures, planner tasks, collectors..." oninput="doGlobalSearch(this.value)" autofocus>
+<button onclick="closeSearch()" style="border:none;background:#f1f5f9;padding:6px 10px;border-radius:6px;cursor:pointer">✕</button>
+</div>
+<div class="search-results" id="searchResults">
+<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...<br><small>Searches Structure No, Collector, Location, Project, Tasks</small></div>
+</div>
+</div>
+</div>
+
+<script>
+function openSearch(){ document.getElementById('searchOverlay').classList.add('open'); document.getElementById('globalSearchInput').focus(); }
+function closeSearch(){ document.getElementById('searchOverlay').classList.remove('open'); }
+let searchCache={qc:[],gantt:[]};
+async function loadSearchCache(){
+  try{
+    const [qc,gantt]=await Promise.all([fetch('./api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('./api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
+    searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[];
+  }catch{}
+}
+loadSearchCache();
+function doGlobalSearch(q){
+  const resEl=document.getElementById('searchResults');
+  if(!q || q.trim().length<1){ resEl.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...</div>'; return; }
+  q=q.toLowerCase();
+  const matches=[];
+  searchCache.qc.forEach(s=>{
+    const hay=[s.project_name,s.location,s.structure_number,s.collector_number,s.section_number,s.inspector,s.status,s.sheet_type].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'QC',title:`${s.project_name||''} - ${s.location||''} ${s.structure_number?'(Struct '+s.structure_number+')':''}`.trim(), sub:`${s.collector_number?'Collector '+s.collector_number+' • ':''}${s.date||''} • ${s.status||''} • ID ${s.id} • ${s.sheet_type||''}`, id:s.id, go:`./qc`});
+  });
+  searchCache.gantt.forEach(t=>{
+    const hay=[t.name,t.assignee,t.start_date,t.end_date].join(' ').toLowerCase();
+    if(hay.includes(q)) matches.push({type:'Planner',title:t.name, sub:`${t.assignee||''} • ${t.start_date||''} → ${t.end_date||''} • ${t.progress||0}%`, id:t.id, go:`./gantt`});
+  });
+  if(matches.length==0){ resEl.innerHTML=`<div style="padding:20px;text-align:center;color:#94a3b8">No results for "${q}"</div>`; return; }
+  resEl.innerHTML=matches.slice(0,30).map(m=>`<div class="search-item" onclick="window.location.href='${m.go}'"><div><b>[${m.type}] ${m.title}</b><br><small>${m.sub}</small></div><span style="font-size:10px;background:#f1f5f9;padding:4px 8px;border-radius:20px">Go →</span></div>`).join('');
+  // Also filter current page list if exists
+  if(typeof filterCurrentPage==='function'){ try{filterCurrentPage(q)}catch{} }
+}
+document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()=='k'){ e.preventDefault(); openSearch(); } if(e.key=='Escape') closeSearch(); });
 </script>
 </body>
 </html>
