@@ -71,6 +71,13 @@ tr:nth-child(even){background:#f8fafc}
 <div><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
 <div><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
 </div>
+
+<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap">
+  <div><label>Load Saved ID</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 5" style="width:100px" type="number"><button onclick="loadById()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 16px">📂 Load ID</button></div></div>
+  <div style="flex:1;min-width:200px"><label>Recent H-Pole Sheets</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet...</option></select></div>
+  <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
+  <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
+</div>
 </div>
 
 <div class="card">
@@ -122,6 +129,112 @@ function goBack(){ if(document.referrer && document.referrer.includes(window.loc
 function logout(){const u=getUser(); if(u&&u.token) fetch('/api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 const me=guard();
 const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
+
+let currentId = null;
+let currentChecks = {};
+
+async function loadById(idVal=null){
+  const inputId = idVal || document.getElementById('loadIdInput')?.value;
+  if(!inputId){ alert('Enter ID e.g. 5'); return; }
+  const statusEl=document.getElementById('status');
+  if(statusEl) statusEl.innerText='Loading ID '+inputId+'...';
+  try{
+    let data;
+    try{
+      const r=await fetch(`/api/qc-sheets/${inputId}`,{headers:authHeader()});
+      if(!r.ok) throw new Error('Auth failed');
+      data=await r.json();
+    }catch(e){
+      console.log('Auth load failed, trying public',e);
+      const r=await fetch(`/api/qc-sheets/public-get/${inputId}`);
+      data=await r.json();
+      if(!r.ok) throw new Error(data.error||'Not found');
+    }
+    // Populate fields
+    currentId = data.id;
+    const badge=document.getElementById('currentIdBadge');
+    if(badge){ badge.style.display='inline-block'; badge.innerText='Editing ID: '+currentId; }
+    document.getElementById('project').value=data.project_name||'Overberg WEF';
+    document.getElementById('contractor').value=data.location||data.contractor||'';
+    document.getElementById('structure').value=data.structure_number||'';
+    document.getElementById('collector').value=data.collector_number||'';
+    document.getElementById('section').value=data.section_number||'';
+    document.getElementById('gps').value=data.chainage_extra||data.gps||'';
+    document.getElementById('date').value=data.date||new Date().toISOString().slice(0,10);
+    document.getElementById('inspector').value=data.inspector||'';
+    // Load checklist
+    let checklist = data.checklist_data;
+    if(typeof checklist==='string'){ try{ checklist=JSON.parse(checklist); }catch{ checklist={}; } }
+    if(!checklist && data.checks) checklist=data.checks;
+    if(checklist){
+      for(let i=1;i<=18;i++){
+        const item = checklist[i] || checklist[String(i)];
+        if(!item) continue;
+        const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
+        const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
+        const commentEl=document.getElementById(`comment-${i}`);
+        if(item.pass!==undefined){
+          if(passEl) passEl.checked=!!item.pass;
+          if(failEl) failEl.checked=!!item.fail;
+        }else if(item.status){
+          if(passEl) passEl.checked=(item.status==='pass');
+          if(failEl) failEl.checked=(item.status==='fail');
+        }
+        if(commentEl) commentEl.value=item.comment||item.remark||'';
+        const tr=passEl?.closest('tr');
+        if(tr){
+          tr.classList.remove('pass','fail');
+          if(passEl?.checked) tr.classList.add('pass');
+          if(failEl?.checked) tr.classList.add('fail');
+        }
+      }
+    }
+    updateScore();
+    if(statusEl){ statusEl.innerText='✅ Loaded ID '+currentId+' - '+ (data.project_name||'')+' '+ (data.structure_number||''); statusEl.style.color='#16a34a'; }
+    setTimeout(()=>{ if(statusEl) statusEl.innerText=''; }, 4000);
+  }catch(e){
+    if(statusEl){ statusEl.innerText='❌ Load failed: '+e.message; statusEl.style.color='#dc2626'; }
+    console.error(e);
+    alert('Failed to load ID '+inputId+': '+e.message);
+  }
+}
+
+async function loadRecentList(){
+  const sel=document.getElementById('recentSelect');
+  if(!sel) return;
+  try{
+    let data=[];
+    try{
+      const r=await fetch('/api/qc-sheets',{headers:authHeader()});
+      data=await r.json();
+    }catch(e){
+      const r=await fetch('/api/qc-sheets/public-list');
+      const j=await r.json();
+      data=j;
+    }
+    // Filter for H-Pole wooden types
+    const wooden = data.filter(d=> (d.sheet_type||'').includes('wooden') || (d.sheet_type||'').includes('h_pole') || (d.sheet_type||'').includes('wood') || d.structure_number );
+    sel.innerHTML='<option value="">Select recent sheet... ('+data.length+' total, '+wooden.length+' H-Pole)</option>';
+    // Show most recent 50
+    const recent = data.slice().reverse().slice(0,50);
+    recent.forEach(s=>{
+      const label = `ID ${s.id} - ${s.structure_number||''} ${s.location||''} ${s.date||''} [${s.sheet_type||''}]`.trim();
+      const opt=document.createElement('option');
+      opt.value=s.id;
+      opt.textContent=label;
+      sel.appendChild(opt);
+    });
+    // If URL has ?id=5, auto load
+    const params=new URLSearchParams(window.location.search);
+    const qid=params.get('id');
+    if(qid && !currentId){
+      document.getElementById('loadIdInput').value=qid;
+      loadById(qid);
+    }
+  }catch(e){
+    console.error('Load recent failed',e);
+  }
+}
 
 function setPass(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
@@ -197,6 +310,9 @@ async function saveSheet(){
   }catch(e){ document.getElementById('status').innerText='Error '+e.message; console.error(e); }
 }
 document.getElementById('date').valueAsDate=new Date();
+loadRecentList();
+// Auto load ?id=5 from URL
+(function(){ const p=new URLSearchParams(location.search); const id=p.get('id'); if(id){ document.getElementById('loadIdInput').value=id; setTimeout(()=>loadById(id),500); } })();
 
 async function saveCurrent(){
   const statusEl=document.getElementById('status');

@@ -367,6 +367,27 @@ def migrate_db():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/api/qc-sheets/public-list')
+def public_list_qc():
+    conn=get_conn(); cur=conn.cursor()
+    try:
+        if USE_PG:
+            cur.execute('SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets ORDER BY id DESC LIMIT 100')
+        else:
+            cur.execute('SELECT id, project_name, location, structure_number, collector_number, section_number, chainage_extra, date, inspector, status, sheet_type, created_at FROM qc_sheets ORDER BY id DESC LIMIT 100')
+        rows=cur.fetchall()
+        cols=[d[0] for d in cur.description]
+        result=[]
+        for r in rows:
+            d=dict(zip(cols,r)) if USE_PG else dict(r)
+            result.append(d)
+        conn.close()
+        return jsonify(result)
+    except Exception as e:
+        conn.close()
+        return jsonify({"error": str(e)}), 500
+
 # Pages
 @app.route('/')
 def home(): return send_from_directory('.', 'index.html')
