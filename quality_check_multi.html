@@ -25,8 +25,9 @@
 .section-head{background:#f8fafc;padding:10px 14px;display:flex;justify-content:space-between;cursor:pointer}
 .section-head h4{font-size:13px}.section-body{display:none;padding:0 14px 14px}.section.open .section-body{display:block}
 .check-row{display:grid;grid-template-columns:30px 1fr 80px 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
-.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;border:1px solid #e2e8f0}
-.badge.pass{background:#dcfce7;color:#166534}.badge.fail{background:#fee2e2;color:#991b1b}.badge.na{background:#f1f5f9}
+.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;border:1px solid #e2e8f0;transition:.15s}
+.badge.pass{background:#dcfce7;color:#166534;border-color:#bbf7d0}.badge.fail{background:#fee2e2;color:#991b1b;border-color:#fecaca}.badge.na{background:#f1f5f9}
+.badge.check{background:#ffedd5;color:#9a3412;border-color:#fed7aa;font-weight:700} /* Orange for unchecked Check */
 .back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)}
 /* RESPONSIVE - TABLETS & PHONES */
 @media(max-width:1024px){
@@ -179,7 +180,9 @@ function renderChecks(){
     sec.items.forEach((it,ii)=>{
       const key=`${si}_${ii}`; const val=currentChecks[key]||{status:'',remark:''};
       total++; if(val.status){checked++; if(val.status==='pass')pass++; if(val.status==='fail')fail++;}
-      rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${val.status}" onclick="toggleCheck('${key}')">${val.status||'Check'}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      const badgeClass = val.status||'check'; const badgeText = val.status||'Check'; const isCheck = !val.status;
+      const badgeStyle = isCheck ? 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:700' : '';
+      rows+=`<div class="check-row" style="${isCheck?'background:#fffbeb;border-left:3px solid #f97316':''}"><div style="${isCheck?'color:#ea580c;font-weight:700':''}">${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
     });
     div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span>${sec.items.length}</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
@@ -194,8 +197,12 @@ function renderChecks(){
   const passWeight = pass>0 ? '800' : '400';
   const passBg = pass>0 ? '#dcfce7' : 'transparent';
   const passBorder = pass>0 ? '1px solid #bbf7d0' : '1px solid transparent';
+  const uncheckColor = unchecked>0 ? '#ea580c' : '#64748b';
+  const uncheckWeight = unchecked>0 ? '800' : '400';
+  const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
+  const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
   const scoreEl = document.getElementById('score');
-  if(scoreEl) scoreEl.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck ${unchecked}`;
+  if(scoreEl) scoreEl.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span>`;
 }
 function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];

@@ -20,6 +20,10 @@ th,td{padding:10px 8px;border:1px solid #e2e8f0;text-align:left}
 th{background:#0f172a;color:#fff;font-size:11px;text-transform:uppercase}
 tr:nth-child(even){background:#f8fafc}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
+/* Orange highlight for Check/unchecked boxes */
+.badge-check{background:#ffedd5 !important;color:#9a3412 !important;border:1px solid #fed7aa !important}
+tr:has(.pass-check:not(:checked)):has(.fail-check:not(:checked)){background:#fffbeb !important;border-left:3px solid #f97316}
+tr:has(.pass-check:not(:checked)):has(.fail-check:not(:checked)) td:first-child{color:#ea580c;font-weight:700}
 .btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer}
 .btn-primary{background:#0f172a;color:#fff} .btn-save{background:#10b981;color:#fff}
 .check{width:18px;height:18px}
@@ -456,15 +460,40 @@ function setPass(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
   if(p.checked) f.checked=false;
-  const tr=p.closest('tr'); tr.classList.remove('fail'); if(p.checked) tr.classList.add('pass');
+  const tr=p.closest('tr'); 
+  tr.classList.remove('fail'); 
+  tr.style.background='';
+  tr.style.borderLeft='';
+  if(p.checked) tr.classList.add('pass');
   updateScore();
 }
 function setFail(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
   if(f.checked) p.checked=false;
-  const tr=f.closest('tr'); tr.classList.remove('pass'); if(f.checked) tr.classList.add('fail');
+  const tr=f.closest('tr'); 
+  tr.classList.remove('pass');
+  tr.style.background='';
+  tr.style.borderLeft='';
+  if(f.checked) tr.classList.add('fail');
   updateScore();
+}
+function highlightUnchecked(){
+  for(let i=1;i<=18;i++){
+    const p=document.querySelector(`.pass-check[data-row="${i}"]`);
+    const f=document.querySelector(`.fail-check[data-row="${i}"]`);
+    if(!p||!f) continue;
+    const tr=p.closest('tr');
+    if(!p.checked && !f.checked){
+      tr.style.background='#fffbeb';
+      tr.style.borderLeft='3px solid #f97316';
+    }else{
+      if(!tr.classList.contains('pass') && !tr.classList.contains('fail')){
+        tr.style.background='';
+        tr.style.borderLeft='';
+      }
+    }
+  }
 }
 function updateScore(){
   let total=18, checked=0, pass=0, fail=0;
@@ -478,6 +507,7 @@ function updateScore(){
   const progress = total ? Math.round(checked/total*100) : 0;
   const unchecked = total - checked;
   const el=document.getElementById('score');
+  highlightUnchecked();
   if(el){
     const failColor = fail>0 ? '#ef4444' : '#64748b';
     const failWeight = fail>0 ? '800' : '400';
@@ -487,7 +517,11 @@ function updateScore(){
     const passWeight = pass>0 ? '800' : '400';
     const passBg = pass>0 ? '#dcfce7' : 'transparent';
     const passBorder = pass>0 ? '1px solid #bbf7d0' : '1px solid transparent';
-    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck ${unchecked}`;
+    const uncheckColor = unchecked>0 ? '#ea580c' : '#64748b';
+    const uncheckWeight = unchecked>0 ? '800' : '400';
+    const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
+    const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
+    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span>`;
   }
 }
 function clearAll(){
