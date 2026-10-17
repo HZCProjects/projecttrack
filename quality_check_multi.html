@@ -144,7 +144,10 @@ function renderChecks(){
   });
   const progress = total ? Math.round(checked/total*100) : 0;
   const unchecked = total - checked;
-  document.getElementById('score').innerText=`Checked ${checked}/${total} (${progress}%) • Pass ${pass} • Fail ${fail} • Uncheck ${unchecked}`;
+  const failColor = fail>0 ? '#ef4444' : '#64748b';
+  const failWeight = fail>0 ? '800' : '400';
+  const scoreEl = document.getElementById('score');
+  if(scoreEl) scoreEl.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:#16a34a;font-weight:600">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${fail>0?'#fee2e2':''};padding:2px 6px;border-radius:4px">${fail}</span> • Uncheck ${unchecked}`;
 }
 function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];
