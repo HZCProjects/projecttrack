@@ -64,22 +64,63 @@ def init_db():
         cur.execute('''CREATE TABLE IF NOT EXISTS sessions (
             token TEXT PRIMARY KEY, user_id INTEGER, username TEXT, role TEXT,
             display_name TEXT, created_at TEXT)''')
-    # Migration: Add missing columns to old tables (if table existed before)
+    # Migration: Add missing columns to old tables (if table existed before) - FULL LIST
     try:
         if USE_PG:
-            # Check and add columns that might be missing in old DB
+            # Check and add columns that might be missing in old DB - ALL columns
             for col, coltype in [
+                ('project_name', 'TEXT DEFAULT \'\''),
+                ('location', 'TEXT DEFAULT \'\''),
                 ('structure_number', 'TEXT DEFAULT \'\''),
                 ('collector_number', 'TEXT DEFAULT \'\''),
                 ('section_number', 'TEXT DEFAULT \'\''),
                 ('chainage_extra', 'TEXT DEFAULT \'\''),
+                ('date', 'TEXT DEFAULT \'\''),
+                ('inspector', 'TEXT DEFAULT \'\''),
+                ('status', 'TEXT DEFAULT \'draft\''),
                 ('sheet_type', 'TEXT DEFAULT \'trench\''),
-                ('status', 'TEXT DEFAULT \'draft\'')
+                ('checklist_data', 'TEXT DEFAULT \'{}\''),
+                ('created_at', 'TEXT DEFAULT \'\''),
+                ('updated_at', 'TEXT DEFAULT \'\''),
+                # Old column names that might have been used before
+                ('data', 'TEXT DEFAULT \'{}\''),
+                ('checks', 'TEXT DEFAULT \'{}\''),
+                ('checklist', 'TEXT DEFAULT \'{}\''),
             ]:
                 try:
                     cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN IF NOT EXISTS {col} {coltype}")
                 except Exception as e:
                     print(f"Migration add {col}: {e}")
+            conn.commit()
+            # Log current columns for debugging
+            try:
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='qc_sheets'")
+                cols = [r[0] for r in cur.fetchall()]
+                print(f"Current qc_sheets columns after migration: {cols}")
+            except Exception as e:
+                print(f"Could not list columns: {e}")
+        else:
+            # SQLite migration
+            for col, coltype in [
+                ('project_name', 'TEXT DEFAULT \'\''),
+                ('location', 'TEXT DEFAULT \'\''),
+                ('structure_number', 'TEXT DEFAULT \'\''),
+                ('collector_number', 'TEXT DEFAULT \'\''),
+                ('section_number', 'TEXT DEFAULT \'\''),
+                ('chainage_extra', 'TEXT DEFAULT \'\''),
+                ('date', 'TEXT DEFAULT \'\''),
+                ('inspector', 'TEXT DEFAULT \'\''),
+                ('status', 'TEXT DEFAULT \'draft\''),
+                ('sheet_type', 'TEXT DEFAULT \'trench\''),
+                ('checklist_data', 'TEXT DEFAULT \'{}\''),
+                ('created_at', 'TEXT DEFAULT \'\''),
+                ('updated_at', 'TEXT DEFAULT \'\''),
+            ]:
+                try:
+                    cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN {col} {coltype}")
+                except Exception as e:
+                    # Column already exists in SQLite throws error, ignore
+                    pass
             conn.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -287,6 +328,44 @@ def public_delete_qc(sid):
     except Exception as e:
         conn.close()
         return jsonify({"error":str(e)}),500
+
+
+@app.route('/api/admin/migrate-db')
+def migrate_db():
+    """Force DB migration and show columns"""
+    try:
+        conn=get_conn(); cur=conn.cursor()
+        if USE_PG:
+            for col, coltype in [
+                ('project_name', 'TEXT DEFAULT \'\''),
+                ('location', 'TEXT DEFAULT \'\''),
+                ('structure_number', 'TEXT DEFAULT \'\''),
+                ('collector_number', 'TEXT DEFAULT \'\''),
+                ('section_number', 'TEXT DEFAULT \'\''),
+                ('chainage_extra', 'TEXT DEFAULT \'\''),
+                ('date', 'TEXT DEFAULT \'\''),
+                ('inspector', 'TEXT DEFAULT \'\''),
+                ('status', 'TEXT DEFAULT \'draft\''),
+                ('sheet_type', 'TEXT DEFAULT \'trench\''),
+                ('checklist_data', 'TEXT DEFAULT \'{}\''),
+                ('created_at', 'TEXT DEFAULT \'\''),
+                ('updated_at', 'TEXT DEFAULT \'\''),
+            ]:
+                try:
+                    cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN IF NOT EXISTS {col} {coltype}")
+                    print(f"Added {col}")
+                except Exception as e:
+                    print(f"Failed {col}: {e}")
+            conn.commit()
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='qc_sheets' ORDER BY ordinal_position")
+            cols = [r[0] for r in cur.fetchall()]
+            conn.close()
+            return jsonify({"migrated": True, "columns": cols, "use_pg": USE_PG})
+        else:
+            conn.close()
+            return jsonify({"migrated": False, "use_pg": False})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Pages
 @app.route('/')
