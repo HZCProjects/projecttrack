@@ -56,5 +56,22 @@ fetch('./api/status').then(r=>r.json()).then(s=>{
   }).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';})},2000);
 });
 </script>
+
+<script>
+setTimeout(()=>{
+  const u=getAuth(); if(!u) return;
+  if(u.role==='viewer'){
+    const b=document.querySelector('a[href="./gantt"]'); if(b) b.style.opacity='0.8';
+    // viewer can still view, but hide user management for non-admin
+  }
+  if(u.role!=='admin'){
+    // Hide Users link for non-admin in userBar - already shown but disable
+    const ub=document.getElementById('userBar');
+    if(ub && u.role!=='admin'){
+      ub.innerHTML=ub.innerHTML.replace('Users','<span style="opacity:0.4">Users (Admin only)</span>');
+    }
+  }
+},600);
+</script>
 </body>
 </html>
