@@ -51,10 +51,14 @@
 </div>
 
 <div class="meta-grid">
-<div class="f"><label>Project Name</label><input id="proj"></div>
-<div class="f"><label>Location / Chainage</label><input id="loc"></div>
+<div class="f"><label>Project Name</label><input id="proj" placeholder="Overberg WEF"></div>
 <div class="f"><label>Date</label><input type="date" id="date"></div>
+<div class="f"><label>Structure / Pole Number</label><input id="structure_num" placeholder="Pole 100"></div>
+<div class="f"><label>Collector Number</label><input id="collector_num" placeholder="Collector 17 & 18"></div>
+<div class="f"><label>Section Number</label><input id="section_num" placeholder="Section 4"></div>
+<div class="f"><label>Location / Chainage (Auto)</label><input id="loc" placeholder="Auto from above" readonly style="background:#f8fafc"></div>
 <div class="f"><label>Inspector</label><input id="ins"><label style="margin-top:8px">Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
+<div class="f"><label>Chainage / Extra Notes</label><input id="chainage_extra" placeholder="Optional"></div>
 </div>
 
 <div id="score" style="font-size:12px;font-weight:700;margin:12px 0"></div>
@@ -66,7 +70,9 @@
 
 <script>
 const checksData = [
-{title:"1. Foundation & Excavation",items:["Excavation depth 2.0m","Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"]},
+{title:"1. Foundation & Excavation",items:[
+  {name:"Excavation depth", type:"depth_select", options:["2.0m","2.5m","3.0m"], default:"2.0m"},
+  "Shuttering alignment","Reinforcement","Concrete mix & slump","Curing 7 days","Backfilling"]},
 {title:"2. Pole Erection",items:["Pole type/height","Verticality ≤1°","Alignment","Bolt torque","Danger plate","Anti-climbing"]},
 {title:"3. Conductor Stringing",items:["ACSR type","Sag & tension","Jumper connections","Earth continuity","Insulator cleaning","Clearance ≥2.5m"]},
 {title:"4. Earthing",items:["Earth resistance <10Ω","Electrode depth 3m","GI size 25x3mm","Lightning arrester","Bonding","Pit marking"]},
@@ -96,9 +102,12 @@ async function openSheet(id){
   const s = await api(`/api/qc-sheets/${id}`);
   currentId=id; currentChecks=s.checks||{};
   document.getElementById('proj').value=s.project_name; document.getElementById('loc').value=s.location;
+  document.getElementById('structure_num').value=s.structure_number||''; document.getElementById('collector_num').value=s.collector_number||''; document.getElementById('section_num').value=s.section_number||''; document.getElementById('chainage_extra').value=s.chainage_extra||'';
   document.getElementById('date').value=s.date||''; document.getElementById('ins').value=s.inspector;
   document.getElementById('status').value=s.status; document.getElementById('sheetTitle').innerText=`${s.project_name} - ${s.location} (ID ${s.id})`;
-  renderChecks(); loadList();
+  renderChecks(); function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
+loadList();
 }
 
 function renderChecks(){
@@ -108,15 +117,25 @@ function renderChecks(){
     const div=document.createElement('div'); div.className='section '+(si===0?'open':'');
     let rows='';
     sec.items.forEach((it,ii)=>{
-      const key=`${si}_${ii}`; const val=currentChecks[key]||{status:'',remark:''};
+      const key=`${si}_${ii}`; const val=currentChecks[key]||{status:'',remark:'',depth:''};
+      const isObj = typeof it === 'object';
+      const label = isObj ? it.name : it;
       total++; if(val.status){checked++; if(val.status==='pass')pass++; if(val.status==='fail')fail++;}
-      rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${val.status}" onclick="toggleCheck('${key}')">${val.status||'Check'}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      if(isObj && it.type==='depth_select'){
+        const selVal = val.depth || it.default || it.options[0];
+        const opts = it.options.map(o=>`<option value="${o}" ${o===selVal?'selected':''}>${o}</option>`).join('');
+        rows+=`<div class="check-row"><div>${ii+1}</div><div>${label} <select onchange="setDepth('${key}',this.value)" style="margin-left:8px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:6px;font-weight:600;background:#f8fafc">${opts}</select></div><div><div class="badge ${val.status}" onclick="toggleCheck('${key}')">${val.status||'Check'}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      } else {
+        rows+=`<div class="check-row"><div>${ii+1}</div><div>${label}</div><div><div class="badge ${val.status}" onclick="toggleCheck('${key}')">${val.status||'Check'}</div></div><div><input placeholder="Remark" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      }
     });
     div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span>${sec.items.length}</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
   });
   document.getElementById('score').innerText=`Checked ${checked}/${total} • Pass ${pass} • Fail ${fail} • Score ${checked?Math.round(pass/checked*100):0}%`;
 }
+function setDepth(key,v){ currentChecks[key]={...(currentChecks[key]||{}), depth:v }; }
+
 
 function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];
@@ -125,34 +144,57 @@ function toggleCheck(key){
 function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
 
 async function createNew(){
-  const proj=prompt('Project Name?', '132kV Overhead Line - Lot 2')||'New Project';
-  const loc=prompt('Location / Pole No?', 'Pole 12 - Soweto')||'Location';
-  const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', checks:{}});
-  await loadList(); await openSheet(s.id);
+  const proj=prompt('Project Name?', 'Overberg WEF')||'New Project';
+  const loc=prompt('Structure Number?', 'Pole 100')||'Pole 100';
+  const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, structure_number:loc, collector_number:'', section_number:'', date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', checks:{}});
+  await function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
+loadList(); await openSheet(s.id);
 }
 async function saveCurrent(){
   if(!currentId){ alert('Create a sheet first'); return; }
+    // Auto-build Location from structure fields
+  const struct = document.getElementById('structure_num').value.trim();
+  const coll = document.getElementById('collector_num').value.trim();
+  const sect = document.getElementById('section_num').value.trim();
+  let autoLoc = struct;
+  if(sect) autoLoc += (autoLoc? ', ':'') + sect;
+  if(coll) autoLoc += (autoLoc? ', ':'') + coll;
+  if(!autoLoc) autoLoc = document.getElementById('loc').value;
+  else document.getElementById('loc').value = autoLoc;
   await api(`/api/qc-sheets/${currentId}`,'PUT',{
     project_name:document.getElementById('proj').value,
-    location:document.getElementById('loc').value,
+    location:autoLoc,
+    structure_number:struct,
+    collector_number:coll,
+    section_number:sect,
+    chainage_extra:document.getElementById('chainage_extra').value,
     date:document.getElementById('date').value,
     inspector:document.getElementById('ins').value,
     status:document.getElementById('status').value,
     checks:currentChecks
   });
-  alert('Saved to database ID '+currentId); loadList();
+  alert('Saved to database ID '+currentId); function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
+loadList();
 }
 async function duplicateSheet(){
   if(!currentId) return;
   const s=await api(`/api/qc-sheets/${currentId}`);
-  const ns=await api('/api/qc-sheets','POST',{project_name:s.project_name, location:s.location+' (Copy)', date:s.date, inspector:s.inspector, status:'draft', checks:s.checks});
-  loadList(); openSheet(ns.id);
+  const ns=await api('/api/qc-sheets','POST',{project_name:s.project_name, location:s.location+' (Copy)', structure_number:s.structure_number||'', collector_number:s.collector_number||'', section_number:s.section_number||'', date:s.date, inspector:s.inspector, status:'draft', checks:s.checks});
+  function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
+loadList(); openSheet(ns.id);
 }
 async function deleteSheet(){
   if(!currentId) return;
   if(!confirm('Delete sheet ID '+currentId+'?')) return;
-  await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; loadList();
+  await api(`/api/qc-sheets/${currentId}`,'DELETE'); currentId=null; document.getElementById('sections').innerHTML=''; function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
+loadList();
 }
+function setupAutoLoc(){['structure_num','collector_num','section_num'].forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener('input', ()=>{const s=document.getElementById('structure_num').value.trim(); const c=document.getElementById('collector_num').value.trim(); const se=document.getElementById('section_num').value.trim(); let a=s; if(se) a+=(a?', ':'')+se; if(c) a+=(a?', ':'')+c; document.getElementById('loc').value=a;});});}
+setupAutoLoc();
 loadList();
 </script>
 </body>
