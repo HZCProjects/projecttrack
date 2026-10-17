@@ -184,7 +184,7 @@ function renderChecks(){
       const badgeStyle = isCheck ? 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:700' : '';
       rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Comments" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
     });
-    div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span><span style="font-size:80%;font-weight:600">${sec.items.length}</span> Fields</span></div><div class="section-body">${rows}</div>`;
+    div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span style="font-size:80%;font-weight:500"><span style="font-weight:600">${sec.items.length}</span> Fields</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
   });
   const progress = total ? Math.round(checked/total*100) : 0;
