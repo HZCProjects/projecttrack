@@ -236,7 +236,7 @@ async function loadRecentList(){
     const sheets = await api('/api/qc-sheets');
     const steel = sheets.filter(d=>{
       const t=(d.sheet_type||'').toLowerCase();
-      return t.includes('steel') || t.includes('monopole') || t.includes('wood') || t.includes('h_pole');
+      return t.includes('steel') || t.includes('monopole') || t.includes('wood') || t.includes('h_pole') || t.includes('trench');
     });
     sel.innerHTML='<option value="">Select recent sheet... ('+steel.length+' found, '+sheets.length+' total in DB)</option>';
     const recent = steel.slice().reverse().slice(0,50);
@@ -249,9 +249,10 @@ async function loadRecentList(){
     });
     const params=new URLSearchParams(window.location.search);
     const qid=params.get('id');
-    if(qid && !currentId){
-      document.getElementById('loadIdInput').value=qid;
-      setTimeout(()=>openSheet(qid),500);
+    if(qid){
+      const inp=document.getElementById('loadIdInput');
+      if(inp) inp.value=qid;
+      if(!currentId) setTimeout(()=>openSheet(qid),500);
     }
   }catch(e){ console.error('Load recent failed',e); }
 }
