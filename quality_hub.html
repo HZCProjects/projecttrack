@@ -74,7 +74,7 @@
 </head>
 <body>
 <div class="header">
-<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
+<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Quality Management</b> <!-- removed Loading badge --> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
 <div class="nav-links" id="navLinks">
 <a href="#" onclick="goBack()" class="back-btn">← Previous</a>
 <a href="./">🏠 Home</a>
@@ -93,7 +93,7 @@
 </div>
 <div style="display:flex;gap:8px">
 <span class="badge db">● Live DB Connected</span>
-<span id="sheetCount" class="badge" style="background:#f1f5f9">Loading...</span>
+<!-- REMOVED: sheetCount Loading badge removed per user request v94-v96 locked -->
 </div>
 </div>
 
@@ -182,8 +182,8 @@ async function loadCounts(){
     const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
     const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
     const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
-    document.getElementById('multiCount').innerText=multi+' sheets';
-    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
+    const mc=document.getElementById('multiCount'); if(mc) mc.innerText=multi+' sheets';
+    const sc=document.getElementById('sheetCount'); if(sc) sc.innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
   }catch{}
 }
 loadCounts();
