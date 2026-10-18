@@ -71,7 +71,7 @@ tr:nth-child(even){background:#f8fafc}
 </head>
 <body>
 <div class="header no-print">
-<div><b>🪵 Wooden Pole Inspections</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Checking session...</span></div>
+<div><b>🪵 Wooden Pole Inspections</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
 <a href="./">🏠 Home</a>
 <a href="./gantt">📅 Planner</a>
@@ -134,7 +134,7 @@ tr:nth-child(even){background:#f8fafc}
 <script>
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'}}
-function guard(){const u=getUser(); const rb=document.getElementById('roleBadge'); if(!u||!u.token){ if(rb){rb.innerText='❌ Not logged in'; rb.style.background='#ef4444'; rb.style.cursor='pointer'; rb.onclick=()=>window.location.href='./login';} return null;} if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
+function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
 function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 const me=guard();
 function setPass(i){
