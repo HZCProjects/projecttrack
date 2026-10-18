@@ -3,48 +3,70 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wooden Pole Inspections - QC Sheet - ProjectTrack</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
-.header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px}
-.header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px}
-.card{background:#fff;padding:20px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.05);margin-bottom:20px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
+.header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px;position:sticky;top:0;z-index:20}
+.header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:13px;margin-left:8px}
+.btn{border:none;padding:10px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+.btn-primary{background:#0f172a;color:#fff} .btn-save{background:#10b981;color:#fff}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.06);padding:24px;margin-bottom:16px}
 h2{margin:0 0 4px;font-size:20px} .sub{color:#64748b;font-size:13px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.f label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px}
 input,select{padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%;box-sizing:border-box;font-size:13px}
-label{font-size:11px;color:#64748b;text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:10px 8px;border:1px solid #e2e8f0;text-align:left}
 th{background:#0f172a;color:#fff;font-size:11px;text-transform:uppercase}
 tr:nth-child(even){background:#f8fafc}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
-.btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer}
-.btn-primary{background:#0f172a;color:#fff} .btn-save{background:#10b981;color:#fff}
-.check{width:18px;height:18px}
-.comment{width:100%}
-@media print{.no-print{display:none} body{background:#fff} .card{box-shadow:none} }
+.check{width:18px;height:18px;accent-color:#0f172a}
+.comment{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
 
-/* === v86 CLEAN A4 BOTH FIT === */
+/* === MATCH /qc RESPONSIVE === */
+@media(max-width:1024px){
+  .container{max-width:100%!important;padding:12px!important}
+  .grid{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:768px){
+  .header{flex-wrap:wrap;height:auto!important;padding:10px 12px!important;gap:8px;position:relative!important}
+  .header div{width:100%;display:flex;flex-wrap:wrap;gap:6px}
+  .header a{font-size:11px!important;padding:5px 8px!important}
+  .container{padding:8px!important}
+  .card{padding:14px!important}
+  .grid{grid-template-columns:1fr!important;gap:8px}
+  table{font-size:12px!important}
+  th,td{padding:6px!important}
+  .btn{font-size:11px!important;padding:8px 10px!important}
+}
+@media(max-width:480px){
+  .header b{font-size:14px}
+  h2{font-size:16px!important}
+}
+
+/* === v86 CLEAN A4 BOTH FIT - SAME AS /qc === */
 @page { size: A4; margin: 10mm; }
 @page landscape { size: A4 landscape; margin: 10mm; }
-@media print {
-  body { background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .header, .card, .container, .main, .sidebar-list, .main, .hero, .section { box-shadow:none !important; }
-  .no-print { display:none !important; }
-  /* Both fit - prevent overflow */
-  table, .grid, .container, .card, .meta-grid { max-width:100% !important; width:100% !important; }
-  table { font-size:9pt !important; }
-  th, td { padding:4px 6px !important; word-break:break-word; }
-  /* Portrait default 210mm, landscape class auto */
-  body { width:210mm; margin:0 auto; }
-  .page.landscape, body.landscape, .landscape-page { width:297mm !important; }
-  tr, .card { page-break-inside: avoid; }
+@media print{
+  body{background:#fff!important}
+  .header{display:none!important}
+  .no-print{display:none!important}
+  .container{max-width:100%!important;padding:0!important;margin:0!important}
+  .card{box-shadow:none!important;border:1px solid #e2e8f0!important;border-radius:8px!important;padding:12px!important;margin-bottom:10px!important;page-break-inside:auto}
+  table{font-size:9pt!important;width:100%!important}
+  th,td{padding:4px 6px!important;word-break:break-word}
+  tr{page-break-inside:avoid;page-break-after:auto}
+  .grid{grid-template-columns:1fr 1fr 1fr 1fr!important;gap:8px!important}
+  input,select{border:1px solid #ccc!important;padding:4px!important;font-size:9pt!important}
+  h2{font-size:14pt!important}
+  .sub{font-size:9pt!important}
 }
-.fit-a4 { width:100%; max-width:100%; box-sizing:border-box; }
-@media print and (orientation: landscape) {
-  @page { size: A4 landscape; margin:10mm; }
+@media print and (orientation: landscape){
+  @page { size: A4 landscape; margin: 10mm; }
+  .container{max-width:297mm!important}
 }
-
 </style>
 </head>
 <body>
@@ -59,22 +81,23 @@ tr:nth-child(even){background:#f8fafc}
 </div>
 </div>
 
+<div class="container">
 <div class="card">
 <h2>Wooden Pole Inspections - Quality Check Sheet</h2>
 <div class="sub">Overberg WEF - Wooden Pole Structures • Based on site photo checklist</div>
 
 <div class="grid">
-<div><label>Project Name</label><input id="project" value="Overberg WEF"></div>
-<div><label>Contractor</label><input id="contractor" placeholder="2671 / Contractor Name"></div>
-<div><label>Date</label><input id="date" type="date"></div>
-<div><label>Inspector</label><input id="inspector" placeholder="Inspector Name"></div>
+<div class="f"><label>Project Name</label><input id="project" value="Overberg WEF"></div>
+<div class="f"><label>Contractor</label><input id="contractor" placeholder="2671 / Contractor Name"></div>
+<div class="f"><label>Date</label><input id="date" type="date"></div>
+<div class="f"><label>Inspector</label><input id="inspector" placeholder="Inspector Name"></div>
 </div>
 
 <div class="grid">
-<div><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296"></div>
-<div><label>Collector No</label><input id="collector" placeholder="e.g. 420"></div>
-<div><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
-<div><label>Depth / Height</label><select id="depth"><option>2.0m</option><option selected>2.5m</option><option>3.0m</option></select></div>
+<div class="f"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296"></div>
+<div class="f"><label>Collector No</label><input id="collector" placeholder="e.g. 420"></div>
+<div class="f"><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
+<div class="f"><label>Depth / Height</label><select id="depth"><option>2.0m</option><option selected>2.5m</option><option>3.0m</option></select></div>
 </div>
 </div>
 
@@ -99,11 +122,12 @@ tr:nth-child(even){background:#f8fafc}
 <tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td><input class="comment" id="comment-13" placeholder="Comment..."></td></tr>
 </tbody>
 </table>
-<div style="margin-top:16px;display:flex;gap:10px" class="no-print">
+<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" class="no-print">
 <button class="btn btn-primary" onclick="saveSheet()">💾 Save to ProjectTrack</button>
-<button class="btn sec" onclick="clearAll()" style="background:#f1f5f9">Clear</button>
-<button class="btn" onclick="window.print()" style="background:#e2e8f0">Print</button>
+<button class="btn" onclick="clearAll()" style="background:#f1f5f9">Clear</button>
+<button class="btn" onclick="window.print()" style="background:#e2e8f0">🖨️ Print A4</button>
 <span id="status" style="font-size:12px;color:#64748b;padding:10px"></span>
+</div>
 </div>
 </div>
 
@@ -113,8 +137,6 @@ function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bea
 function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
 function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 const me=guard();
-const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
-
 function setPass(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
@@ -161,7 +183,7 @@ async function saveSheet(){
     const r=await fetch('./api/qc-sheets',{method:'POST',headers:authHeader(),body:JSON.stringify(payload)});
     const d=await r.json();
     if(!r.ok){ document.getElementById('status').innerText='❌ '+d.error; return; }
-    document.getElementById('status').innerText='✅ Saved ID '+d.id+' - View in All QC Sheets';
+    document.getElementById('status').innerText='✅ Saved ID '+d.id;
   }catch(e){ document.getElementById('status').innerText='Error '+e.message; }
 }
 document.getElementById('date').valueAsDate=new Date();

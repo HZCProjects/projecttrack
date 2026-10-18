@@ -16,28 +16,6 @@ button:hover{background:#1e293b}
 .users{margin-top:20px;text-align:left;background:#f8fafc;padding:12px;border-radius:10px;font-size:12px;color:#475569}
 .users b{color:#0f172a}
 a{color:#3b82f6;text-decoration:none;font-size:12px}
-
-/* === v86 CLEAN A4 BOTH FIT === */
-@page { size: A4; margin: 10mm; }
-@page landscape { size: A4 landscape; margin: 10mm; }
-@media print {
-  body { background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .header, .card, .container, .main, .sidebar-list, .main, .hero, .section { box-shadow:none !important; }
-  .no-print { display:none !important; }
-  /* Both fit - prevent overflow */
-  table, .grid, .container, .card, .meta-grid { max-width:100% !important; width:100% !important; }
-  table { font-size:9pt !important; }
-  th, td { padding:4px 6px !important; word-break:break-word; }
-  /* Portrait default 210mm, landscape class auto */
-  body { width:210mm; margin:0 auto; }
-  .page.landscape, body.landscape, .landscape-page { width:297mm !important; }
-  tr, .card { page-break-inside: avoid; }
-}
-.fit-a4 { width:100%; max-width:100%; box-sizing:border-box; }
-@media print and (orientation: landscape) {
-  @page { size: A4 landscape; margin:10mm; }
-}
-
 </style>
 </head>
 <body>

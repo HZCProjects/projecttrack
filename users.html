@@ -15,28 +15,6 @@ button.sec{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
 table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left} th{color:#64748b;font-size:11px;text-transform:uppercase}
 .badge{padding:3px 8px;border-radius:20px;font-size:11px;background:#f1f5f9}
 .badge.admin{background:#0f172a;color:#fff} .badge.qc_manager{background:#3b82f6;color:#fff}
-
-/* === v86 CLEAN A4 BOTH FIT === */
-@page { size: A4; margin: 10mm; }
-@page landscape { size: A4 landscape; margin: 10mm; }
-@media print {
-  body { background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .header, .card, .container, .main, .sidebar-list, .main, .hero, .section { box-shadow:none !important; }
-  .no-print { display:none !important; }
-  /* Both fit - prevent overflow */
-  table, .grid, .container, .card, .meta-grid { max-width:100% !important; width:100% !important; }
-  table { font-size:9pt !important; }
-  th, td { padding:4px 6px !important; word-break:break-word; }
-  /* Portrait default 210mm, landscape class auto */
-  body { width:210mm; margin:0 auto; }
-  .page.landscape, body.landscape, .landscape-page { width:297mm !important; }
-  tr, .card { page-break-inside: avoid; }
-}
-.fit-a4 { width:100%; max-width:100%; box-sizing:border-box; }
-@media print and (orientation: landscape) {
-  @page { size: A4 landscape; margin:10mm; }
-}
-
 </style>
 </head>
 <body>
