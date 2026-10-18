@@ -10,6 +10,28 @@ a.btn{display:block;padding:16px 18px;border-radius:12px;text-decoration:none;fo
 .primary{background:#0f172a;color:#fff} .blue{background:#3b82f6;color:#fff} .green{grid-column:span 2;background:#10b981;color:#fff}
 .secondary{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0} .badge{display:inline-block;background:#10b981;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:700}
 .userbar{margin-top:16px;padding:10px;background:#f8fafc;border-radius:10px;font-size:12px;display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* === v86 CLEAN A4 BOTH FIT === */
+@page { size: A4; margin: 10mm; }
+@page landscape { size: A4 landscape; margin: 10mm; }
+@media print {
+  body { background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .header, .card, .container, .main, .sidebar-list, .main, .hero, .section { box-shadow:none !important; }
+  .no-print { display:none !important; }
+  /* Both fit - prevent overflow */
+  table, .grid, .container, .card, .meta-grid { max-width:100% !important; width:100% !important; }
+  table { font-size:9pt !important; }
+  th, td { padding:4px 6px !important; word-break:break-word; }
+  /* Portrait default 210mm, landscape class auto */
+  body { width:210mm; margin:0 auto; }
+  .page.landscape, body.landscape, .landscape-page { width:297mm !important; }
+  tr, .card { page-break-inside: avoid; }
+}
+.fit-a4 { width:100%; max-width:100%; box-sizing:border-box; }
+@media print and (orientation: landscape) {
+  @page { size: A4 landscape; margin:10mm; }
+}
+
 </style></head>
 <body>
 <div class="card">
