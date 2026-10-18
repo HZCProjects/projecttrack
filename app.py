@@ -334,6 +334,17 @@ def public_update_qc(sid):
             return jsonify({"error": f"{str(e)} | Fallback: {str(e2)}"}), 500
 
 
+@app.route('/multi')
+@app.route('/multi/')
+@app.route('/steel')
+@app.route('/steel/')
+@app.route('/steel-monopoles')
+@app.route('/qc')
+@app.route('/qc/')
+@app.route('/quality_check_multi.html')
+def steel_route():
+    return send_from_directory('.', 'quality_check_multi.html')
+
 @app.route('/api/qc-sheets/public-get/<int:sid>')
 def public_get_qc(sid):
     conn=get_conn(); cur=conn.cursor()
