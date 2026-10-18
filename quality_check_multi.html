@@ -228,7 +228,7 @@ async function openSheet(id){
     document.getElementById('proj').value=s.project_name||'Overberg WEF'; 
     if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||'';
     // New split fields
-    if(document.getElementById('structure_no')) document.getElementById('structure_no').value = s.structure_number || s.location?.match(/Pole Number ([^,]+)/)?.[1] || s.location || '';
+    if(document.getElementById('structure_no')) document.getElementById('structure_no').value = s.structure_number || s.location?.match(/Structure Number ([^,]+)/)?.[1] || s.location || '';
     if(document.getElementById('collector_no')) document.getElementById('collector_no').value = s.collector_number || '';
     if(document.getElementById('section_no')) document.getElementById('section_no').value = s.section_number || '';
     document.getElementById('loc').value=s.location||'';
@@ -238,7 +238,7 @@ async function openSheet(id){
     document.getElementById('status').value=s.status||'draft';
     // To layout: Title without Overberg prefix and without (ID X)
     const locOnly = (s.location || '').replace(/^Overberg WEF\s*-\s*/i,'').replace(/\s*\(ID.*?\)/,'').trim();
-    const titleTo = locOnly || `Pole Number ${s.structure_number||''}${s.section_number ? ', Section '+s.section_number : ''}${s.collector_number ? ', Collectors '+s.collector_number : ''}`.trim() || `Structure ${s.structure_number||s.id}`;
+    const titleTo = locOnly || `Structure Number ${s.structure_number||''}${s.section_number ? ', Section '+s.section_number : ''}${s.collector_number ? ', Collectors '+s.collector_number : ''}`.trim() || `Structure ${s.structure_number||s.id}`;
     document.getElementById('sheetTitle').innerText = titleTo;
     renderChecks();
     loadList();
@@ -309,7 +309,7 @@ function toggleCheck(key){
 function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
 async function createNew(){
   const proj=prompt('Project Name?', 'Overberg WEF')||'Overberg WEF';
-  const loc=prompt('Structure No / Location?', 'Pole Number 100, Section 4')||'SM-12';
+  const loc=prompt('Structure No / Location?', 'Structure Number 100, Section 4')||'SM-12';
   try{
     const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checklist_data:{}, chainage_extra:''});
     await loadList(); await openSheet(s.id);
@@ -322,7 +322,7 @@ async function saveCurrent(){
   const collNo = document.getElementById('collector_no')?.value || '';
   const sectNo = document.getElementById('section_no')?.value || '';
   const locVal = document.getElementById('loc')?.value || '';
-  const combinedLoc = locVal || `${structNo ? 'Pole Number ' + structNo : ''}${sectNo ? ', Section ' + sectNo : ''}${collNo ? ', Collectors ' + collNo : ''}`.trim() || structNo;
+  const combinedLoc = locVal || `${structNo ? 'Structure Number ' + structNo : ''}${sectNo ? ', Section ' + sectNo : ''}${collNo ? ', Collectors ' + collNo : ''}`.trim() || structNo;
   if(document.getElementById('loc')) document.getElementById('loc').value = combinedLoc;
   const payload={
     project_name:document.getElementById('proj').value,
