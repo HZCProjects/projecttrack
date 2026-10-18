@@ -74,7 +74,7 @@
 </head>
 <body>
 <div class="header">
-<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
+<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px;cursor:pointer">Checking session...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
 <div class="nav-links" id="navLinks">
 <a href="#" onclick="goBack()" class="back-btn">← Previous</a>
 <a href="./">🏠 Home</a>
@@ -85,6 +85,7 @@
 </div>
 </div>
 
+<div id="authBanner" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px 20px;margin:0 24px;border-radius:12px;align-items:center;justify-content:space-between;gap:12px;margin-top:12px"><div><b>⚠️ Session expired or not logged in</b> — Please login to view QC sheets. The <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px">● Live DB Connected</span> badge only means the database is reachable, not that you are authenticated.</div><a href="./login" style="background:#0f172a;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">Go to Login →</a></div>
 <div class="container">
 <div class="hero">
 <div>
@@ -170,7 +171,32 @@ document.addEventListener('click', e=>{
 
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
-function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
+function guard(){
+  const u=getUser(); 
+  const rb=document.getElementById('roleBadge');
+  if(!u||!u.token){
+    if(rb){
+      rb.innerText='❌ Not logged in — Click to Login';
+      rb.style.background='#ef4444';
+      rb.style.cursor='pointer';
+      rb.style.color='#fff';
+      rb.onclick=()=>window.location.href='./login';
+    }
+    // Show banner
+    const banner=document.getElementById('authBanner');
+    if(banner) banner.style.display='flex';
+    return null;
+  }
+  if(rb){
+    rb.innerText=(u.display_name||u.username)+' ('+u.role+')';
+    rb.style.background='rgba(255,255,255,.15)';
+    rb.style.cursor='default';
+    rb.onclick=null;
+  }
+  const banner=document.getElementById('authBanner');
+  if(banner) banner.style.display='none';
+  return u;
+}
 function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
 function logout(){const u=getUser(); if(u&&u.token) fetch('/api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 function go(url){window.location.href=url;}
