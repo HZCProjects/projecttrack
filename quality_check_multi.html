@@ -172,17 +172,25 @@ async function openSheet(id){
   }catch(e){ alert('Error opening sheet: '+e.message); }
 }
 function renderChecks(){
-  const wrap=document.getElementById('sections'); wrap.innerHTML='';
+  const wrap=document.getElementById('sections'); 
+  // Preserve open states before re-render
+  const prevOpen = [];
+  if(wrap){
+    const existing = wrap.querySelectorAll('.section');
+    existing.forEach((el,i)=>{ prevOpen[i]=el.classList.contains('open'); });
+  }
+  wrap.innerHTML='';
   let total=0, pass=0, fail=0, checked=0;
   checksData.forEach((sec,si)=>{
-    const div=document.createElement('div'); div.className='section '+(si===0?'open':'');
+    const shouldOpen = prevOpen.length ? prevOpen[si] : (si===0);
+    const div=document.createElement('div'); div.className='section '+(shouldOpen?'open':'');
     let rows='';
     sec.items.forEach((it,ii)=>{
       const key=`${si}_${ii}`; const val=currentChecks[key]||{status:'',remark:''};
       total++; if(val.status){checked++; if(val.status==='pass')pass++; if(val.status==='fail')fail++;}
       const badgeClass = val.status||'check'; const badgeText = val.status||'Check'; const isCheck = !val.status;
       const badgeStyle = isCheck ? 'background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;font-weight:700' : '';
-      rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Comments" value="${val.remark||''}" oninput="setRemark('${key}',this.value)"></div></div>`;
+      rows+=`<div class="check-row"><div>${ii+1}</div><div>${it}</div><div><div class="badge ${badgeClass}" style="${badgeStyle}" onclick="event.stopPropagation(); toggleCheck('${key}')">${badgeText}</div></div><div><input placeholder="Comments" value="${val.remark||''}" oninput="setRemark('${key}',this.value)" onclick="event.stopPropagation()"></div></div>`;
     });
     div.innerHTML=`<div class="section-head" onclick="this.parentElement.classList.toggle('open')"><h4>${sec.title}</h4><span style="font-size:80%;font-weight:500">(${sec.items.length} Fields)</span></div><div class="section-body">${rows}</div>`;
     wrap.appendChild(div);
