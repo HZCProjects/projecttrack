@@ -89,7 +89,11 @@
 <div class="hero">
 <div>
 <h1>Quality Management</h1>
-<div style="margin-top:8px"><span class="badge db">● Live DB Connected</span></div>
+<p>HZCProjects • Overberg WEF • All QC sheets, inspections and checklists in one hub. Select a sheet type to continue.</p>
+</div>
+<div style="display:flex;gap:8px">
+<span class="badge db">● Live DB Connected</span>
+<span id="sheetCount" class="badge" style="background:#f1f5f9">Loading...</span>
 </div>
 </div>
 
@@ -100,10 +104,10 @@
 
 <div class="grid">
 <!-- EXISTING MULTI SHEETS - SIMPLIFIED TO MATCH REQUESTED DESIGN -->
-<div class="card" onclick="go('./multi')" style="padding:20px">
+<div class="card" onclick="go('./qc')" style="padding:20px">
 <h3 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px">1️⃣ Steel Monopoles QC Sheets</h3>
 <div style="display:flex;justify-content:flex-start">
-<button class="btn btn-dark" onclick="event.stopPropagation(); go('./multi')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
+<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
 </div>
 </div>
 
