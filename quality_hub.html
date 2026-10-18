@@ -177,9 +177,7 @@ async function loadCounts(){
   try{
     const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
     const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
-    const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
-    document.getElementById('multiCount').innerText=multi+' sheets';
-    const el=document.getElementById('sheetCount'); if(el) el.innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
+    const mc=document.getElementById('multiCount'); if(mc) mc.innerText=multi+' sheets';
   }catch{}
 }
 loadCounts();

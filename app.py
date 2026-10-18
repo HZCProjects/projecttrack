@@ -65,24 +65,15 @@ def init_db():
     try:
         if USE_PG:
             for col, coltype in [
-                ('project_name', "TEXT DEFAULT ''"),
-                ('location', "TEXT DEFAULT ''"),
-                ('structure_number', "TEXT DEFAULT ''"),
-                ('collector_number', "TEXT DEFAULT ''"),
-                ('section_number', "TEXT DEFAULT ''"),
-                ('chainage_extra', "TEXT DEFAULT ''"),
-                ('date', "TEXT DEFAULT ''"),
-                ('inspector', "TEXT DEFAULT ''"),
-                ('status', "TEXT DEFAULT 'draft'"),
-                ('sheet_type', "TEXT DEFAULT 'trench'"),
-                ('checklist_data', "TEXT DEFAULT '{}'"),
-                ('created_at', "TEXT DEFAULT ''"),
-                ('updated_at', "TEXT DEFAULT ''"),
+                ('project_name', "TEXT DEFAULT ''"),('location', "TEXT DEFAULT ''"),
+                ('structure_number', "TEXT DEFAULT ''"),('collector_number', "TEXT DEFAULT ''"),
+                ('section_number', "TEXT DEFAULT ''"),('chainage_extra', "TEXT DEFAULT ''"),
+                ('date', "TEXT DEFAULT ''"),('inspector', "TEXT DEFAULT ''"),
+                ('status', "TEXT DEFAULT 'draft'"),('sheet_type', "TEXT DEFAULT 'trench'"),
+                ('checklist_data', "TEXT DEFAULT '{}'"),('created_at', "TEXT DEFAULT ''"),('updated_at', "TEXT DEFAULT ''"),
             ]:
-                try:
-                    cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN IF NOT EXISTS {col} {coltype}")
-                except Exception as e:
-                    print(f"Migration add {col}: {e}")
+                try: cur.execute(f"ALTER TABLE qc_sheets ADD COLUMN IF NOT EXISTS {col} {coltype}")
+                except: pass
             conn.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -100,8 +91,6 @@ def init_users():
             ('admin', generate_password_hash('HZC2026!'), 'admin', 'System Admin'),
             ('HCE', generate_password_hash('HCE2026!'), 'admin', 'HCE'),
             ('qc_lead', generate_password_hash('QC2026!'), 'qc_manager', 'QC Lead'),
-            ('inspector', generate_password_hash('Inspect2026!'), 'inspector', 'Site Inspector'),
-            ('viewer', generate_password_hash('Viewer123'), 'viewer', 'Guest Viewer'),
         ]
         for u,p,r,dname in defaults:
             if USE_PG:
@@ -123,19 +112,15 @@ def get_session(token):
         else:
             cur.execute('SELECT token, user_id, username, role, display_name FROM sessions WHERE token=?',(token,))
         row=cur.fetchone()
-        if not row:
+        if not row: 
             conn.close()
             return None
-        if USE_PG:
-            result = {'token': row[0], 'user_id': row[1], 'username': row[2], 'role': row[3], 'display_name': row[4]}
-        else:
-            result = dict(row) if hasattr(row, 'keys') else {'token': row[0], 'user_id': row[1], 'username': row[2], 'role': row[3], 'display_name': row[4]}
+        result = {'token': row[0], 'user_id': row[1], 'username': row[2], 'role': row[3], 'display_name': row[4]} if USE_PG else dict(row)
         conn.close()
         return result
-    except Exception as e:
+    except:
         try: conn.close()
         except: pass
-        print(f"get_session error: {e}")
         return None
 
 def require_auth(f):
@@ -143,11 +128,9 @@ def require_auth(f):
     def decorated(*args, **kwargs):
         auth = request.headers.get('Authorization','')
         token = auth.replace('Bearer ','') if auth.startswith('Bearer ') else ''
-        if not token:
-            token = request.cookies.get('session_token','')
+        if not token: token = request.cookies.get('session_token','')
         sess = get_session(token)
-        if not sess:
-            return jsonify({'error': 'Unauthorized'}), 401
+        if not sess: return jsonify({'error': 'Unauthorized'}), 401
         request.user = sess
         return f(*args, **kwargs)
     decorated.__name__ = f.__name__
@@ -161,23 +144,26 @@ def home():
 @app.route('/quality/')
 @app.route('/qc')
 @app.route('/quality-hub')
-def quality_hub():
+def quality_hub_route():
     return send_from_directory('.', 'quality_hub.html')
 
 @app.route('/gantt')
 @app.route('/gantt/')
 @app.route('/planner')
-def gantt():
+def gantt_route():
     return send_from_directory('.', 'gantt_planner_DB.html')
 
 @app.route('/wooden')
 @app.route('/wooden-pole')
-def wooden_pole():
+@app.route('/quality_check_wooden_pole.html')
+def wooden_route():
     return send_from_directory('.', 'quality_check_wooden_pole.html')
 
 @app.route('/multi')
 @app.route('/steel')
-def multi():
+@app.route('/steel-monopoles')
+@app.route('/quality_check_multi.html')
+def steel_route():
     return send_from_directory('.', 'quality_check_multi.html')
 
 @app.route('/login')
@@ -204,14 +190,7 @@ def login():
     if not row:
         conn.close()
         return jsonify({'error': 'Invalid credentials'}), 401
-    if USE_PG:
-        uid, uname, phash, role, dname = row
-    else:
-        uid = row['id'] if hasattr(row, 'keys') else row[0]
-        uname = row['username'] if hasattr(row, 'keys') else row[1]
-        phash = row['password_hash'] if hasattr(row, 'keys') else row[2]
-        role = row['role'] if hasattr(row, 'keys') else row[3]
-        dname = row['display_name'] if hasattr(row, 'keys') else row[4]
+    uid, uname, phash, role, dname = (row[0], row[1], row[2], row[3], row[4]) if USE_PG else (row['id'], row['username'], row['password_hash'], row['role'], row['display_name'])
     if not check_password_hash(phash, password):
         conn.close()
         return jsonify({'error': 'Invalid credentials'}), 401
@@ -245,19 +224,20 @@ def logout():
 def me():
     return jsonify(request.user)
 
+@app.route('/api/status', methods=['GET'])
+def status():
+    return jsonify({'db': 'Postgres' if USE_PG else 'SQLite', 'use_postgres': USE_PG, 'has_postgres': HAS_PG, 'time': datetime.utcnow().isoformat()})
+
 @app.route('/api/qc-sheets', methods=['GET'])
 @require_auth
 def list_sheets():
     conn=get_conn(); cur=conn.cursor()
     cur.execute('SELECT * FROM qc_sheets ORDER BY id DESC')
     rows=cur.fetchall()
-    if not rows:
-        conn.close()
-        return jsonify([])
-    cols=[d[0] for d in cur.description]
+    cols=[d[0] for d in cur.description] if rows else []
     data=[]
     for r in rows:
-        d=dict(zip(cols, r))
+        d=dict(zip(cols, r)) if USE_PG else dict(r)
         if isinstance(d.get('checklist_data'), str):
             try: d['checklist_data']=json.loads(d['checklist_data'])
             except: pass
@@ -292,7 +272,7 @@ def list_gantt():
     cur.execute('SELECT * FROM gantt_tasks ORDER BY id')
     rows=cur.fetchall()
     cols=[d[0] for d in cur.description] if rows else []
-    data=[dict(zip(cols, r)) for r in rows]
+    data=[dict(zip(cols, r)) if USE_PG else dict(r) for r in rows]
     conn.close()
     return jsonify(data)
 
@@ -314,10 +294,6 @@ def create_gantt():
         nid=cur.lastrowid
     conn.commit(); conn.close()
     return jsonify({'id': nid})
-
-@app.route('/api/status', methods=['GET'])
-def status():
-    return jsonify({'db': 'Postgres' if USE_PG else 'SQLite', 'time': datetime.utcnow().isoformat()})
 
 @app.route('/<path:path>')
 def serve_static(path):

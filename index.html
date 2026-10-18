@@ -44,7 +44,7 @@ const u=getUser(); if(!u){window.location.href='./login';} else {
 }
 function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 fetch('./api/status').then(r=>r.json()).then(s=>{
-  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite') + ' • Quality Hub';
+  document.getElementById('dbStatus').innerText = (s.db || 'Postgres') + (s.use_postgres===false?' ⚠️ SQLite':' ✅ Postgres Permanent') + ' • Quality Hub';
   document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
 }).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';});
 </script>
