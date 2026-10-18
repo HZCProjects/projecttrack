@@ -93,7 +93,7 @@
 </div>
 <div style="display:flex;gap:8px">
 <span class="badge db">● Live DB Connected</span>
-<span id="sheetCount" class="badge" style="background:#f1f5f9">Loading...</span>
+<!-- sheetCount removed per user request -->
 </div>
 </div>
 
@@ -183,7 +183,7 @@ async function loadCounts(){
     const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
     const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
     document.getElementById('multiCount').innerText=multi+' sheets';
-    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
+    const el=document.getElementById('sheetCount'); if(el) el.innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
   }catch{}
 }
 loadCounts();
