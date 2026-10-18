@@ -148,7 +148,9 @@ th:first-child{text-align:center}
 <div style="width:320px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:320px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
 <div style="width:320px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:320px"></div>
 <div style="width:320px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:320px"></div>
-<div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
+<div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:320px">📍 Get Current GPS</button>
+<div style="margin-top:10px"><label>Status</label><select id="statusField" style="width:320px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="pass">Pass</option></select></div>
+</div>
 </div>
 
 <div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1300px;max-width:1300px">
@@ -521,6 +523,13 @@ function updateScore(){
   const unchecked = total - checked;
   const el=document.getElementById('score');
   highlightUnchecked();
+  // AUTO STATUS LOGIC: 100% = Pass, Not 100% = In Progress, 0% = Draft
+  const statusEl = document.getElementById('statusField');
+  if(statusEl){
+    if(checked===0) statusEl.value='draft';
+    else if(checked===total) statusEl.value='pass';
+    else statusEl.value='in_progress';
+  }
   if(el){
     const failColor = fail>0 ? '#ef4444' : '#64748b';
     const failWeight = fail>0 ? '800' : '400';

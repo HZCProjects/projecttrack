@@ -116,7 +116,7 @@
 <div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
 <div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
 <div class="f"><label>Inspected By:</label><input id="ins" placeholder="Name"></div>
-<div class="f"><label>Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
+<div class="f"><label>Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="pass">Pass</option></select></div>
 </div>
 <div id="score" style="font-size:14.4px;font-weight:700;margin:12px 0"></div>
 <div id="msg" style="font-size:13px;margin:8px 0;min-height:20px"></div>
@@ -236,6 +236,13 @@ function renderChecks(){
   const uncheckWeight = unchecked>0 ? '800' : '400';
   const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
   const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
+  // AUTO STATUS LOGIC: When 100% - Pass, Not 100% - In Progress (0% = Draft)
+  const statusEl = document.getElementById('status');
+  if(statusEl){
+    if(checked===0) statusEl.value='draft';
+    else if(checked===total) statusEl.value='pass';
+    else statusEl.value='in_progress';
+  }
   const scoreEl = document.getElementById('score');
   if(scoreEl) scoreEl.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span>`;
 }
