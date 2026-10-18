@@ -98,6 +98,12 @@
 <div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
 <div class="nav-links" id="navLinks"><a href="#" onclick="goBack()" class="back-btn">← Previous</a><a href="/">🏠 Home</a><a href="/gantt">📅 Planner</a><a href="/quality">🏗️ Quality</a><a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a></div>
 </div>
+<div style="margin:0 0 16px;padding:12px;background:#fff;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+  <div><label>LOAD BY STRUCTURE NO</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px;padding:8px;border:1px solid #e2e8f0;border-radius:8px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 4." style="width:110px;padding:8px;border:1px solid #e2e8f0;border-radius:8px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:700">📂 Open</button></div></div>
+  <div style="flex:0 0 480px;max-width:480px;min-width:300px"><label>RECENT H-POLE SHEETS (STRUCTURE + COLLECTOR)</label><select id="recentSelect" style="padding:8px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) openSheet(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
+  <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:8px 12px;border-radius:8px;cursor:pointer">🔄 Refresh List</button>
+  <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
+</div>
 <div class="container">
 <div class="sidebar-list">
 <h3>Steel Monopoles QC Sheets</h3>
@@ -173,6 +179,78 @@ async function loadList(){
     });
   }catch(e){ document.getElementById('msg').innerText='Error loading list: '+e.message; }
 }
+
+async function loadByStructure(){
+  const structNo = document.getElementById('loadIdInput')?.value?.trim();
+  const collectorNo = document.getElementById('loadCollectorInput')?.value?.trim();
+  if(!structNo){ alert('Enter Structure No e.g. 450'); return; }
+  try{
+    let data=null;
+    try{
+      const q = collectorNo ? `?collector=${encodeURIComponent(collectorNo)}` : '';
+      const r=await fetch(`/api/qc-sheets/by-structure/${encodeURIComponent(structNo)}${q}`,{headers:authHeader()});
+      if(r.ok) data=await r.json();
+    }catch{}
+    if(!data){
+      // fallback search in list
+      const sheets = await api('/api/qc-sheets');
+      let matches = sheets.filter(s=> String(s.structure_number||'').trim()===structNo || String(s.location||'').toLowerCase().includes(structNo.toLowerCase()));
+      if(collectorNo){
+        const exact = matches.filter(s=> String(s.collector_number||'').trim()===collectorNo);
+        if(exact.length>0) matches=exact;
+      }
+      if(matches.length===1) data=matches[0];
+      else if(matches.length>1){
+        const choice = prompt(`Found ${matches.length} sheets with Structure ${structNo}:\n`+matches.map(m=>`ID ${m.id} - ${m.location||''} Collector ${m.collector_number||''}`).join('\n')+`\nEnter ID to open:`);
+        if(choice){
+          const sel = matches.find(m=> String(m.id)===choice.trim());
+          if(sel) data=sel;
+        }
+        if(!data) return;
+      }
+    }
+    if(!data){ alert('Structure No '+structNo+' not found'); return; }
+    if(data.id && !data.checks && !data.checklist_data){
+      await openSheet(data.id);
+    } else {
+      currentId=data.id;
+      const badge=document.getElementById('currentIdBadge');
+      if(badge){ badge.style.display='inline-block'; badge.innerText='Editing ID: '+currentId+' (Struct '+structNo+')'; }
+      // populate from data
+      await openSheet(data.id);
+    }
+  }catch(e){ alert('Load failed: '+e.message); console.error(e); }
+}
+
+async function loadRecentList(){
+  const sel=document.getElementById('recentSelect');
+  if(!sel) return;
+  try{
+    const sheets = await api('/api/qc-sheets');
+    // Filter steel only
+    const steel = sheets.filter(d=>{
+      const t=(d.sheet_type||'').toLowerCase();
+      return t.includes('steel') || t.includes('monopole');
+    });
+    sel.innerHTML='<option value="">Select recent sheet... ('+steel.length+' Steel only, '+sheets.length+' total in DB)</option>';
+    const recent = steel.slice().reverse().slice(0,50);
+    recent.forEach(s=>{
+      const label = `Structure ${s.structure_number||s.location||'No-No'} + Collector ${s.collector_number||'?'} - ID ${s.id} ${s.date||''}`.trim();
+      const opt=document.createElement('option');
+      opt.value=s.id;
+      opt.textContent=label;
+      sel.appendChild(opt);
+    });
+    // URL ?id
+    const params=new URLSearchParams(window.location.search);
+    const qid=params.get('id');
+    if(qid && !currentId){
+      document.getElementById('loadIdInput').value=qid;
+      setTimeout(()=>openSheet(qid),500);
+    }
+  }catch(e){ console.error('Load recent failed',e); }
+}
+
 async function openSheet(id){
   try{
     const s = await api(`/api/qc-sheets/${id}`);
