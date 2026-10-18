@@ -233,19 +233,18 @@ def public_save_qc():
     vals=[data.get(f,'') for f in fields]
     struct_no = str(data.get('structure_number','')).strip()
     try:
-        # ENFORCE ONE ID PER (Structure Number + Collector No + Section No + sheet_type) - as per user request
+        # ENFORCE ONE ID PER (Structure No + Collector No + sheet_type) - handles duplicates
         sheet_type = data.get('sheet_type','')
         collector_no = str(data.get('collector_number','')).strip()
-        section_no = str(data.get('section_number','')).strip()
         if struct_no:
             if USE_PG:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND section_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, section_no, sheet_type))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, sheet_type))
             else:
-                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND section_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, section_no, sheet_type))
+                cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, sheet_type))
             existing = cur.fetchone()
             if existing:
                 existing_id = existing[0] if USE_PG else existing[0]
-                print(f"Structure {struct_no} Collector {collector_no} Section {section_no} already exists as ID {existing_id} - updating instead of creating new")
+                print(f"Structure {struct_no} already exists as ID {existing_id} - updating instead of creating new")
                 # Update existing instead of creating new
                 if USE_PG:
                     cur.execute('UPDATE qc_sheets SET project_name=%s, location=%s, structure_number=%s, collector_number=%s, section_number=%s, chainage_extra=%s, date=%s, inspector=%s, status=%s, sheet_type=%s, checklist_data=%s, updated_at=%s WHERE id=%s',
@@ -254,7 +253,7 @@ def public_save_qc():
                     cur.execute('UPDATE qc_sheets SET project_name=?, location=?, structure_number=?, collector_number=?, section_number=?, chainage_extra=?, date=?, inspector=?, status=?, sheet_type=?, checklist_data=?, updated_at=? WHERE id=?',
                         (*vals, cdata, now, existing_id))
                 conn.commit(); conn.close()
-                return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} Collector {collector_no} Section {section_no} - ID {existing_id} (One ID per Structure+Collector+Section)"})
+                return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} Collector {collector_no} - ID {existing_id} (One ID per Structure+Collector)"})
         
         if USE_PG:
             cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id', (*vals,cdata,now,now))
@@ -270,13 +269,12 @@ def public_save_qc():
             conn.rollback()
             # Check again for existing in fallback
             collector_no = str(data.get('collector_number','')).strip()
-            section_no = str(data.get('section_number','')).strip()
             sheet_type = data.get('sheet_type','')
             if struct_no:
                 if USE_PG:
-                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND section_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, section_no, sheet_type))
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=%s AND collector_number=%s AND sheet_type=%s LIMIT 1', (struct_no, collector_no, sheet_type))
                 else:
-                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND section_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, section_no, sheet_type))
+                    cur.execute('SELECT id FROM qc_sheets WHERE structure_number=? AND collector_number=? AND sheet_type=? LIMIT 1', (struct_no, collector_no, sheet_type))
                 existing = cur.fetchone()
                 if existing:
                     existing_id = existing[0] if USE_PG else existing[0]
