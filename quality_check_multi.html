@@ -97,9 +97,12 @@
 <div class="header no-print">
 <div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
+<a href="#" onclick="goBack()" style="background:#475569">← Previous</a>
 <a href="./">🏠 Home</a>
 <a href="./gantt">📅 Planner</a>
-<a href="./quality">🏗️ Quality</a>
+<a href="./quality">🏗️ Quality Management</a>
+<input id="structureSearch" placeholder="Search Structure No..." style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;font-size:12px;width:160px;margin-left:8px" onkeypress="if(event.key==='Enter') searchStructure()">
+<button onclick="searchStructure()" style="padding:6px 12px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:12px;cursor:pointer;margin-left:4px">🔍 Search</button>
 <a href="#" onclick="window.print()">🖨️ Print</a>
 <a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
 </div>
@@ -144,6 +147,7 @@ let currentChecks = {};
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function guardSimple(){const u=getUser();if(!u||!u.token){window.location.href='/login';return null;}const rb=document.getElementById('roleBadge');if(rb){rb.innerText=(u.display_name||u.username)+' ('+u.role+')';}return u;}
 function authHeader(){const u=getUser();return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
+async function searchStructure(){ const v=document.getElementById("structureSearch").value.trim(); if(!v){ alert("Enter Structure No"); return;} try{ const r=await fetch("./api/qc-sheets/by-structure/"+encodeURIComponent(v)); const d=await r.json(); if(!d||d.length===0){ alert("No sheet for "+v); return;} if(typeof loadSheet==="function"&&d[0].id) loadSheet(d[0].id); document.getElementById("msg").innerText="Found "+d.length+" for "+v;}catch(e){ alert(e.message);} }
 function goBack(){if(document.referrer&&document.referrer.includes(window.location.host)){history.back();}else{window.location.href='/';}}
 function logout(){const u=getUser();if(u&&u.token)fetch('/api/auth/logout',{method:'POST',headers:authHeader()});localStorage.removeItem('projecttrack_user');window.location.href='/login';}
 guardSimple();
