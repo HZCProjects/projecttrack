@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>H-Pole Wooden Structures - Quality Check Sheets - ProjectTrack</title>
+<title>Wooden Pole Inspections - QC Sheet - ProjectTrack</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 body{font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px}
 .header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px}
@@ -15,187 +13,74 @@ h2{margin:0 0 4px;font-size:20px} .sub{color:#64748b;font-size:13px;margin-botto
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}
 input,select{padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%;box-sizing:border-box;font-size:13px}
 label{font-size:11px;color:#64748b;text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px}
-table{width:100%;border-collapse:collapse;border-spacing:0;font-size:13px;table-layout:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:10px 8px;border:1px solid #e2e8f0;text-align:left}
 th{background:#0f172a;color:#fff;font-size:11px;text-transform:uppercase}
 tr:nth-child(even){background:#f8fafc}
-tr.pass{background:#dcfce7 !important} tr.fail{background:#fee2e2 !important}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
-td:first-child{text-align:center;font-weight:700}
-#qcTable{width:1260px;table-layout:fixed}
-#qcTable th:nth-child(1), #qcTable td:nth-child(1){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:500px;max-width:500px;min-width:500px;white-space:normal;word-wrap:break-word}
-#qcTable th:nth-child(3), #qcTable td:nth-child(3){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(4), #qcTable td:nth-child(4){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(5), #qcTable td:nth-child(5){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:500px;max-width:500px;min-width:500px}
-
-
-
-
-
-th:first-child{text-align:center}
-/* Orange highlight for Check/unchecked boxes */
-.badge-check{background:#ffedd5 !important;color:#9a3412 !important;border:1px solid #fed7aa !important}
-/* Only Check badge orange - no row highlight per user */
 .btn{padding:10px 16px;border:none;border-radius:8px;font-weight:700;cursor:pointer}
 .btn-primary{background:#0f172a;color:#fff} .btn-save{background:#10b981;color:#fff}
 .check{width:18px;height:18px}
 .comment{width:100%}
 @media print{.no-print{display:none} body{background:#fff} .card{box-shadow:none} }
-.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
-/* RESPONSIVE - TABLETS & PHONES */
-@media(max-width:1024px){
-  .grid{grid-template-columns:1fr 1fr !important}
-  body{padding:12px !important}
-}
-@media(max-width:768px){
-  body{padding:8px !important}
-  .header{flex-wrap:wrap;height:auto !important;padding:10px !important;gap:8px;position:relative !important;border-radius:8px !important;margin-bottom:12px !important}
-  .header div{width:100%;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start !important}
-  .header div:last-child{margin-top:6px}
-  .header a, .back-btn, .search-btn{font-size:10px !important;padding:5px 8px !important;margin:2px !important}
-  .header b{font-size:13px !important;display:block;width:100%;margin-bottom:4px}
-  .card{padding:12px !important;border-radius:12px !important;margin-bottom:12px !important}
-  .card h2{font-size:16px !important}
-  .sub{font-size:11px !important}
-  .grid{grid-template-columns:1fr !important;gap:8px !important}
-  label{font-size:10px !important}
-  input, select{font-size:12px !important;padding:8px !important}
-  div[style*="display:flex;gap:8px;align-items:end"]{flex-direction:column !important;align-items:stretch !important}
-  div[style*="display:flex;gap:8px;align-items:end"] div{width:100% !important}
-  #loadIdInput, #loadCollectorInput{width:100% !important}
-  table{font-size:11px !important;display:block;overflow-x:auto;white-space:nowrap}
-  th, td{padding:6px 4px !important;font-size:10px !important}
-  td:nth-child(2){white-space:normal !important;min-width:120px}
-  .check{width:16px !important;height:16px !important}
-  .comment{font-size:11px !important}
-  .btn{font-size:11px !important;padding:8px 10px !important}
-  #score{font-size:11px !important;line-height:1.6 !important;padding:8px !important;background:#f8fafc;border-radius:8px}
-  .search-box{width:95vw !important}
-}
-@media(max-width:480px){
-  body{padding:4px !important}
-  .header{padding:8px !important}
-  .header b{font-size:12px !important}
-  .card{padding:10px !important}
-  .card h2{font-size:14px !important}
-  input, select{font-size:11px !important}
-  table{font-size:10px !important}
-  th{font-size:9px !important}
-  td{padding:4px 3px !important}
-  #score{font-size:10px !important}
-  button{font-size:10px !important}
-}
-@media(max-width:360px){
-  .header a{font-size:9px !important;padding:4px 6px !important}
-  table{font-size:9px !important}
-}
-
-.search-btn{color:#fff;text-decoration:none;background:#8b5cf6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none} .search-btn:hover{background:#7c3aed}
-.search-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-start;justify-content:center;padding-top:80px;z-index:100}
-.search-overlay.open{display:flex}
-.search-box{background:#fff;width:600px;max-width:90vw;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
-.search-input-wrap{display:flex;align-items:center;padding:16px;border-bottom:1px solid #e2e8f0}
-.search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;padding:8px}
-.search-results{max-height:400px;overflow-y:auto;padding:8px}
-.search-item{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-.search-item:hover{background:#f8fafc}
-.search-item b{font-size:13px} .search-item small{font-size:11px;color:#64748b}
-
-
-/* HAMBURGER MENU FOR PHONES/TABLETS */
-.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px 8px;background:rgba(255,255,255,.15);border-radius:8px;border:1px solid rgba(255,255,255,.2)}
-.hamburger span{width:18px;height:2px;background:#fff;border-radius:2px;display:block}
-.nav-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-@media(max-width:768px){
-  .hamburger{display:flex !important}
-  .nav-links{display:none !important;flex-direction:column;position:absolute;top:100%;right:0;left:0;background:#0f172a;padding:12px;border-radius:0 0 12px 12px;z-index:50;box-shadow:0 8px 20px rgba(0,0,0,.3)}
-  .nav-links.open{display:flex !important}
-  .nav-links a, .nav-links button{width:100%;justify-content:flex-start !important;margin:2px 0 !important}
-  .header{position:relative !important;flex-wrap:wrap}
-  .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
-}
-
 </style>
 </head>
 <body>
-<div class="header no-print" style="height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px">
-<div class="header-title"><div><b>🪵 H-Pole Wooden Structures</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
-<div class="nav-links" id="navLinks">
-<a href="#" onclick="goBack()" class="back-btn" title="Go to previous page">← Previous</a>
-<a href="./" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏠 Home</a>
-<a href="./gantt" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">📅 Planner</a>
-<a href="./quality" style="color:#fff;text-decoration:none;background:#3b82f6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🏗️ Quality Management</a>
-<a href="#" onclick="window.print()" style="color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🖨️ Print</a>
-<a href="#" onclick="logout()" style="color:#fff;text-decoration:none;background:#ef4444;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px">🚪 Logout</a>
-<button onclick="openSearch()" class="search-btn" title="Search (Ctrl+K)" style="background:#8b5cf6;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none">🔍 Search</button>
+<div class="header no-print">
+<div><b>🪵 Wooden Pole Inspections</b> <span style="opacity:.6;font-size:12px">QC Sheet</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div>
+<a href="./">🏠 Home</a>
+<a href="./gantt">📅 Planner</a>
+<a href="./qc">✅ All QC Sheets</a>
+<a href="#" onclick="window.print()">🖨️ Print</a>
+<a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
 </div>
 </div>
 
 <div class="card">
-<h2>H-Pole Wooden Structures - Quality Check Sheets</h2>
-<div class="sub">Overberg WEF - H-Pole Wooden Structures • Based on site photo checklist</div>
+<h2>Wooden Pole Inspections - Quality Check Sheet</h2>
+<div class="sub">Overberg WEF - Wooden Pole Structures • Based on site photo checklist</div>
 
-<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:320px"><label>Project Name</label><input id="project" value="Overberg WEF" style="width:320px"></div>
-<div style="width:320px"><label>Contractor</label><select id="contractor" style="width:320px"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
-<div style="width:320px"><label>Date of Inspection</label><input id="date" type="date" style="width:320px"></div>
-<div style="width:320px"><label>Inspected By:</label><input id="inspector" placeholder="Inspected By Name" style="width:320px"></div>
+<div class="grid">
+<div><label>Project Name</label><input id="project" value="Overberg WEF"></div>
+<div><label>Contractor</label><input id="contractor" placeholder="2671 / Contractor Name"></div>
+<div><label>Date</label><input id="date" type="date"></div>
+<div><label>Inspector</label><input id="inspector" placeholder="Inspector Name"></div>
 </div>
 
-<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-<div style="width:320px"><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296" style="width:320px" onblur="checkStructureExists()" oninput="document.getElementById('loadIdInput').value=''"></div>
-<div style="width:320px"><label>Collector No</label><input id="collector" placeholder="e.g. 420" style="width:320px"></div>
-<div style="width:320px"><label>Section No</label><input id="section" placeholder="e.g. 421" style="width:320px"></div>
-<div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
-</div>
-
-<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1300px;max-width:1300px">
-  <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 420" style="width:110px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 14px">📂 Open</button></div></div>
-  <div style="flex:0 0 500px;max-width:500px;min-width:500px"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:500px" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
-  <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
-  <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
-  <button onclick="saveCurrent()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 20px;font-weight:700">💾 Save to ProjectTrack</button>
-  <button onclick="deleteCurrent()" class="btn" style="background:#ef4444;color:#fff;padding:10px 16px">🗑️ Delete</button>
+<div class="grid">
+<div><label>Structure No</label><input id="structure" placeholder="e.g. 246 / 296"></div>
+<div><label>Collector No</label><input id="collector" placeholder="e.g. 420"></div>
+<div><label>Section No</label><input id="section" placeholder="e.g. 421"></div>
+<div><label>Depth / Height</label><select id="depth"><option>2.0m</option><option selected>2.5m</option><option>3.0m</option></select></div>
 </div>
 </div>
 
 <div class="card">
-<div style="display:flex;justify-content:flex-start;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
-<span style="font-size:14.4px;font-weight:700" id="score">Checked 0/18 • Pass 0 • Fail 0 • Score 0%</span>
-<span style="font-size:13.2px;color:#94a3b8">H-Pole Wooden Structures • 18 Checks</span>
-</div>
 <table id="qcTable">
 <thead>
-<tr><th style="width:50px;text-align:center">Item</th><th>Inspection Requirement</th><th style="width:70px;text-align:center">Pass</th><th style="width:70px;text-align:center">Fail</th><th style="width:70px;text-align:center">N/A</th><th>Comments</th></tr>
+<tr><th style="width:40px">Item</th><th>Inspection Requirement</th><th style="width:70px">Pass</th><th style="width:70px">Fail</th><th>Comment</th></tr>
 </thead>
 <tbody>
-<tr><td><b>1</b></td><td>Pole(s) installed at the correct location and orientation</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="1" onchange="setPass(1)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="1" onchange="setFail(1)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="1" onchange="setNA(1)"></td><td><input class="comment" id="comment-1" placeholder="Comments..."></td></tr>
-<tr><td><b>2</b></td><td>Structure is straight, level and vertically plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="2" onchange="setPass(2)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="2" onchange="setFail(2)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="2" onchange="setNA(2)"></td><td><input class="comment" id="comment-2" placeholder="Comments..."></td></tr>
-<tr><td><b>3</b></td><td>H-pole bisectors are correctly aligned and in line</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="3" onchange="setPass(3)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="3" onchange="setFail(3)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="3" onchange="setNA(3)"></td><td><input class="comment" id="comment-3" placeholder="Comments..."></td></tr>
-<tr><td><b>4</b></td><td>Bill (pole top) has been cut to the specified requirement</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="4" onchange="setPass(4)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="4" onchange="setFail(4)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="4" onchange="setNA(4)"></td><td><input class="comment" id="comment-4" placeholder="Comments..."></td></tr>
-<tr><td><b>5</b></td><td>PVC pipe installed and at the correct specified height (2.5m) above ground level</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="5" onchange="setPass(5)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="5" onchange="setFail(5)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="5" onchange="setNA(5)"></td><td><input class="comment" id="comment-5" placeholder="Comments..."></td></tr>
-<tr><td><b>6</b></td><td>Bonding clips correctly fitted and securely tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="6" onchange="setPass(6)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="6" onchange="setFail(6)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="6" onchange="setNA(6)"></td><td><input class="comment" id="comment-6" placeholder="Comments..."></td></tr>
-<tr><td><b>7</b></td><td>Bonding is continuous with no damage or loose connections</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="7" onchange="setPass(7)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="7" onchange="setFail(7)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="7" onchange="setNA(7)"></td><td><input class="comment" id="comment-7" placeholder="Comments..."></td></tr>
-<tr><td><b>8</b></td><td>All bolts and nuts installed correctly and are straight</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="8" onchange="setPass(8)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="8" onchange="setFail(8)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="8" onchange="setNA(8)"></td><td><input class="comment" id="comment-8" placeholder="Comments..."></td></tr>
-<tr><td><b>9</b></td><td>All eye bolts are correctly installed and plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="9" onchange="setPass(9)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="9" onchange="setFail(9)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="9" onchange="setNA(9)"></td><td><input class="comment" id="comment-9" placeholder="Comments..."></td></tr>
-<tr><td><b>10</b></td><td>Stay wire pole top is installed 100 mm from the bottom of the BILL, cut and tied as per specification</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="10" onchange="setPass(10)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="10" onchange="setFail(10)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="10" onchange="setNA(10)"></td><td><input class="comment" id="comment-10" placeholder="Comments..."></td></tr>
-<tr><td><b>11</b></td><td>All lock nuts checked and fully tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="11" onchange="setPass(11)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="11" onchange="setFail(11)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="11" onchange="setNA(11)"></td><td><input class="comment" id="comment-11" placeholder="Comments..."></td></tr>
-<tr><td><b>12</b></td><td>Washers correctly installed where required</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="12" onchange="setPass(12)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="12" onchange="setFail(12)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="12" onchange="setNA(12)"></td><td><input class="comment" id="comment-12" placeholder="Comments..."></td></tr>
-<tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="13" onchange="setNA(13)"></td><td><input class="comment" id="comment-13" placeholder="Comments..."></td></tr>
-<tr><td><b>14</b></td><td>Structure Free From Visible Defects or Damages?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="14" onchange="setPass(14)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="14" onchange="setFail(14)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="14" onchange="setNA(14)"></td><td><input class="comment" id="comment-14" placeholder="Comments..."></td></tr>
-<tr><td><b>15</b></td><td>Work Area Clean and Safe?</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="15" onchange="setPass(15)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="15" onchange="setFail(15)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="15" onchange="setNA(15)"></td><td><input class="comment" id="comment-15" placeholder="Comments..."></td></tr>
-<tr><td><b>16</b></td><td>Check all pre-forms (guy grips) to be installed correctly</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="16" onchange="setPass(16)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="16" onchange="setFail(16)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="16" onchange="setNA(16)"></td><td><input class="comment" id="comment-16" placeholder="Comments..."></td></tr>
-<tr><td><b>17</b></td><td>Stays to be installed and tensioned with thimble and made off, including the tail</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="17" onchange="setPass(17)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="17" onchange="setFail(17)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="17" onchange="setNA(17)"></td><td><input class="comment" id="comment-17" placeholder="Comments..."></td></tr>
-<tr><td><b>18</b></td><td>Structure Label to be 3m from NGL and to point in the direction from the source</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="18" onchange="setPass(18)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="18" onchange="setFail(18)"></td><td style="text-align:center"><input type="checkbox" class="check na-check" data-row="18" onchange="setNA(18)"></td><td><input class="comment" id="comment-18" placeholder="Comments..."></td></tr>
+<tr><td><b>1</b></td><td>Pole(s) installed at the correct location and orientation</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="1" onchange="setPass(1)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="1" onchange="setFail(1)"></td><td><input class="comment" id="comment-1" placeholder="Comment..."></td></tr>
+<tr><td><b>2</b></td><td>Structure is straight, level and vertically plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="2" onchange="setPass(2)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="2" onchange="setFail(2)"></td><td><input class="comment" id="comment-2" placeholder="Comment..."></td></tr>
+<tr><td><b>3</b></td><td>H-pole bisectors are correctly aligned and in line</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="3" onchange="setPass(3)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="3" onchange="setFail(3)"></td><td><input class="comment" id="comment-3" placeholder="Comment..."></td></tr>
+<tr><td><b>4</b></td><td>Bill (pole top) has been cut to the specified requirement</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="4" onchange="setPass(4)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="4" onchange="setFail(4)"></td><td><input class="comment" id="comment-4" placeholder="Comment..."></td></tr>
+<tr><td><b>5</b></td><td>PVC pipe installed and at the correct specified height (2.5m) above ground level</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="5" onchange="setPass(5)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="5" onchange="setFail(5)"></td><td><input class="comment" id="comment-5" placeholder="Comment..."></td></tr>
+<tr><td><b>6</b></td><td>Bonding clips correctly fitted and securely tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="6" onchange="setPass(6)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="6" onchange="setFail(6)"></td><td><input class="comment" id="comment-6" placeholder="Comment..."></td></tr>
+<tr><td><b>7</b></td><td>Bonding is continuous with no damage or loose connections</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="7" onchange="setPass(7)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="7" onchange="setFail(7)"></td><td><input class="comment" id="comment-7" placeholder="Comment..."></td></tr>
+<tr><td><b>8</b></td><td>All bolts and nuts installed correctly and are straight</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="8" onchange="setPass(8)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="8" onchange="setFail(8)"></td><td><input class="comment" id="comment-8" placeholder="Comment..."></td></tr>
+<tr><td><b>9</b></td><td>All eye bolts are correctly installed and plumb</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="9" onchange="setPass(9)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="9" onchange="setFail(9)"></td><td><input class="comment" id="comment-9" placeholder="Comment..."></td></tr>
+<tr><td><b>10</b></td><td>Stay wire pole top is installed 100 mm from the bottom of the BILL, cut and tied as per specification</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="10" onchange="setPass(10)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="10" onchange="setFail(10)"></td><td><input class="comment" id="comment-10" placeholder="Comment..."></td></tr>
+<tr><td><b>11</b></td><td>All lock nuts checked and fully tightened</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="11" onchange="setPass(11)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="11" onchange="setFail(11)"></td><td><input class="comment" id="comment-11" placeholder="Comment..."></td></tr>
+<tr><td><b>12</b></td><td>Washers correctly installed where required</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="12" onchange="setPass(12)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="12" onchange="setFail(12)"></td><td><input class="comment" id="comment-12" placeholder="Comment..."></td></tr>
+<tr><td><b>13</b></td><td>Cross-arms and fittings securely installed</td><td style="text-align:center"><input type="checkbox" class="check pass-check" data-row="13" onchange="setPass(13)"></td><td style="text-align:center"><input type="checkbox" class="check fail-check" data-row="13" onchange="setFail(13)"></td><td><input class="comment" id="comment-13" placeholder="Comment..."></td></tr>
 </tbody>
 </table>
 <div style="margin-top:16px;display:flex;gap:10px" class="no-print">
 <button class="btn btn-primary" onclick="saveSheet()">💾 Save to ProjectTrack</button>
 <button class="btn sec" onclick="clearAll()" style="background:#f1f5f9">Clear</button>
-<button class="btn" onclick="window.print()" style="background:#e2e8f0">🖨️ Print</button>
-<button class="btn" onclick="exportToPDF()" style="background:#dc2626;color:#fff">📄 Export to PDF</button>
+<button class="btn" onclick="window.print()" style="background:#e2e8f0">Print</button>
 <span id="status" style="font-size:12px;color:#64748b;padding:10px"></span>
 </div>
 </div>
@@ -204,358 +89,37 @@ th:first-child{text-align:center}
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'}}
 function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
-function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
-function logout(){const u=getUser(); if(u&&u.token) fetch('/api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
+function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 const me=guard();
 const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
-
-let currentId = null;
-let currentChecks = {};
-
-async function loadById(idVal=null){
-  const inputId = idVal || document.getElementById('loadIdInput')?.value;
-  if(!inputId){ alert('Enter ID e.g. 5'); return; }
-  const statusEl=document.getElementById('status');
-  if(statusEl) statusEl.innerText='Loading ID '+inputId+'...';
-  try{
-    let data;
-    try{
-      const r=await fetch(`/api/qc-sheets/${inputId}`,{headers:authHeader()});
-      if(!r.ok) throw new Error('Auth failed');
-      data=await r.json();
-    }catch(e){
-      console.log('Auth load failed, trying public',e);
-      const r=await fetch(`/api/qc-sheets/public-get/${inputId}`);
-      data=await r.json();
-      if(!r.ok) throw new Error(data.error||'Not found');
-    }
-    // Populate fields
-    currentId = data.id;
-    const badge=document.getElementById('currentIdBadge');
-    if(badge){ badge.style.display='inline-block'; badge.innerText='Editing ID: '+currentId; }
-    document.getElementById('project').value=data.project_name||'Overberg WEF';
-    document.getElementById('contractor').value=data.location||data.contractor||'';
-    document.getElementById('structure').value=data.structure_number||'';
-    document.getElementById('collector').value=data.collector_number||'';
-    document.getElementById('section').value=data.section_number||'';
-    document.getElementById('gps').value=data.chainage_extra||data.gps||'';
-    document.getElementById('date').value=data.date||new Date().toISOString().slice(0,10);
-    document.getElementById('inspector').value=data.inspector||'';
-    // Load checklist
-    let checklist = data.checklist_data;
-    if(typeof checklist==='string'){ try{ checklist=JSON.parse(checklist); }catch{ checklist={}; } }
-    if(!checklist && data.checks) checklist=data.checks;
-    if(checklist){
-      for(let i=1;i<=18;i++){
-        const item = checklist[i] || checklist[String(i)];
-        if(!item) continue;
-        const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
-        const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
-        const commentEl=document.getElementById(`comment-${i}`);
-        if(item.pass!==undefined){
-          if(passEl) passEl.checked=!!item.pass;
-          if(failEl) failEl.checked=!!item.fail;
-        }else if(item.status){
-          if(passEl) passEl.checked=(item.status==='pass');
-          if(failEl) failEl.checked=(item.status==='fail');
-        }
-        if(commentEl) commentEl.value=item.comment||item.remark||'';
-        const tr=passEl?.closest('tr');
-        if(tr){
-          tr.classList.remove('pass','fail');
-          if(passEl?.checked) tr.classList.add('pass');
-          if(failEl?.checked) tr.classList.add('fail');
-        }
-      }
-    }
-    updateScore();
-    if(statusEl){ statusEl.innerText='✅ Loaded ID '+currentId+' - '+ (data.project_name||'')+' '+ (data.structure_number||''); statusEl.style.color='#16a34a'; }
-    setTimeout(()=>{ if(statusEl) statusEl.innerText=''; }, 4000);
-  }catch(e){
-    if(statusEl){ statusEl.innerText='❌ Load failed: '+e.message; statusEl.style.color='#dc2626'; }
-    console.error(e);
-    alert('Failed to load ID '+inputId+': '+e.message);
-  }
-}
-
-async function checkStructureExists(){
-  const structNo = document.getElementById('structure')?.value?.trim();
-  if(!structNo) return;
-  const statusEl=document.getElementById('status');
-  try{
-    let data=[];
-    try{
-      const r=await fetch('/api/qc-sheets',{headers:authHeader()});
-      data=await r.json();
-    }catch(e){
-      const r=await fetch('/api/qc-sheets/public-list');
-      data=await r.json();
-    }
-    // ONLY check within wooden H-Pole sheets, not steel monopoles
-    const woodenOnly = data.filter(s=>{ const t=(s.sheet_type||'').toLowerCase(); return t.includes('wood') || t.includes('h_pole'); });
-    const found = woodenOnly.find(s=> String(s.structure_number||'').trim() === structNo);
-    if(found){
-      if(statusEl){ statusEl.innerText=`⚠️ Structure ${structNo} already exists as ID ${found.id} - will update that ID`; statusEl.style.color='#f59e0b'; }
-      // Auto-load it?
-      if(confirm(`Structure ${structNo} already exists as ID ${found.id}. Load it to edit?`)){
-        loadById(found.id);
-      }
-    }
-  }catch(e){ console.error(e); }
-}
-
-async function loadByStructure(){
-  const inputVal = document.getElementById('loadIdInput')?.value?.trim();
-  const collectorVal = document.getElementById('loadCollectorInput')?.value?.trim();
-  if(!inputVal){ alert('Enter Structure No e.g. 450'); return; }
-  const statusEl=document.getElementById('status');
-  const displayCollector = collectorVal ? ` Collector ${collectorVal}` : '';
-  if(statusEl) statusEl.innerText='Searching Structure No '+inputVal+displayCollector+'...';
-  try{
-    // First try to load by structure number + collector via API
-    let data=null;
-    const queryCollector = collectorVal ? `?collector=${encodeURIComponent(collectorVal)}` : '';
-    try{
-      const r=await fetch(`/api/qc-sheets/by-structure/${encodeURIComponent(inputVal)}${queryCollector}`,{headers:authHeader()});
-      if(r.ok){ data=await r.json(); }
-    }catch{}
-    if(!data){
-      try{
-        const r=await fetch(`/api/qc-sheets/public-by-structure/${encodeURIComponent(inputVal)}${queryCollector}`);
-        if(r.ok){ data=await r.json(); }
-      }catch{}
-    }
-    // Fallback: search in list with collector logic
-    if(!data){
-      let allData=[];
-      try{
-        const r=await fetch('/api/qc-sheets',{headers:authHeader()});
-        allData=await r.json();
-      }catch{
-        const r=await fetch('/api/qc-sheets/public-list');
-        allData=await r.json();
-      }
-      // Filter by structure
-      let matches = allData.filter(s=>{
-        const struct = String(s.structure_number||'').trim();
-        return struct===inputVal || struct.toLowerCase()===inputVal.toLowerCase();
-      });
-      if(matches.length>0){
-        // If collector specified, filter further
-        if(collectorVal){
-          const exact = matches.filter(s=> String(s.collector_number||'').trim()===collectorVal);
-          if(exact.length>0) matches=exact;
-        }
-        if(matches.length===1){
-          data=matches[0];
-        }else if(matches.length>1){
-          // Multiple with same structure number - need collector to differentiate
-          const list = matches.map(m=> `ID ${m.id} - Structure ${m.structure_number} Collector ${m.collector_number||'?'}`).join('\n');
-          const choice = prompt(`Found ${matches.length} sheets with Structure No ${inputVal}:\n${list}\n\nEnter Collector No to open (e.g. 420), or ID:`);
-          if(choice){
-            // Try find by collector or ID
-            const byCollector = matches.find(m=> String(m.collector_number||'').trim()===choice.trim() || String(m.id)===choice.trim());
-            if(byCollector) data=byCollector;
-            else alert('Not found with that collector/ID');
-          }
-          if(!data) return;
-        }else{
-          data=matches[0];
-        }
-      }
-    }
-    if(!data){
-      const dc = collectorVal ? ` Collector ${collectorVal}` : '';
-      if(statusEl){ statusEl.innerText=`❌ Structure No ${inputVal}${dc} not found`; statusEl.style.color='#dc2626'; }
-      alert(`Structure No ${inputVal}${dc} not found. Create new sheet with that Structure No and Collector and Save.`);
-      return;
-    }
-    // If data is from list (not full), load full by ID
-    if(data.id && !data.checklist_data && !data.checks){
-      await loadById(data.id);
-    }else{
-      // Populate directly
-      currentId = data.id;
-      const badge=document.getElementById('currentIdBadge');
-      if(badge){ badge.style.display='inline-block'; badge.innerText='Editing ID: '+currentId+' (Struct '+inputVal+')'; }
-      document.getElementById('project').value=data.project_name||'Overberg WEF';
-      document.getElementById('contractor').value=data.location||data.contractor||'';
-      document.getElementById('structure').value=data.structure_number||inputVal;
-      document.getElementById('collector').value=data.collector_number||'';
-      document.getElementById('section').value=data.section_number||'';
-      document.getElementById('gps').value=data.chainage_extra||data.gps||'';
-      document.getElementById('date').value=data.date||new Date().toISOString().slice(0,10);
-      document.getElementById('inspector').value=data.inspector||'';
-      let checklist = data.checklist_data;
-      if(typeof checklist==='string'){ try{ checklist=JSON.parse(checklist); }catch{ checklist={}; } }
-      if(!checklist && data.checks) checklist=data.checks;
-      if(checklist){
-        for(let i=1;i<=18;i++){
-          const item = checklist[i] || checklist[String(i)];
-          if(!item) continue;
-          const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
-          const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
-          const commentEl=document.getElementById(`comment-${i}`);
-          if(item.pass!==undefined){
-            if(passEl) passEl.checked=!!item.pass;
-            if(failEl) failEl.checked=!!item.fail;
-          }else if(item.status){
-            if(passEl) passEl.checked=(item.status==='pass');
-            if(failEl) failEl.checked=(item.status==='fail');
-          }
-          if(commentEl) commentEl.value=item.comment||item.remark||'';
-          const tr=passEl?.closest('tr');
-          if(tr){
-            tr.classList.remove('pass','fail');
-            if(passEl?.checked) tr.classList.add('pass');
-            if(failEl?.checked) tr.classList.add('fail');
-          }
-        }
-      }
-      updateScore();
-      const dc2 = collectorVal ? ` Collector ${collectorVal}` : (data.collector_number ? ` Collector ${data.collector_number}` : '');
-      if(statusEl){ statusEl.innerText=`✅ Loaded Structure No ${inputVal}${dc2} - ID ${currentId}`; statusEl.style.color='#16a34a'; }
-    }
-  }catch(e){
-    if(statusEl){ statusEl.innerText='❌ Load failed: '+e.message; statusEl.style.color='#dc2626'; }
-    console.error(e);
-  }
-}
-
-async function loadRecentList(){
-  const sel=document.getElementById('recentSelect');
-  if(!sel) return;
-  try{
-    let data=[];
-    try{
-      const r=await fetch('/api/qc-sheets',{headers:authHeader()});
-      data=await r.json();
-    }catch(e){
-      const r=await fetch('/api/qc-sheets/public-list');
-      const j=await r.json();
-      data=j;
-    }
-    // STRICTLY separate - ONLY wooden H-Pole sheets, NOT steel
-    const wooden = data.filter(d=> {
-      const t=(d.sheet_type||'').toLowerCase();
-      return t.includes('wood') || t.includes('h_pole') || t==='wooden_pole' || t==='wooden_h_pole';
-    });
-    sel.innerHTML='<option value="">Select recent sheet... ('+wooden.length+' H-Pole only, '+data.length+' total in DB)</option>';
-    // Show ONLY wooden, most recent 50
-    const recent = wooden.slice().reverse().slice(0,50);
-    if(recent.length===0){
-      sel.innerHTML='<option value="">No H-Pole sheets yet - '+data.length+' other sheets in DB (Steel separated)</option>';
-    }
-    recent.forEach(s=>{
-      const collectorInfo = s.collector_number ? `Collector ${s.collector_number}` : 'No Collector';
-      const label = `Structure ${s.structure_number||'No-No'} + ${collectorInfo} - ID ${s.id} ${s.date||''}`.trim();
-      const opt=document.createElement('option');
-      opt.value=s.id;
-      opt.textContent=label;
-      // Also set data attribute for structure no search
-      opt.dataset.structure = s.structure_number||'';
-      sel.appendChild(opt);
-    });
-    // If URL has ?id=5, auto load
-    const params=new URLSearchParams(window.location.search);
-    const qid=params.get('id');
-    if(qid && !currentId){
-      document.getElementById('loadIdInput').value=qid;
-      loadById(qid);
-    }
-  }catch(e){
-    console.error('Load recent failed',e);
-  }
-}
 
 function setPass(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
-  const n=document.querySelector(`.na-check[data-row="${i}"]`);
-  if(p.checked){ f.checked=false; if(n) n.checked=false; }
-  const tr=p.closest('tr'); 
-  tr.classList.remove('fail'); 
-  tr.style.background='';
-  tr.style.borderLeft='';
-  if(p.checked) tr.classList.add('pass');
-  updateScore();
+  if(p.checked) f.checked=false;
+  const tr=p.closest('tr'); tr.classList.remove('fail'); if(p.checked) tr.classList.add('pass');
 }
 function setFail(i){
   const p=document.querySelector(`.pass-check[data-row="${i}"]`);
   const f=document.querySelector(`.fail-check[data-row="${i}"]`);
-  const n=document.querySelector(`.na-check[data-row="${i}"]`);
-  if(f.checked){ p.checked=false; if(n) n.checked=false; }
-  const tr=f.closest('tr'); 
-  tr.classList.remove('pass');
-  tr.style.background='';
-  tr.style.borderLeft='';
-  if(f.checked) tr.classList.add('fail');
-  updateScore();
-}
-function setNA(i){
-  const p=document.querySelector(`.pass-check[data-row="${i}"]`);
-  const f=document.querySelector(`.fail-check[data-row="${i}"]`);
-  const n=document.querySelector(`.na-check[data-row="${i}"]`);
-  if(n && n.checked){ p.checked=false; f.checked=false; }
-  const tr=n ? n.closest('tr') : p.closest('tr');
-  tr.classList.remove('pass','fail');
-  tr.style.background='';
-  tr.style.borderLeft='';
-  updateScore();
-}
-function highlightUnchecked(){
-  // Only Check block orange - no row background highlight per user request
-}
-function updateScore(){
-  let total=18, checked=0, pass=0, fail=0, na=0;
-  for(let i=1;i<=18;i++){
-    const p=document.querySelector(`.pass-check[data-row="${i}"]`)?.checked;
-    const f=document.querySelector(`.fail-check[data-row="${i}"]`)?.checked;
-    const n=document.querySelector(`.na-check[data-row="${i}"]`)?.checked;
-    if(p||f||n) checked++;
-    if(p) pass++;
-    if(f) fail++;
-    if(n) na++;
-  }
-  const progress = total ? Math.round(checked/total*100) : 0;
-  const unchecked = total - checked;
-  const el=document.getElementById('score');
-  highlightUnchecked();
-  if(el){
-    const failColor = fail>0 ? '#ef4444' : '#64748b';
-    const failWeight = fail>0 ? '800' : '400';
-    const failBg = fail>0 ? '#fee2e2' : 'transparent';
-    const failBorder = fail>0 ? '1px solid #fecaca' : '1px solid transparent';
-    const passColor = pass>0 ? '#16a34a' : '#64748b';
-    const passWeight = pass>0 ? '800' : '400';
-    const passBg = pass>0 ? '#dcfce7' : 'transparent';
-    const passBorder = pass>0 ? '1px solid #bbf7d0' : '1px solid transparent';
-    const uncheckColor = unchecked>0 ? '#ea580c' : '#64748b';
-    const uncheckWeight = unchecked>0 ? '800' : '400';
-    const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
-    const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
-    el.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span> • N/A ${na}`;
-  }
+  if(f.checked) p.checked=false;
+  const tr=f.closest('tr'); tr.classList.remove('pass'); if(f.checked) tr.classList.add('fail');
 }
 function clearAll(){
-  const contEl=document.getElementById('contractor'); if(contEl) contEl.value='AKC';
-
   if(!confirm('Clear all checks?')) return;
   document.querySelectorAll('.check').forEach(c=>c.checked=false);
   document.querySelectorAll('tr').forEach(tr=>{tr.classList.remove('pass','fail')});
   document.querySelectorAll('.comment').forEach(c=>c.value='');
-  updateScore();
 }
 async function saveSheet(){
   const u=getUser();
   if(u&&u.role==='viewer'){ alert('Viewer cannot save. Contact admin.'); return; }
   const checklist={};
-  for(let i=1;i<=18;i++){
+  for(let i=1;i<=13;i++){
     const p=document.querySelector(`.pass-check[data-row="${i}"]`).checked;
     const f=document.querySelector(`.fail-check[data-row="${i}"]`).checked;
-    const n=document.querySelector(`.na-check[data-row="${i}"]`)?.checked||false;
     const c=document.getElementById(`comment-${i}`).value;
-    checklist[i]={item: document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText, pass:p, fail:f, na:n, comment:c};
+    checklist[i]={item: document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText, pass:p, fail:f, comment:c};
   }
   const payload={
     project_name: document.getElementById('project').value,
@@ -563,7 +127,7 @@ async function saveSheet(){
     structure_number: document.getElementById('structure').value,
     collector_number: document.getElementById('collector').value,
     section_number: document.getElementById('section').value,
-    chainage_extra: document.getElementById('gps').value,
+    chainage_extra: document.getElementById('depth').value,
     date: document.getElementById('date').value,
     inspector: document.getElementById('inspector').value,
     status: 'submitted',
@@ -572,245 +136,13 @@ async function saveSheet(){
   };
   document.getElementById('status').innerText='Saving...';
   try{
-    const r=await fetch('/api/qc-sheets',{method:'POST',headers:authHeader(),body:JSON.stringify(payload)});
-    const text=await r.text();
-    let d;
-    try{ d=JSON.parse(text); }catch{
-      document.getElementById('status').innerText='❌ Server returned HTML - Session expired. Redirecting to login...';
-      console.error('Non-JSON response:', text.slice(0,500));
-      alert('Session expired or API route not found.\nPlease login again at /login');
-      window.location.href='/login';
-      return;
-    }
-    if(!r.ok){ document.getElementById('status').innerText='❌ '+(d.error||'Failed '+r.status); return; }
-    document.getElementById('status').innerText='✅ Saved ID '+d.id+' - View in Quality Management';
-  }catch(e){ document.getElementById('status').innerText='Error '+e.message; console.error(e); }
+    const r=await fetch('./api/qc-sheets',{method:'POST',headers:authHeader(),body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(!r.ok){ document.getElementById('status').innerText='❌ '+d.error; return; }
+    document.getElementById('status').innerText='✅ Saved ID '+d.id+' - View in All QC Sheets';
+  }catch(e){ document.getElementById('status').innerText='Error '+e.message; }
 }
 document.getElementById('date').valueAsDate=new Date();
-loadRecentList();
-// Auto load ?id=5 from URL
-(function(){ const p=new URLSearchParams(location.search); const id=p.get('id'); if(id){ document.getElementById('loadIdInput').value=id; setTimeout(()=>loadById(id),500); } })();
-
-async function saveCurrent(){
-  const statusEl=document.getElementById('status');
-  const msgEl=document.getElementById('msg');
-  if(statusEl) statusEl.innerText='Saving...';
-  // Collect checklist data
-  const checklist={};
-  for(let i=1;i<=18;i++){
-    const passEl=document.querySelector(`.pass-check[data-row="${i}"]`);
-    const failEl=document.querySelector(`.fail-check[data-row="${i}"]`);
-    const commentEl=document.getElementById(`comment-${i}`);
-    let status='';
-    if(passEl && passEl.checked) status='pass';
-    else if(failEl && failEl.checked) status='fail';
-    checklist[i]={status:status, remark:commentEl?commentEl.value:''};
-  }
-  const payload={
-    project_name:document.getElementById('project')?.value||'Overberg WEF',
-    location:`Structure ${document.getElementById('structure')?.value||''} Collector ${document.getElementById('collector')?.value||''} Section ${document.getElementById('section')?.value||''}`.trim(),
-    structure_number:document.getElementById('structure')?.value||'',
-    collector_number:document.getElementById('collector')?.value||'',
-    section_number:document.getElementById('section')?.value||'',
-    chainage_extra:document.getElementById('gps')?.value||'',
-    date:document.getElementById('date')?.value||new Date().toISOString().slice(0,10),
-    inspector:document.getElementById('inspector')?.value||'',
-    status:'in_progress',
-    sheet_type:'wooden_h_pole',
-    checklist_data:checklist,
-    contractor:document.getElementById('contractor')?.value||''
-  };
-  try{
-    let result;
-    if(currentId){
-      result=await api(`/api/qc-sheets/${currentId}`,'PUT',payload);
-    }else{
-      try{
-        result=await api('/api/qc-sheets','POST',payload);
-      }catch(e){
-        console.log('Auth save failed, trying public',e);
-        const r=await fetch('/api/qc-sheets/public-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        result=await r.json();
-        if(!r.ok) throw new Error(result.error||'Save failed');
-      }
-    }
-    if(result && result.id){
-      currentId=result.id;
-      if(statusEl){ statusEl.innerText='✅ Saved ID '+result.id+' at '+new Date().toLocaleTimeString(); statusEl.style.color='#16a34a'; }
-      if(msgEl){ msgEl.innerText='View in Quality Management'; }
-      setTimeout(()=>{ if(statusEl) statusEl.innerText=''; }, 5000);
-    }
-  }catch(e){
-    console.error('Auth save failed, trying public fallback',e);
-    try{
-      let r, d;
-      if(currentId){
-        r=await fetch(`/api/qc-sheets/public-update/${currentId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        d=await r.json();
-      }else{
-        r=await fetch('/api/qc-sheets/public-save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        d=await r.json();
-      }
-      if(r.ok){
-        currentId=d.id;
-        if(statusEl){ statusEl.innerText='✅ Saved (public fallback) ID '+d.id+' at '+new Date().toLocaleTimeString(); statusEl.style.color='#f59e0b'; }
-      }else{
-        throw new Error(d.error||'Save failed');
-      }
-    }catch(e2){
-      if(statusEl){ statusEl.innerText='❌ Save failed: '+e2.message; statusEl.style.color='#dc2626'; }
-      console.error(e2);
-    }
-  }
-}
-
-async function deleteCurrent(){
-  if(!currentId){ alert('No ID loaded to delete. Load an ID first.'); return; }
-  if(!confirm(`Delete Structure ${document.getElementById('structure')?.value||''} - ID ${currentId}? This cannot be undone.`)) return;
-  const statusEl=document.getElementById('status');
-  if(statusEl) statusEl.innerText='Deleting ID '+currentId+'...';
-  try{
-    let r;
-    try{
-      r=await fetch(`/api/qc-sheets/${currentId}`,{method:'DELETE',headers:authHeader()});
-    }catch(e){
-      r=await fetch(`/api/qc-sheets/public-delete/${currentId}`,{method:'DELETE'});
-    }
-    let d;
-    try{ d=await r.json(); }catch{ d={}; }
-    if(!r.ok) throw new Error(d.error||'Delete failed');
-    if(statusEl){ statusEl.innerText='✅ Deleted ID '+currentId; statusEl.style.color='#16a34a'; }
-    currentId=null;
-    const badge=document.getElementById('currentIdBadge');
-    if(badge) badge.style.display='none';
-    document.getElementById('loadIdInput').value='';
-    // Clear form
-    clearAll();
-    document.getElementById('structure').value='';
-    document.getElementById('collector').value='';
-    document.getElementById('section').value='';
-    document.getElementById('gps').value='';
-    loadRecentList();
-  }catch(e){
-    if(statusEl){ statusEl.innerText='❌ Delete failed: '+e.message; statusEl.style.color='#dc2626'; }
-    alert('Delete failed: '+e.message);
-  }
-}
-
-async function exportToPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','mm','a4');
-  const project = document.getElementById('project').value || 'Overberg WEF';
-  const contractor = document.getElementById('contractor').value || '';
-  const structure = document.getElementById('structure').value || '';
-  const collector = document.getElementById('collector').value || '';
-  const section = document.getElementById('section').value || '';
-  const gps = document.getElementById('gps').value || '';
-  const date = document.getElementById('date').value || new Date().toISOString().slice(0,10);
-  const inspector = document.getElementById('inspector').value || '';
-
-  doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text('H-Pole Wooden Structures - Quality Check Sheets', 10, 15);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(`Overberg WEF - H-Pole Wooden Structures`, 10, 21);
-  doc.text(`Project: ${project} | Contractor: ${contractor} | Date: ${date} | Inspected By: ${inspector}`, 10, 27);
-  doc.text(`Structure: ${structure} | Collector: ${collector} | Section: ${section} | GPS: ${gps}`, 10, 32);
-
-  let y=40;
-  doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('ITEM',10,y); doc.text('INSPECTION REQUIREMENT',20,y); doc.text('PASS',115,y); doc.text('FAIL',130,y); doc.text('N/A',145,y); doc.text('COMMENTS',160,y);
-  y+=3; doc.line(10,y,200,y); y+=4;
-  doc.setFont('helvetica','normal');
-  for(let i=1;i<=18;i++){
-    const req = document.querySelector(`#qcTable tbody tr:nth-child(${i}) td:nth-child(2)`).innerText;
-    const p = document.querySelector(`.pass-check[data-row="${i}"]`).checked ? 'YES' : '';
-    const f = document.querySelector(`.fail-check[data-row="${i}"]`).checked ? 'YES' : '';
-    const n = document.querySelector(`.na-check[data-row="${i}"]`)?.checked ? 'YES' : '';
-    const c = document.getElementById(`comment-${i}`).value || '';
-    if(y>270){ doc.addPage(); y=15; }
-    const lines = doc.splitTextToSize(req, 100);
-    doc.text(String(i),10,y);
-    doc.text(lines,20,y);
-    doc.text(p,115,y);
-    doc.text(f,130,y);
-    doc.text(n,145,y);
-    doc.text(doc.splitTextToSize(c,35),160,y);
-    y+= Math.max(6, lines.length*4);
-    doc.setDrawColor(230); doc.line(10,y,200,y); y+=2;
-  }
-  y+=5;
-  doc.setFont('helvetica','bold'); doc.text(`Generated: ${new Date().toLocaleString()} | Inspected By: ${inspector} | HZCProjects Overberg WEF`,10,y);
-  doc.save(`H_Pole_Wooden_Structures_${structure||'QC'}_${date}.pdf`);
-  document.getElementById('status').innerText='📄 PDF Exported!';
-}
-
-function toggleNav(){ const nav=document.getElementById('navLinks'); if(nav) nav.classList.toggle('open'); }
-// Close nav when clicking outside
-document.addEventListener('click', e=>{
-  const nav=document.getElementById('navLinks');
-  const ham=document.getElementById('hamburgerBtn');
-  if(nav && ham && !nav.contains(e.target) && !ham.contains(e.target) && nav.classList.contains('open')) nav.classList.remove('open');
-});
-
-function getGPS(){
-  const btn = document.querySelector('button[onclick="getGPS()"]');
-  if(!navigator.geolocation){ alert('GPS not supported'); return; }
-  if(btn) btn.innerText='📍 Getting GPS...';
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-    document.getElementById('gps').value = coords;
-    if(btn) btn.innerText='✅ GPS Captured';
-    setTimeout(()=>{ if(btn) btn.innerText='📍 Get Current GPS'; }, 2000);
-  }, err=>{
-    alert('GPS Error: '+err.message);
-    if(btn) btn.innerText='📍 Get Current GPS';
-  }, {enableHighAccuracy:true, timeout:10000});
-}
-</script>
-
-<div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
-<div class="search-box">
-<div class="search-input-wrap">
-<span>🔍</span>
-<input id="globalSearchInput" type="text" placeholder="Search QC sheets, structures, planner tasks, collectors..." oninput="doGlobalSearch(this.value)" autofocus>
-<button onclick="closeSearch()" style="border:none;background:#f1f5f9;padding:6px 10px;border-radius:6px;cursor:pointer">✕</button>
-</div>
-<div class="search-results" id="searchResults">
-<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...<br><small>Searches Structure No, Collector, Location, Project, Tasks</small></div>
-</div>
-</div>
-</div>
-
-<script>
-function openSearch(){ document.getElementById('searchOverlay').classList.add('open'); document.getElementById('globalSearchInput').focus(); }
-function closeSearch(){ document.getElementById('searchOverlay').classList.remove('open'); }
-let searchCache={qc:[],gantt:[]};
-async function loadSearchCache(){
-  try{
-    const [qc,gantt]=await Promise.all([fetch('/api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('/api/gantt-tasks').then(r=>r.json()).catch(()=>[])]);
-    searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[];
-  }catch{}
-}
-loadSearchCache();
-function doGlobalSearch(q){
-  const resEl=document.getElementById('searchResults');
-  if(!q || q.trim().length<1){ resEl.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...</div>'; return; }
-  q=q.toLowerCase();
-  const matches=[];
-  searchCache.qc.forEach(s=>{
-    const hay=[s.project_name,s.location,s.structure_number,s.collector_number,s.section_number,s.inspector,s.status,s.sheet_type].join(' ').toLowerCase();
-    if(hay.includes(q)) matches.push({type:'QC',title:`${s.project_name||''} - ${s.location||''} ${s.structure_number?'(Struct '+s.structure_number+')':''}`.trim(), sub:`${s.collector_number?'Collector '+s.collector_number+' • ':''}${s.date||''} • ${s.status||''} • ID ${s.id} • ${s.sheet_type||''}`, id:s.id, go:`./qc`});
-  });
-  searchCache.gantt.forEach(t=>{
-    const hay=[t.name,t.assignee,t.start_date,t.end_date].join(' ').toLowerCase();
-    if(hay.includes(q)) matches.push({type:'Planner',title:t.name, sub:`${t.assignee||''} • ${t.start_date||''} → ${t.end_date||''} • ${t.progress||0}%`, id:t.id, go:`./gantt`});
-  });
-  if(matches.length==0){ resEl.innerHTML=`<div style="padding:20px;text-align:center;color:#94a3b8">No results for "${q}"</div>`; return; }
-  resEl.innerHTML=matches.slice(0,30).map(m=>`<div class="search-item" onclick="window.location.href='${m.go}'"><div><b>[${m.type}] ${m.title}</b><br><small>${m.sub}</small></div><span style="font-size:10px;background:#f1f5f9;padding:4px 8px;border-radius:20px">Go →</span></div>`).join('');
-  // Also filter current page list if exists
-  if(typeof filterCurrentPage==='function'){ try{filterCurrentPage(q)}catch{} }
-}
-document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()=='k'){ e.preventDefault(); openSearch(); } if(e.key=='Escape') closeSearch(); });
 </script>
 </body>
 </html>
