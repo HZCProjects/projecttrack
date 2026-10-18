@@ -24,9 +24,12 @@
 .section{border:1px solid #e2e8f0;border-radius:12px;margin-bottom:12px;overflow:hidden}
 .section-head{background:#f8fafc;padding:10px 14px;display:flex;justify-content:space-between;cursor:pointer}
 .section-head h4{font-size:13px}.section-body{display:none;padding:0 14px 14px}.section.open .section-body{display:block}
-.section-header-row{display:grid;grid-template-columns:30px 1fr 65px 65px 65px 1fr;gap:8px;padding:8px 0;background:#0f172a;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:6px;margin-bottom:4px}
-.check-row{display:grid;grid-template-columns:30px 1fr 65px 65px 65px 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
-.check-box{width:18px;height:18px;cursor:pointer;accent-color:#0f172a}
+.section-header-row{display:grid;grid-template-columns:50px 1fr 70px 70px 70px 1fr;gap:8px;padding:8px 4px;background:#0f172a;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:6px;margin-bottom:4px;align-items:center}
+.section-header-row div{text-align:center}
+.section-header-row div:nth-child(2){text-align:left}
+.check-row{display:grid;grid-template-columns:50px 1fr 70px 70px 70px 1fr;gap:8px;align-items:center;justify-items:center;padding:10px 4px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.check-row div:nth-child(2){justify-self:start;text-align:left;width:100%}
+.check-box{width:20px;height:20px;cursor:pointer;accent-color:#0f172a;display:block;margin:0 auto}
 .check-box.pass-box{accent-color:#16a34a}
 .check-box.fail-box{accent-color:#dc2626}
 .check-box.na-box{accent-color:#64748b}
@@ -209,10 +212,10 @@ function renderChecks(){
       const isPass = val.status==='pass' ? 'checked' : '';
       const isFail = val.status==='fail' ? 'checked' : '';
       const isNA = val.status==='na' ? 'checked' : '';
-      rows+=`<div class="check-row"><div><b>${ii+1}</b></div><div>${it}</div>
-        <div class="check-cell"><input type="checkbox" class="check-box pass-box" ${isPass} onclick="event.stopPropagation(); setStatus('${key}','pass')" style="accent-color:#16a34a"></div>
-        <div class="check-cell"><input type="checkbox" class="check-box fail-box" ${isFail} onclick="event.stopPropagation(); setStatus('${key}','fail')" style="accent-color:#dc2626"></div>
-        <div class="check-cell"><input type="checkbox" class="check-box na-box" ${isNA} onclick="event.stopPropagation(); setStatus('${key}','na')"></div>
+      rows+=`<div class="check-row"><div style="text-align:center;width:100%;font-weight:700">${ii+1}</div><div>${it}</div>
+        <div class="check-cell" style="display:flex;justify-content:center;align-items:center;width:100%"><input type="checkbox" class="check-box pass-box" ${isPass} onclick="event.stopPropagation(); setStatus('${key}','pass')" style="accent-color:#16a34a"></div>
+        <div class="check-cell" style="display:flex;justify-content:center;align-items:center;width:100%"><input type="checkbox" class="check-box fail-box" ${isFail} onclick="event.stopPropagation(); setStatus('${key}','fail')" style="accent-color:#dc2626"></div>
+        <div class="check-cell" style="display:flex;justify-content:center;align-items:center;width:100%"><input type="checkbox" class="check-box na-box" ${isNA} onclick="event.stopPropagation(); setStatus('${key}','na')"></div>
         <div><input class="comment-input" placeholder="Comments..." value="${(val.remark||'').replace(/"/g,'&quot;')}" oninput="setRemark('${key}',this.value)" onclick="event.stopPropagation()"></div>
       </div>`;
     });
