@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
 .header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
 .header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px}
-.container{max-width:1200px;margin:0 auto;padding:24px}
+.container{max-width:1200px;margin:0 auto;padding:24px;width:100%}
 .hero{background:#fff;border-radius:20px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
 .hero h1{font-size:28px} .hero p{color:#64748b;font-size:14px;margin-top:6px}
 .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
@@ -16,7 +16,7 @@
 .section{margin-bottom:32px}
 .section h2{font-size:22px;margin-bottom:6px;display:flex;align-items:center;gap:8px;color:#0f172a;font-weight:800}
 .section .desc{font-size:13px;color:#475569;margin-bottom:16px;font-weight:500}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;justify-content:start}
 .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #f1f5f9;cursor:pointer;transition:.15s}
 .card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.1);border-color:#bfdbfe}
 .card.active{border-color:#3b82f6;background:#eff6ff}
@@ -91,7 +91,6 @@
 <div>
 <h1>Quality Management</h1>
 <div style="margin-top:8px"><span class="badge db">● Live DB Connected</span></div>
-</div>
 </div>
 </div>
 
@@ -203,10 +202,6 @@ const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&
 async function loadCounts(){
   try{
     const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
-    const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
-    const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
-    document.getElementById('multiCount').innerText=multi+' sheets';
-    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
   }catch{}
 }
 loadCounts();
