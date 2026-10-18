@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
-.header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px;position:sticky;top:0;z-index:20}
+.header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
 .header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:13px;margin-left:8px}
 .btn{border:none;padding:10px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
 .btn-blue{background:#3b82f6;color:#fff}.btn-dark{background:#0f172a;color:#fff}.btn-light{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
@@ -91,50 +91,12 @@
   .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
 }
 
-
-/* === A4 FIT - ensures page fits A4 width for Print / Export to PDF === */
-@media print {
-  @page { size: A4 portrait; margin: 12mm 10mm; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  body { background:#fff !important; margin:0 !important; padding:0 !important; width:210mm !important; }
-  .container { max-width:190mm !important; width:190mm !important; margin:0 auto !important; padding:0 !important; display:block !important; gap:0 !important; }
-  .sidebar-list, .no-print, .hamburger { display:none !important; }
-  .main { width:100% !important; max-width:190mm !important; margin:0 !important; padding:8mm 0 0 0 !important; box-shadow:none !important; border:none !important; border-radius:0 !important; }
-  .meta-grid { grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; margin:6px 0 !important; }
-  .f input, .f select { padding:5px 6px !important; font-size:10px !important; }
-  .f label { font-size:8px !important; }
-  #sheetTitle, h2 { font-size:14px !important; }
-  #score, #msg { font-size:10px !important; }
-  .section { border:1px solid #cbd5e1 !important; margin-bottom:6px !important; break-inside:avoid !important; page-break-inside:avoid !important; }
-  .section-head { padding:5px 8px !important; }
-  .section-head h4 { font-size:11px !important; }
-  .section-body { display:block !important; padding:0 6px 6px !important; }
-  .section-header-row { grid-template-columns:24px 1fr 40px 40px 40px 1fr !important; padding:4px 2px !important; font-size:8px !important; gap:4px !important; }
-  .check-row { grid-template-columns:24px 1fr 40px 40px 40px 1fr !important; padding:4px 2px !important; font-size:10px !important; gap:4px !important; border-bottom:1px solid #e2e8f0 !important; }
-  .comment-input { padding:4px 6px !important; font-size:9px !important; }
-  .badge { font-size:8px !important; padding:2px 4px !important; }
-  .btn { display:none !important; }
-}
-/* Screen A4 preview - constrain main to A4-like width on large screens for WYSIWYG */
-@media screen and (min-width: 900px) {
-  .main { max-width: 800px; }
-}
-
 </style>
 </head>
 <body>
-<div class="header no-print">
-<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
-<div>
-<a href="#" onclick="goBack()" style="background:#475569">← Previous</a>
-<a href="./">🏠 Home</a>
-<a href="./gantt">📅 Planner</a>
-<a href="./quality">🏗️ Quality Management</a>
-<input id="structureSearch" placeholder="Search Structure No..." style="padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff;font-size:12px;width:160px;margin-left:8px" onkeypress="if(event.key==='Enter') searchStructure()">
-<button onclick="searchStructure()" style="padding:6px 12px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:12px;cursor:pointer;margin-left:4px">🔍 Search</button>
-<a href="#" onclick="window.print()">🖨️ Print</a>
-<a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
-</div>
+<div class="header">
+<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
+<div class="nav-links" id="navLinks"><a href="#" onclick="goBack()" class="back-btn">← Previous</a><a href="/">🏠 Home</a><a href="/gantt">📅 Planner</a><a href="/quality">🏗️ Quality</a><a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a></div>
 </div>
 <div class="container">
 <div class="sidebar-list">
@@ -143,25 +105,18 @@
 <div id="list"></div>
 </div>
 <div class="main">
-<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px">
-<h2 id="sheetTitle" style="flex:1;min-width:280px;font-size:20px;line-height:1.3">Select or Create a Sheet</h2>
-<div style="display:flex;gap:8px;flex-shrink:0" class="no-print"><button class="btn btn-light" onclick="saveCurrent()" style="padding:8px 14px;font-size:12px;border:1px solid #e2e8f0">💾 Save to DB</button><button class="btn btn-light" onclick="duplicateSheet()" style="padding:8px 14px;font-size:12px">Duplicate</button><button class="btn btn-light" onclick="deleteSheet()" style="color:#ef4444;padding:8px 14px;font-size:12px">Delete</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+<h2 id="sheetTitle">Select or Create a Sheet</h2>
+<div style="display:flex;gap:8px"><button class="btn btn-light" onclick="saveCurrent()">💾 Save to DB</button><button class="btn btn-light" onclick="duplicateSheet()">Duplicate</button><button class="btn btn-light" onclick="deleteSheet()" style="color:#ef4444">Delete</button></div>
 </div>
-<div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+<div class="meta-grid">
 <div class="f"><label>Project Name</label><input id="proj" placeholder="Overberg WEF"></div>
-<div class="f"><label>Contractor</label><select id="contractor"><option value="" selected></option><option value="AKC">AKC</option><option value="SST">SST</option></select></div>
-<div class="f"><label>Inspected By:</label><input id="ins" placeholder="Name"></div>
+<div class="f"><label>Contractor</label><select id="contractor"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
+<div class="f"><label>Location / Structure No</label><input id="loc" placeholder="Pole 100"></div>
+<div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
 <div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
-</div>
-<div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr 1.2fr;gap:10px;margin-top:10px">
-<div class="f"><label>Structure No</label><input id="structure_no" placeholder="e.g. 246 / 296"></div>
-<div class="f"><label>Collector No</label><input id="collector_no" placeholder="e.g. 420"></div>
-<div class="f"><label>Section No</label><input id="section_no" placeholder="e.g. 421"></div>
-<div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="-26.257393, 28.400311"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
-</div>
-<div class="meta-grid" style="grid-template-columns:200px 1fr;gap:10px;margin-top:10px">
+<div class="f"><label>Inspected By:</label><input id="ins" placeholder="Name"></div>
 <div class="f"><label>Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
-<div style="display:none"><input id="loc" placeholder="Pole 100"></div>
 </div>
 <div id="score" style="font-size:14.4px;font-weight:700;margin:12px 0"></div>
 <div id="msg" style="font-size:13px;margin:8px 0;min-height:20px"></div>
@@ -183,7 +138,6 @@ let currentChecks = {};
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function guardSimple(){const u=getUser();if(!u||!u.token){window.location.href='/login';return null;}const rb=document.getElementById('roleBadge');if(rb){rb.innerText=(u.display_name||u.username)+' ('+u.role+')';}return u;}
 function authHeader(){const u=getUser();return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
-async function searchStructure(){ const v=document.getElementById("structureSearch").value.trim(); if(!v){ alert("Enter Structure No"); return;} try{ const r=await fetch("./api/qc-sheets/by-structure/"+encodeURIComponent(v)); const d=await r.json(); if(!d||d.length===0){ alert("No sheet for "+v); return;} if(typeof loadSheet==="function"&&d[0].id) loadSheet(d[0].id); document.getElementById("msg").innerText="Found "+d.length+" for "+v;}catch(e){ alert(e.message);} }
 function goBack(){if(document.referrer&&document.referrer.includes(window.location.host)){history.back();}else{window.location.href='/';}}
 function logout(){const u=getUser();if(u&&u.token)fetch('/api/auth/logout',{method:'POST',headers:authHeader()});localStorage.removeItem('projecttrack_user');window.location.href='/login';}
 guardSimple();
@@ -225,21 +179,14 @@ async function openSheet(id){
     currentId=id; 
     currentChecks=s.checks||s.checklist_data||{};
     if(typeof currentChecks==='string'){ try{ currentChecks=JSON.parse(currentChecks);}catch{ currentChecks={}; } }
-    document.getElementById('proj').value=s.project_name||'Overberg WEF'; 
-    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||'';
-    // New split fields
-    if(document.getElementById('structure_no')) document.getElementById('structure_no').value = s.structure_number || s.location?.match(/Structure Number ([^,]+)/)?.[1] || s.location || '';
-    if(document.getElementById('collector_no')) document.getElementById('collector_no').value = s.collector_number || '';
-    if(document.getElementById('section_no')) document.getElementById('section_no').value = s.section_number || '';
+    document.getElementById('proj').value=s.project_name||''; 
+    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||s.location||'AKC'; 
     document.getElementById('loc').value=s.location||'';
-    document.getElementById('gps').value=s.chainage_extra||s.gps||'';
+    document.getElementById('gps').value=s.chainage_extra||'';
     document.getElementById('date').value=s.date||''; 
     document.getElementById('ins').value=s.inspector||'';
-    document.getElementById('status').value=s.status||'draft';
-    // To layout: Title without Overberg prefix and without (ID X)
-    const locOnly = (s.location || '').replace(/^Overberg WEF\s*-\s*/i,'').replace(/\s*\(ID.*?\)/,'').trim();
-    const titleTo = locOnly || `Structure Number ${s.structure_number||''}${s.section_number ? ', Section '+s.section_number : ''}${s.collector_number ? ', Collectors '+s.collector_number : ''}`.trim() || `Structure ${s.structure_number||s.id}`;
-    document.getElementById('sheetTitle').innerText = titleTo;
+    document.getElementById('status').value=s.status||'draft'; 
+    document.getElementById('sheetTitle').innerText=`${s.project_name||''} - ${s.location||''} (ID ${s.id})`;
     renderChecks();
     loadList();
   }catch(e){ alert('Error opening sheet: '+e.message); }
@@ -309,7 +256,7 @@ function toggleCheck(key){
 function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
 async function createNew(){
   const proj=prompt('Project Name?', 'Overberg WEF')||'Overberg WEF';
-  const loc=prompt('Structure No / Location?', 'Structure Number 100, Section 4')||'SM-12';
+  const loc=prompt('Structure No / Location?', 'Pole Number 100, Section 4')||'SM-12';
   try{
     const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checklist_data:{}, chainage_extra:''});
     await loadList(); await openSheet(s.id);
@@ -318,18 +265,9 @@ async function createNew(){
 async function saveCurrent(){
   if(!currentId){ alert('Create a sheet first - click + New Steel Monopole QC Sheet'); return; }
   const btn=document.getElementById('msg'); btn.innerText='Saving...';
-  const structNo = document.getElementById('structure_no')?.value || '';
-  const collNo = document.getElementById('collector_no')?.value || '';
-  const sectNo = document.getElementById('section_no')?.value || '';
-  const locVal = document.getElementById('loc')?.value || '';
-  const combinedLoc = locVal || `${structNo ? 'Structure Number ' + structNo : ''}${sectNo ? ', Section ' + sectNo : ''}${collNo ? ', Collectors ' + collNo : ''}`.trim() || structNo;
-  if(document.getElementById('loc')) document.getElementById('loc').value = combinedLoc;
   const payload={
     project_name:document.getElementById('proj').value,
-    location:combinedLoc,
-    structure_number:structNo,
-    collector_number:collNo,
-    section_number:sectNo,
+    location:document.getElementById('loc').value,
     chainage_extra:document.getElementById('gps').value,
     date:document.getElementById('date').value,
     inspector:document.getElementById('ins').value,

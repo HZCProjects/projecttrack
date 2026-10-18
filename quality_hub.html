@@ -14,8 +14,8 @@
 .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
 .badge.db{background:#dcfce7;color:#166534}
 .section{margin-bottom:32px}
-.section h2{font-size:22px;margin-bottom:6px;display:flex;align-items:center;gap:8px;color:#0f172a;font-weight:800}
-.section .desc{font-size:13px;color:#475569;margin-bottom:16px;font-weight:500}
+.section h2{font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.section .desc{font-size:13px;color:#64748b;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1px solid #f1f5f9;cursor:pointer;transition:.15s}
 .card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.1);border-color:#bfdbfe}
@@ -29,59 +29,16 @@
 .btn{border:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer}
 .btn-dark{background:#0f172a;color:#fff} .btn-blue{background:#3b82f6;color:#fff}
 .divider{height:1px;background:#e2e8f0;margin:32px 0}
-.back-btn{color:#fff;text-decoration:none;background:#475569;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(255,255,255,.2)} .back-btn:hover{background:#334155}
-.search-btn{color:#fff;background:#8b5cf6;padding:6px 12px;border-radius:8px;font-size:12px;margin-left:8px;border:none;cursor:pointer} .search-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:flex-start;justify-content:center;padding-top:80px;z-index:100} .search-overlay.open{display:flex} .search-box{background:#fff;width:600px;max-width:90vw;border-radius:16px;overflow:hidden} .search-input-wrap{display:flex;align-items:center;padding:16px;border-bottom:1px solid #e2e8f0} .search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;padding:8px} .search-results{max-height:400px;overflow-y:auto;padding:8px} .search-item{padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between} .search-item:hover{background:#f8fafc}
-
-@media(max-width:1024px){
-  .container{padding:16px !important}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr)) !important}
-}
-@media(max-width:768px){
-  .header{flex-wrap:wrap;height:auto !important;min-height:auto;padding:12px !important;gap:8px;position:relative !important}
-  .header div{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  .header a, .back-btn, .search-btn{font-size:11px !important;padding:5px 8px !important;margin:2px !important}
-  .container{padding:10px !important}
-  .grid{grid-template-columns:1fr !important}
-  .hero{padding:16px !important;flex-direction:column;align-items:flex-start !important;gap:12px}
-  .hero h1{font-size:22px !important}
-  .card{padding:14px !important}
-  .card h3{font-size:14px !important}
-}
-@media(max-width:480px){
-  .header b{font-size:14px}
-  .hero h1{font-size:18px !important}
-  .hero p{font-size:12px !important}
-  .section h2{font-size:18px !important}
-  .btn{font-size:11px !important;padding:6px 10px !important}
-  .search-box{width:95vw !important}
-}
-
-
-/* HAMBURGER MENU FOR PHONES/TABLETS */
-.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px 8px;background:rgba(255,255,255,.15);border-radius:8px;border:1px solid rgba(255,255,255,.2)}
-.hamburger span{width:18px;height:2px;background:#fff;border-radius:2px;display:block}
-.nav-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-@media(max-width:768px){
-  .hamburger{display:flex !important}
-  .nav-links{display:none !important;flex-direction:column;position:absolute;top:100%;right:0;left:0;background:#0f172a;padding:12px;border-radius:0 0 12px 12px;z-index:50;box-shadow:0 8px 20px rgba(0,0,0,.3)}
-  .nav-links.open{display:flex !important}
-  .nav-links a, .nav-links button{width:100%;justify-content:flex-start !important;margin:2px 0 !important}
-  .header{position:relative !important;flex-wrap:wrap}
-  .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
-}
-
 </style>
 </head>
 <body>
 <div class="header">
-<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
-<div class="nav-links" id="navLinks">
-<a href="#" onclick="goBack()" class="back-btn">← Previous</a>
+<div><b>🏗️ Quality Management</b> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span> <span style="background:#10b981;padding:4px 8px;border-radius:20px;font-size:11px;margin-left:8px">Postgres</span></div>
+<div>
 <a href="./">🏠 Home</a>
 <a href="./gantt">📅 Planner</a>
 <a href="./api/export/excel">📊 Excel</a>
 <a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
-<button onclick="openSearch()" class="search-btn">🔍 Search</button>
 </div>
 </div>
 
@@ -103,19 +60,41 @@
 <div class="desc">Quality Control check sheets for construction verification. Choose a sheet type - each is stored separately with its own checklist.</div>
 
 <div class="grid">
-<!-- EXISTING MULTI SHEETS - SIMPLIFIED TO MATCH REQUESTED DESIGN -->
-<div class="card" onclick="go('./qc')" style="padding:20px">
-<h3 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px">1️⃣ Steel Monopoles QC Sheets</h3>
-<div style="display:flex;justify-content:flex-start">
-<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
+<!-- EXISTING MULTI SHEETS -->
+<div class="card" onclick="go('./qc')">
+<div class="card-header">
+<h3>1️⃣ General QC Multi Sheets</h3>
+<span class="badge" style="background:#0f172a;color:#fff">EXISTING</span>
+</div>
+<p><b>6 sections</b> • Foundation & Excavation, Pole Erection, Conductor Stringing, Earthing, Transformer, Testing. Unlimited sheets: Pole 12, Pole 13, etc.</p>
+<div class="meta">
+<span>📦 Foundation</span><span>🪵 Pole Erection</span><span>🔌 Conductor</span><span>⚡ Earthing</span><span>🔋 Transformer</span><span>🧪 Testing</span>
+</div>
+<div class="meta">
+<span class="green">● Database stored</span><span class="blue" id="multiCount">0 sheets</span><span>Pass/Fail/NA + Remarks</span>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px">
+<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')">Open Multi Sheets →</button>
+<button class="btn" style="background:#f1f5f9" onclick="event.stopPropagation(); go('./qc')">+ New Sheet</button>
 </div>
 </div>
 
-<!-- H-POLE WOODEN - SIMPLIFIED -->
-<div class="card" style="border-color:#f59e0b;padding:20px" onclick="go('./quality_check_wooden_pole.html')">
-<h3 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px">2️⃣ H-Pole Wooden Structures QC Sheets</h3>
-<div style="display:flex;justify-content:flex-start">
-<button class="btn btn-blue" onclick="event.stopPropagation(); go('./quality_check_wooden_pole.html')" style="background:#3b82f6;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
+<!-- NEW WOODEN POLE SHEET -->
+<div class="card" style="border-color:#f59e0b" onclick="go('./quality_check_wooden_pole.html')">
+<div class="card-header">
+<h3>2️⃣ Wooden Pole Inspections</h3>
+<span class="badge" style="background:#f59e0b;color:#fff">NEW • From Photo</span>
+</div>
+<p><b>13 checks</b> from site photo: Pole location, Straight/Plumb, H-pole bisectors, Bill cut, PVC 2.5m, Bonding clips, Bonding continuous, Bolts, Eye bolts, Stay wire 100mm, Lock nuts, Washers, Cross-arms.</p>
+<div class="meta">
+<span>📍 Location</span><span>📏 Plumb</span><span>🔩 Bolts</span><span>⚡ Bonding</span><span>🪵 Bill cut</span><span>🔧 Stay wire</span>
+</div>
+<div class="meta">
+<span class="amber">● 13 items • Pass/Fail + Comment</span><span class="green">● Saves to same DB</span><span>Sheet type: wooden_pole</span>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px">
+<button class="btn btn-blue" onclick="event.stopPropagation(); go('./quality_check_wooden_pole.html')">Open Wooden Pole Sheet →</button>
+<button class="btn" style="background:#fef3c7" onclick="event.stopPropagation(); go('./quality_check_wooden_pole.html')">New Inspection</button>
 </div>
 </div>
 </div>
@@ -145,7 +124,7 @@
 <div class="grid">
 <div class="card" onclick="go('./api/export/excel')">
 <h3>📥 Export All QC to Excel</h3>
-<p>Download all sheets (Steel Monopoles + H-Pole Wooden Pole) into one Excel file for client submission.</p>
+<p>Download all sheets (General + Wooden Pole) into one Excel file for client submission.</p>
 <div style="margin-top:12px"><button class="btn btn-dark">Download Excel →</button></div>
 </div>
 <div class="card" onclick="go('./api/status')">
@@ -159,27 +138,17 @@
 </div>
 
 <script>
-
-function toggleNav(){ const nav=document.getElementById('navLinks'); if(nav) nav.classList.toggle('open'); }
-// Close nav when clicking outside
-document.addEventListener('click', e=>{
-  const nav=document.getElementById('navLinks');
-  const ham=document.getElementById('hamburgerBtn');
-  if(nav && ham && !nav.contains(e.target) && !ham.contains(e.target) && nav.classList.contains('open')) nav.classList.remove('open');
-});
-
 function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
 function authHeader(){const u=getUser(); return u&&u.token?{'Authorization':'Bearer '+u.token,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
 function guard(){const u=getUser(); if(!u||!u.token){window.location.href='./login'; return null;} const rb=document.getElementById('roleBadge'); if(rb) rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; return u;}
-function goBack(){ if(document.referrer && document.referrer.includes(window.location.host)) { history.back(); } else { window.location.href="./"; } }
-function logout(){const u=getUser(); if(u&&u.token) fetch('/api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
+function logout(){const u=getUser(); if(u&&u.token) fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 function go(url){window.location.href=url;}
 guard();
 const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&&url.includes('/api/')&&!url.includes('/api/auth/login')){const u=getUser(); opts=opts||{}; opts.headers=opts.headers||{}; if(u&&u.token&&!opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;} return _f(url,opts);};
 
 async function loadCounts(){
   try{
-    const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
+    const r=await fetch('./api/qc-sheets',{headers:authHeader()}); const data=await r.json();
     const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
     const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
     document.getElementById('multiCount').innerText=multi+' sheets';
@@ -188,18 +157,5 @@ async function loadCounts(){
 }
 loadCounts();
 </script>
-
-<div class="search-overlay" id="searchOverlay" onclick="if(event.target==this) closeSearch()">
-<div class="search-box"><div class="search-input-wrap"><span>🔍</span><input id="globalSearchInput" type="text" placeholder="Search QC sheets..." oninput="doGlobalSearch(this.value)" autofocus><button onclick="closeSearch()" style="border:none;background:#f1f5f9;padding:6px 10px;border-radius:6px">✕</button></div><div class="search-results" id="searchResults"><div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Type to search...</div></div></div>
-</div>
-<script>
-function openSearch(){ document.getElementById('searchOverlay').classList.add('open'); document.getElementById('globalSearchInput').focus(); }
-function closeSearch(){ document.getElementById('searchOverlay').classList.remove('open'); }
-let searchCache={qc:[],gantt:[]};
-async function loadSearchCache(){ try{ const [qc,gantt]=await Promise.all([fetch('/api/qc-sheets').then(r=>r.json()).catch(()=>[]), fetch('/api/gantt-tasks').then(r=>r.json()).catch(()=>[]) ]); searchCache.qc=Array.isArray(qc)?qc:[]; searchCache.gantt=Array.isArray(gantt)?gantt:[]; }catch{} } loadSearchCache();
-function doGlobalSearch(q){ const resEl=document.getElementById('searchResults'); if(!q){ resEl.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8">Type to search...</div>'; return; } q=q.toLowerCase(); const matches=[]; searchCache.qc.forEach(s=>{ const hay=[s.project_name,s.location,s.structure_number,s.collector_number,s.inspector,s.sheet_type].join(' ').toLowerCase(); if(hay.includes(q)) matches.push({type:'QC',title:`${s.project_name||''} - ${s.location||''}`, sub:`${s.date||''} • ${s.status||''} • ID ${s.id}`, go:`./qc`}); }); searchCache.gantt.forEach(t=>{ if([t.name,t.assignee].join(' ').toLowerCase().includes(q)) matches.push({type:'Planner',title:t.name, sub:`${t.progress||0}%`, go:`./gantt`}); }); if(matches.length==0){ resEl.innerHTML=`<div style="padding:20px;text-align:center">No results for "${q}"</div>`; return; } resEl.innerHTML=matches.slice(0,30).map(m=>`<div class="search-item" onclick="window.location.href='${m.go}'"><div><b>[${m.type}] ${m.title}</b><br><small>${m.sub}</small></div><span style="font-size:10px;background:#f1f5f9;padding:4px 8px;border-radius:20px">Go →</span></div>`).join(''); }
-document.addEventListener('keydown', e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()=='k'){ e.preventDefault(); openSearch(); } if(e.key=='Escape') closeSearch(); });
-</script>
-
 </body>
 </html>

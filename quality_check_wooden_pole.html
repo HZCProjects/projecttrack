@@ -22,13 +22,13 @@ tr:nth-child(even){background:#f8fafc}
 tr.pass{background:#dcfce7 !important} tr.fail{background:#fee2e2 !important}
 .pass{background:#dcfce7} .fail{background:#fee2e2}
 td:first-child{text-align:center;font-weight:700}
-#qcTable{width:1260px;table-layout:fixed}
+#qcTable{width:100%;table-layout:fixed}
 #qcTable th:nth-child(1), #qcTable td:nth-child(1){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:500px;max-width:500px;min-width:500px;white-space:normal;word-wrap:break-word}
+#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:100%;max-width:100%;min-width:100%;white-space:normal;word-wrap:break-word}
 #qcTable th:nth-child(3), #qcTable td:nth-child(3){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(4), #qcTable td:nth-child(4){width:65px;max-width:65px;min-width:65px;text-align:center}
 #qcTable th:nth-child(5), #qcTable td:nth-child(5){width:65px;max-width:65px;min-width:65px;text-align:center}
-#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:500px;max-width:500px;min-width:500px}
+#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:100%;max-width:100%;min-width:100%}
 
 
 
@@ -117,6 +117,94 @@ th:first-child{text-align:center}
   .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
 }
 
+
+/* === A4 COMPLIANT FOR WOODEN STRUCTURES === */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+@media print {
+  html, body {
+    width: 210mm;
+    height: auto;
+    margin: 0 auto;
+    padding: 0;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .header, .no-print, .search-overlay, .hamburger {
+    display: none !important;
+  }
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    padding: 8mm !important;
+    margin-bottom: 4mm !important;
+    page-break-inside: avoid;
+    width: 190mm !important;
+    max-width: 190mm !important;
+  }
+  table {
+    page-break-inside: auto;
+    width: 190mm !important;
+    max-width: 190mm !important;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+}
+/* Screen A4 preview - container fits A4 */
+body {
+  max-width: 210mm;
+  margin: 0 auto;
+  background: #f8fafc;
+}
+.card {
+  max-width: 190mm;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+#qcTable {
+  width: 100% !important;
+  max-width: 190mm !important;
+  table-layout: fixed !important;
+  font-size: 11px !important;
+}
+#qcTable th:nth-child(1), #qcTable td:nth-child(1){width:8% !important;max-width:8% !important;min-width:auto !important;}
+#qcTable th:nth-child(2), #qcTable td:nth-child(2){width:48% !important;max-width:48% !important;min-width:auto !important;white-space:normal !important;word-wrap:break-word !important;font-size:11px !important;}
+#qcTable th:nth-child(3), #qcTable td:nth-child(3){width:8% !important;max-width:8% !important;min-width:auto !important;}
+#qcTable th:nth-child(4), #qcTable td:nth-child(4){width:8% !important;max-width:8% !important;min-width:auto !important;}
+#qcTable th:nth-child(5), #qcTable td:nth-child(5){width:8% !important;max-width:8% !important;min-width:auto !important;}
+#qcTable th:nth-child(6), #qcTable td:nth-child(6){width:20% !important;max-width:20% !important;min-width:auto !important;}
+.header {
+  max-width: 190mm;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Make input grids A4 fit */
+div[style*="width:320px"] {
+  width: 100% !important;
+  max-width: 44% !important;
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 2%;
+}
+div[style*="width:320px"] input, div[style*="width:320px"] select {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+div[style*="width:100%"] {
+  width: 100% !important;
+  max-width: 190mm !important;
+}
+
 </style>
 </head>
 <body>
@@ -151,9 +239,9 @@ th:first-child{text-align:center}
 <div style="width:320px"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567" style="width:320px"><button onclick="getGPS()" style="margin-top:4px;font-size:11px;padding:4px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:300px">📍 Get Current GPS</button></div>
 </div>
 
-<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:1300px;max-width:1300px">
+<div style="margin-top:16px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;display:flex;gap:8px;align-items:end;flex-wrap:wrap;width:100%;max-width:190mm">
   <div><label>Load by Structure No</label><div style="display:flex;gap:6px"><input id="loadIdInput" placeholder="e.g. 450" style="width:90px" type="text"><input id="loadCollectorInput" placeholder="Collector e.g. 420" style="width:110px" type="text"><button onclick="loadByStructure()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 14px">📂 Open</button></div></div>
-  <div style="flex:0 0 500px;max-width:500px;min-width:500px"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:500px" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
+  <div style="flex:1 1 200px;max-width:100%"><label>Recent H-Pole Sheets (Structure + Collector)</label><select id="recentSelect" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;width:100%" onchange="if(this.value) loadById(this.value)"><option value="">Select recent sheet... (4 H-Pole only, 8 total in DB)</option></select></div>
   <button onclick="loadRecentList()" class="btn" style="background:#fff;border:1px solid #e2e8f0;padding:10px 12px">🔄 Refresh List</button>
   <span id="currentIdBadge" style="font-size:12px;background:#dcfce7;color:#166534;padding:6px 10px;border-radius:20px;display:none">Editing ID: -</span>
   <button onclick="saveCurrent()" class="btn btn-primary" style="background:#0f172a;color:#fff;padding:10px 20px;font-weight:700">💾 Save to ProjectTrack</button>
