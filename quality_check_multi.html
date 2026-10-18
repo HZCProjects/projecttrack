@@ -27,7 +27,19 @@
 .section-header-row{display:grid;grid-template-columns:30px 1fr 65px 65px 65px 1fr;gap:8px;padding:8px 0;background:#0f172a;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:6px;margin-bottom:4px}
 .check-row{display:grid;grid-template-columns:30px 1fr 65px 65px 65px 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
 .check-box{width:18px;height:18px;cursor:pointer;accent-color:#0f172a}
-.check-cell{text-align:center;display:flex;justify-content:center}
+.check-box.pass-box{accent-color:#16a34a}
+.check-box.fail-box{accent-color:#dc2626}
+.check-box.na-box{accent-color:#64748b}
+.check-cell{text-align:center;display:flex;justify-content:center;position:relative}
+.check-row:has(.pass-box:checked){background:#f0fdf4}
+.check-row:has(.fail-box:checked){background:#fef2f2}
+.pass-check-label{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:.15s}
+.pass-check-label.checked-pass{background:#dcfce7;border-color:#16a34a;color:#16a34a}
+.fail-check-label{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:.15s}
+.fail-check-label.checked-fail{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.na-check-label{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:.15s}
+.na-check-label.checked-na{background:#f1f5f9;border-color:#64748b}
+
 .comment-input{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
 .comment-input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
 .badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;border:1px solid #e2e8f0;transition:.15s}
@@ -198,9 +210,9 @@ function renderChecks(){
       const isFail = val.status==='fail' ? 'checked' : '';
       const isNA = val.status==='na' ? 'checked' : '';
       rows+=`<div class="check-row"><div><b>${ii+1}</b></div><div>${it}</div>
-        <div class="check-cell"><input type="checkbox" class="check-box" ${isPass} onclick="event.stopPropagation(); setStatus('${key}','pass')"></div>
-        <div class="check-cell"><input type="checkbox" class="check-box" ${isFail} onclick="event.stopPropagation(); setStatus('${key}','fail')"></div>
-        <div class="check-cell"><input type="checkbox" class="check-box" ${isNA} onclick="event.stopPropagation(); setStatus('${key}','na')"></div>
+        <div class="check-cell"><input type="checkbox" class="check-box pass-box" ${isPass} onclick="event.stopPropagation(); setStatus('${key}','pass')" style="accent-color:#16a34a"></div>
+        <div class="check-cell"><input type="checkbox" class="check-box fail-box" ${isFail} onclick="event.stopPropagation(); setStatus('${key}','fail')" style="accent-color:#dc2626"></div>
+        <div class="check-cell"><input type="checkbox" class="check-box na-box" ${isNA} onclick="event.stopPropagation(); setStatus('${key}','na')"></div>
         <div><input class="comment-input" placeholder="Comments..." value="${(val.remark||'').replace(/"/g,'&quot;')}" oninput="setRemark('${key}',this.value)" onclick="event.stopPropagation()"></div>
       </div>`;
     });
