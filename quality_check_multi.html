@@ -124,7 +124,7 @@
 </head>
 <body>
 <div class="header no-print">
-<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Checking session...</span></div>
+<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
 <div>
 <a href="#" onclick="goBack()" style="background:#475569">← Previous</a>
 <a href="./">🏠 Home</a>
@@ -213,54 +213,22 @@ async function loadList(){
   }catch(e){ document.getElementById('msg').innerText='Error loading list: '+e.message; }
 }
 async function openSheet(id){
-  currentId=id;
-  // highlight sidebar
-  document.querySelectorAll('.sheet-item').forEach(el=>el.classList.remove('active'));
-  const sel=document.getElementById('list');
-  if(sel){
-    Array.from(sel.children).forEach((el,idx)=>{
-      const txt=el.innerHTML||'';
-      if(txt.includes('ID '+id)) el.classList.add('active');
-    });
-  }
   try{
-    let s;
-    try{
-      s=await api(`/api/qc-sheets/${id}`);
-    }catch(e){
-      console.log('Auth get failed, trying public get for id', id);
-      const r=await fetch(`/api/qc-sheets/public-get/${id}`);
-      if(r.ok){ s=await r.json(); } else { throw e; }
-    }
-    document.getElementById('proj').value=s.project_name||'';
+    const s = await api(`/api/qc-sheets/${id}`);
+    currentId=id; 
+    currentChecks=s.checks||s.checklist_data||{};
+    if(typeof currentChecks==='string'){ try{ currentChecks=JSON.parse(currentChecks);}catch{ currentChecks={}; } }
+    document.getElementById('proj').value=s.project_name||''; 
+    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||s.location||'AKC'; 
     document.getElementById('loc').value=s.location||'';
     document.getElementById('gps').value=s.chainage_extra||'';
-    document.getElementById('date').value=s.date||'';
+    document.getElementById('date').value=s.date||''; 
     document.getElementById('ins').value=s.inspector||'';
-    document.getElementById('status').value=s.status||'draft';
+    document.getElementById('status').value=s.status||'draft'; 
     document.getElementById('sheetTitle').innerText=`${s.project_name||''} - ${s.location||''} (ID ${s.id})`;
-    // Robust parse
-    let raw = s.checks || s.checklist_data || {};
-    if(typeof raw === 'string'){
-      try{ raw = JSON.parse(raw); }catch(e){ console.log('Parse fail 1', e); raw={}; }
-    }
-    if(typeof raw === 'string'){
-      try{ raw = JSON.parse(raw); }catch(e){ raw={}; }
-    }
-    currentChecks = raw && typeof raw === 'object' ? raw : {};
-    // Also check localStorage backup if DB is empty but we have local
-    if(Object.keys(currentChecks).length===0){
-      try{
-        const local = localStorage.getItem('steel_checks_'+id);
-        if(local){ const parsed=JSON.parse(local); if(Object.keys(parsed).length>0){ currentChecks=parsed; console.log('Restored from localStorage backup'); } }
-      }catch(e){}
-    }
-    console.log('Loaded checks for ID', id, currentChecks);
     renderChecks();
-  }catch(e){
-    console.error(e);
-    alert('Error opening sheet ID '+id+': '+e.message);
-  }
+    loadList();
+  }catch(e){ alert('Error opening sheet: '+e.message); }
 }
 function renderChecks(){
   const wrap=document.getElementById('sections'); 
@@ -312,9 +280,11 @@ function renderChecks(){
 }
 function setStatus(key, status){
   const cur=currentChecks[key]||{status:'',remark:''};
+  // If already same status, uncheck (toggle off)
   const next = cur.status===status ? '' : status;
   currentChecks[key]={...cur,status:next};
-  try{ if(currentId) localStorage.setItem('steel_checks_'+currentId, JSON.stringify(currentChecks)); }catch(e){}
+  // Preserve open states without full re-render? Do partial update for speed
+  // But keep renderChecks to update score - it preserves open states now
   renderChecks();
 }
 function toggleCheck(key){
@@ -322,10 +292,7 @@ function toggleCheck(key){
   const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];
   currentChecks[key]={...cur,status:next}; renderChecks();
 }
-function setRemark(key,v){ 
-  currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; 
-  try{ if(currentId) localStorage.setItem('steel_checks_'+currentId, JSON.stringify(currentChecks)); }catch(e){}
-}
+function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
 async function createNew(){
   const proj=prompt('Project Name?', 'Overberg WEF')||'Overberg WEF';
   const loc=prompt('Structure No / Location?', 'Pole Number 100, Section 4')||'SM-12';
@@ -394,10 +361,7 @@ async function duplicateSheet(){
       const r=await fetch(`/api/qc-sheets/public-get/${currentId}`);
       if(r.ok){ s=await r.json(); } else { throw e; }
     }
-    let rawDup = s.checks || s.checklist_data || {};
-    if(typeof rawDup === 'string'){ try{ rawDup=JSON.parse(rawDup);}catch(e){ rawDup={}; } }
-    if(typeof rawDup === 'string'){ try{ rawDup=JSON.parse(rawDup);}catch(e){ rawDup={}; } }
-    const payload={project_name:s.project_name, location:(s.location||'')+' (Copy)', date:s.date, inspector:s.inspector, status:'draft', checklist_data:rawDup, chainage_extra:s.chainage_extra, sheet_type:'steel_monopole'};
+    const payload={project_name:s.project_name, location:(s.location||'')+' (Copy)', date:s.date, inspector:s.inspector, status:'draft', checklist_data:s.checks||s.checklist_data||s.checklist_data, chainage_extra:s.chainage_extra, sheet_type:'steel_monopole'};
     let ns;
     try{
       ns=await api('/api/qc-sheets','POST',payload);
