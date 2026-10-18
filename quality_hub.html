@@ -100,10 +100,10 @@
 
 <div class="grid">
 <!-- EXISTING MULTI SHEETS - SIMPLIFIED TO MATCH REQUESTED DESIGN -->
-<div class="card" onclick="go('./qc')" style="padding:20px">
+<div class="card" onclick="go('./multi')" style="padding:20px">
 <h3 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px">1️⃣ Steel Monopoles QC Sheets</h3>
 <div style="display:flex;justify-content:flex-start">
-<button class="btn btn-dark" onclick="event.stopPropagation(); go('./qc')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
+<button class="btn btn-dark" onclick="event.stopPropagation(); go('./multi')" style="background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;font-weight:600">Open QC Sheets →</button>
 </div>
 </div>
 
@@ -177,7 +177,9 @@ async function loadCounts(){
   try{
     const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
     const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
-    const mc=document.getElementById('multiCount'); if(mc) mc.innerText=multi+' sheets';
+    const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
+    document.getElementById('multiCount').innerText=multi+' sheets';
+    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
   }catch{}
 }
 loadCounts();
