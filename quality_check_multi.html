@@ -143,18 +143,25 @@
 <div id="list"></div>
 </div>
 <div class="main">
-<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-<h2 id="sheetTitle">Select or Create a Sheet</h2>
-<div style="display:flex;gap:8px"><button class="btn btn-light" onclick="saveCurrent()">💾 Save to DB</button><button class="btn btn-light" onclick="duplicateSheet()">Duplicate</button><button class="btn btn-light" onclick="deleteSheet()" style="color:#ef4444">Delete</button></div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+<h2 id="sheetTitle" style="flex:1;min-width:280px;font-size:20px;line-height:1.3">Select or Create a Sheet</h2>
+<div style="display:flex;gap:8px;flex-shrink:0" class="no-print"><button class="btn btn-light" onclick="saveCurrent()" style="padding:8px 14px;font-size:12px;border:1px solid #e2e8f0">💾 Save to DB</button><button class="btn btn-light" onclick="duplicateSheet()" style="padding:8px 14px;font-size:12px">Duplicate</button><button class="btn btn-light" onclick="deleteSheet()" style="color:#ef4444;padding:8px 14px;font-size:12px">Delete</button></div>
 </div>
-<div class="meta-grid">
+<div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
 <div class="f"><label>Project Name</label><input id="proj" placeholder="Overberg WEF"></div>
-<div class="f"><label>Contractor</label><select id="contractor"><option value="AKC" selected>AKC</option><option value="SST">SST</option></select></div>
-<div class="f"><label>Location / Structure No</label><input id="loc" placeholder="Pole 100"></div>
-<div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="e.g. -34.1234, 19.4567"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
-<div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
+<div class="f"><label>Contractor</label><select id="contractor"><option value="" selected></option><option value="AKC">AKC</option><option value="SST">SST</option></select></div>
 <div class="f"><label>Inspected By:</label><input id="ins" placeholder="Name"></div>
+<div class="f"><label>Date of Inspection</label><input type="date" id="date"></div>
+</div>
+<div class="meta-grid" style="grid-template-columns:1fr 1fr 1fr 1.2fr;gap:10px;margin-top:10px">
+<div class="f"><label>Structure No</label><input id="structure_no" placeholder="e.g. 246 / 296"></div>
+<div class="f"><label>Collector No</label><input id="collector_no" placeholder="e.g. 420"></div>
+<div class="f"><label>Section No</label><input id="section_no" placeholder="e.g. 421"></div>
+<div class="f"><label>GPS Coordinates</label><input id="gps" placeholder="-26.257393, 28.400311"><button onclick="getSteelGPS()" style="margin-top:4px;font-size:11px;padding:6px 8px;border:none;background:#3b82f6;color:#fff;border-radius:6px;cursor:pointer;width:100%">📍 Get Current GPS</button></div>
+</div>
+<div class="meta-grid" style="grid-template-columns:200px 1fr;gap:10px;margin-top:10px">
 <div class="f"><label>Status</label><select id="status"><option value="draft">Draft</option><option value="in_progress">In Progress</option><option value="passed">Passed</option><option value="failed">Failed</option></select></div>
+<div style="display:none"><input id="loc" placeholder="Pole 100"></div>
 </div>
 <div id="score" style="font-size:14.4px;font-weight:700;margin:12px 0"></div>
 <div id="msg" style="font-size:13px;margin:8px 0;min-height:20px"></div>
@@ -218,14 +225,21 @@ async function openSheet(id){
     currentId=id; 
     currentChecks=s.checks||s.checklist_data||{};
     if(typeof currentChecks==='string'){ try{ currentChecks=JSON.parse(currentChecks);}catch{ currentChecks={}; } }
-    document.getElementById('proj').value=s.project_name||''; 
-    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||s.location||'AKC'; 
+    document.getElementById('proj').value=s.project_name||'Overberg WEF'; 
+    if(document.getElementById('contractor')) document.getElementById('contractor').value=s.contractor||'';
+    // New split fields
+    if(document.getElementById('structure_no')) document.getElementById('structure_no').value = s.structure_number || s.location?.match(/Pole Number ([^,]+)/)?.[1] || s.location || '';
+    if(document.getElementById('collector_no')) document.getElementById('collector_no').value = s.collector_number || '';
+    if(document.getElementById('section_no')) document.getElementById('section_no').value = s.section_number || '';
     document.getElementById('loc').value=s.location||'';
-    document.getElementById('gps').value=s.chainage_extra||'';
+    document.getElementById('gps').value=s.chainage_extra||s.gps||'';
     document.getElementById('date').value=s.date||''; 
     document.getElementById('ins').value=s.inspector||'';
-    document.getElementById('status').value=s.status||'draft'; 
-    document.getElementById('sheetTitle').innerText=`${s.project_name||''} - ${s.location||''} (ID ${s.id})`;
+    document.getElementById('status').value=s.status||'draft';
+    // To layout: Title without Overberg prefix and without (ID X)
+    const locOnly = (s.location || '').replace(/^Overberg WEF\s*-\s*/i,'').replace(/\s*\(ID.*?\)/,'').trim();
+    const titleTo = locOnly || `Pole Number ${s.structure_number||''}${s.section_number ? ', Section '+s.section_number : ''}${s.collector_number ? ', Collectors '+s.collector_number : ''}`.trim() || `Structure ${s.structure_number||s.id}`;
+    document.getElementById('sheetTitle').innerText = titleTo;
     renderChecks();
     loadList();
   }catch(e){ alert('Error opening sheet: '+e.message); }
@@ -304,9 +318,18 @@ async function createNew(){
 async function saveCurrent(){
   if(!currentId){ alert('Create a sheet first - click + New Steel Monopole QC Sheet'); return; }
   const btn=document.getElementById('msg'); btn.innerText='Saving...';
+  const structNo = document.getElementById('structure_no')?.value || '';
+  const collNo = document.getElementById('collector_no')?.value || '';
+  const sectNo = document.getElementById('section_no')?.value || '';
+  const locVal = document.getElementById('loc')?.value || '';
+  const combinedLoc = locVal || `${structNo ? 'Pole Number ' + structNo : ''}${sectNo ? ', Section ' + sectNo : ''}${collNo ? ', Collectors ' + collNo : ''}`.trim() || structNo;
+  if(document.getElementById('loc')) document.getElementById('loc').value = combinedLoc;
   const payload={
     project_name:document.getElementById('proj').value,
-    location:document.getElementById('loc').value,
+    location:combinedLoc,
+    structure_number:structNo,
+    collector_number:collNo,
+    section_number:sectNo,
     chainage_extra:document.getElementById('gps').value,
     date:document.getElementById('date').value,
     inspector:document.getElementById('ins').value,
