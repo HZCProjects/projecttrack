@@ -44,14 +44,8 @@ const u=getUser(); if(!u){window.location.href='./login';} else {
 }
 function logout(){localStorage.removeItem('projecttrack_user'); window.location.href='./login';}
 fetch('./api/status').then(r=>r.json()).then(s=>{
-  const isPG = s.use_postgres || s.db === 'Postgres' || s.database === 'postgres';
-  const dbName = s.db || s.database || (isPG ? 'Postgres' : 'SQLite');
-  const label = isPG ? `✅ ${dbName} Permanent • Quality Hub` : `⚠️ ${dbName} Ephemeral • Add DATABASE_URL`;
-  document.getElementById('dbStatus').innerText = label;
-  document.getElementById('dbStatus').style.background = isPG ? '#10b981' : '#f59e0b';
-  if(!isPG){
-    document.getElementById('dbStatus').title = 'Railway is using SQLite (data will reset on redeploy). Add Postgres plugin and DATABASE_URL env to use permanent Postgres.';
-  }
-}).catch(e=>{document.getElementById('dbStatus').innerText='DB offline - '+e; document.getElementById('dbStatus').style.background='#ef4444';});
+  document.getElementById('dbStatus').innerText = s.db + (s.use_postgres?' ✅ Postgres Permanent':' ⚠️ SQLite') + ' • Quality Hub';
+  document.getElementById('dbStatus').style.background = s.use_postgres ? '#10b981' : '#f59e0b';
+}).catch(()=>{document.getElementById('dbStatus').innerText='DB offline';});
 </script>
 </body></html>
