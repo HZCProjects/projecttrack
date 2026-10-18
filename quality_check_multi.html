@@ -91,6 +91,35 @@
   .header-title{width:100%;display:flex;justify-content:space-between;align-items:center}
 }
 
+
+/* === A4 FIT - ensures page fits A4 width for Print / Export to PDF === */
+@media print {
+  @page { size: A4 portrait; margin: 12mm 10mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background:#fff !important; margin:0 !important; padding:0 !important; width:210mm !important; }
+  .container { max-width:190mm !important; width:190mm !important; margin:0 auto !important; padding:0 !important; display:block !important; gap:0 !important; }
+  .sidebar-list, .no-print, .hamburger { display:none !important; }
+  .main { width:100% !important; max-width:190mm !important; margin:0 !important; padding:8mm 0 0 0 !important; box-shadow:none !important; border:none !important; border-radius:0 !important; }
+  .meta-grid { grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; margin:6px 0 !important; }
+  .f input, .f select { padding:5px 6px !important; font-size:10px !important; }
+  .f label { font-size:8px !important; }
+  #sheetTitle, h2 { font-size:14px !important; }
+  #score, #msg { font-size:10px !important; }
+  .section { border:1px solid #cbd5e1 !important; margin-bottom:6px !important; break-inside:avoid !important; page-break-inside:avoid !important; }
+  .section-head { padding:5px 8px !important; }
+  .section-head h4 { font-size:11px !important; }
+  .section-body { display:block !important; padding:0 6px 6px !important; }
+  .section-header-row { grid-template-columns:24px 1fr 40px 40px 40px 1fr !important; padding:4px 2px !important; font-size:8px !important; gap:4px !important; }
+  .check-row { grid-template-columns:24px 1fr 40px 40px 40px 1fr !important; padding:4px 2px !important; font-size:10px !important; gap:4px !important; border-bottom:1px solid #e2e8f0 !important; }
+  .comment-input { padding:4px 6px !important; font-size:9px !important; }
+  .badge { font-size:8px !important; padding:2px 4px !important; }
+  .btn { display:none !important; }
+}
+/* Screen A4 preview - constrain main to A4-like width on large screens for WYSIWYG */
+@media screen and (min-width: 900px) {
+  .main { max-width: 800px; }
+}
+
 </style>
 </head>
 <body>
