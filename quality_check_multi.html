@@ -5,7 +5,6 @@
 <title>ProjectTrack - Steel Monopoles QC - HZCProjects</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
 .header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
@@ -237,14 +236,39 @@ function renderChecks(){
   const uncheckWeight = unchecked>0 ? '800' : '400';
   const uncheckBg = unchecked>0 ? '#ffedd5' : 'transparent';
   const uncheckBorder = unchecked>0 ? '1px solid #fed7aa' : '1px solid transparent';
-    // AUTO STATUS LOGIC: Pass only when (pass + n/a) == total and no fail, any fail = In Progress
+  // AUTO STATUS LOGIC: When 100% - Pass, Not 100% - In Progress (0% = Draft)
   const statusEl = document.getElementById('status');
   if(statusEl){
     if(checked===0) statusEl.value='draft';
-    else if(fail>0) statusEl.value='in_progress';
-    else if((pass+na)===total) statusEl.value='pass';
+    else if(checked===total) statusEl.value='pass';
     else statusEl.value='in_progress';
   }
+  const scoreEl = document.getElementById('score');
+  if(scoreEl) scoreEl.innerHTML=`Checked ${checked}/${total} (${progress}%) • Pass <span style="color:${passColor};font-weight:${passWeight};background:${passBg};padding:2px 8px;border-radius:6px;border:${passBorder}">${pass}</span> • Fail <span style="color:${failColor};font-weight:${failWeight};background:${failBg};padding:2px 8px;border-radius:6px;border:${failBorder}">${fail}</span> • Uncheck <span style="color:${uncheckColor};font-weight:${uncheckWeight};background:${uncheckBg};padding:2px 8px;border-radius:6px;border:${uncheckBorder}">${unchecked}</span>`;
+}
+function setStatus(key, status){
+  const cur=currentChecks[key]||{status:'',remark:''};
+  // If already same status, uncheck (toggle off)
+  const next = cur.status===status ? '' : status;
+  currentChecks[key]={...cur,status:next};
+  // Preserve open states without full re-render? Do partial update for speed
+  // But keep renderChecks to update score - it preserves open states now
+  renderChecks();
+}
+function toggleCheck(key){
+  // Legacy fallback - cycle pass->fail->na->empty
+  const cur=currentChecks[key]||{status:'',remark:''}; const order=['','pass','fail','na']; const next=order[(order.indexOf(cur.status)+1)%order.length];
+  currentChecks[key]={...cur,status:next}; renderChecks();
+}
+function setRemark(key,v){ currentChecks[key]={...(currentChecks[key]||{}), remark:v, status:currentChecks[key]?.status||''}; }
+async function createNew(){
+  const proj=prompt('Project Name?', 'Overberg WEF')||'Overberg WEF';
+  const loc=prompt('Structure No / Location?', 'Pole Number 100, Section 4')||'SM-12';
+  try{
+    const s=await api('/api/qc-sheets','POST',{project_name:proj, location:loc, date:new Date().toISOString().slice(0,10), inspector:'HZC QC Team', status:'draft', sheet_type:'steel_monopole', checklist_data:{}, chainage_extra:''});
+    await loadList(); await openSheet(s.id);
+  }catch(e){ alert('Create failed: '+e.message); }
+}
 async function saveCurrent(){
   if(!currentId){ alert('Create a sheet first - click + New Steel Monopole QC Sheet'); return; }
   const btn=document.getElementById('msg'); btn.innerText='Saving...';
@@ -365,78 +389,7 @@ function getSteelGPS(){
     if(btn) btn.innerText='📍 Get Current GPS';
   }, {enableHighAccuracy:true, timeout:15000});
 }
-async function exportSteelPDF(){
-  const btn = document.querySelector('button[onclick="exportSteelPDF()"]');
-  const origText = btn ? btn.innerText : '';
-  if(btn) btn.innerText='📄 Generating PDF...';
-  
-  // Open all sections for export
-  const sectionsWrap = document.getElementById('sections');
-  const allSections = sectionsWrap.querySelectorAll('.section');
-  const prevOpenStates = [];
-  allSections.forEach((el,i)=>{ prevOpenStates[i]=el.classList.contains('open'); el.classList.add('open'); });
-  
-  // Wait for render
-  await new Promise(r=>setTimeout(r,300));
-  
-  const main = document.querySelector('.main');
-  const proj = document.getElementById('proj')?.value||'Overberg WEF';
-  const loc = document.getElementById('loc')?.value||'';
-  const date = document.getElementById('date')?.value||new Date().toISOString().slice(0,10);
-  const ins = document.getElementById('ins')?.value||'';
-  const gps = document.getElementById('gps')?.value||'';
-  
-  try{
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p','mm','a4');
-    
-    // Header
-    doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text('Steel Monopoles QC - '+proj, 10, 12);
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text(`Location: ${loc} | Date: ${date} | Inspector: ${ins} | GPS: ${gps}`, 10, 18);
-    
-    // Use html2canvas to capture main content with perfect alignment
-    const canvas = await html2canvas(main, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      windowWidth: main.scrollWidth,
-      width: main.scrollWidth
-    });
-    
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 190; // A4 width minus margins (210-20)
-    const imgHeight = canvas.height * imgWidth / canvas.width;
-    
-    let y = 22;
-    let heightLeft = imgHeight;
-    let position = 0;
-    
-    // Add first page image slice
-    doc.addImage(imgData, 'PNG', 10, y, imgWidth, imgHeight);
-    heightLeft -= (297 - y - 10); // A4 height 297mm
-    
-    while(heightLeft > 0){
-      position = heightLeft - imgHeight;
-      doc.addPage();
-      doc.addImage(imgData, 'PNG', 10, position + 22, imgWidth, imgHeight);
-      heightLeft -= 277;
-    }
-    
-    doc.save(`Steel_Monopole_QC_${loc||'QC'}_${date}.pdf`);
-    const msgEl = document.getElementById('msg');
-    if(msgEl){ msgEl.innerText='✅ PDF Exported with aligned columns'; msgEl.style.color='#16a34a'; setTimeout(()=>msgEl.innerText='',4000); }
-  }catch(e){
-    console.error('PDF export failed', e);
-    alert('PDF export failed: '+e.message+'\nTrying print fallback');
-    window.print();
-  }finally{
-    // Restore open states
-    allSections.forEach((el,i)=>{ if(!prevOpenStates[i]) el.classList.remove('open'); else el.classList.add('open'); });
-    if(btn) btn.innerText=origText||'📄 Export to PDF';
-  }
-}
+function exportSteelPDF(){ alert('PDF Export: Use browser Print → Save as PDF'); window.print(); }
 loadList();
 document.getElementById('date').valueAsDate=new Date();
 </script>
