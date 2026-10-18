@@ -11,75 +11,6 @@ try:
 except:
     HAS_PG = False
 
-
-# === v86 CHECKPOINT SYSTEM - Every 5 deployments / app actions ===
-import json as _cp_json
-import os as _cp_os
-from datetime import datetime as _cp_dt
-
-CHECKPOINT_FILE = 'checkpoints.jsonl'
-DEPLOY_COUNT_FILE = '.deploy_count'
-CHECKPOINT_EVERY = 5
-
-def _get_deploy_count():
-    try:
-        if _cp_os.path.exists(DEPLOY_COUNT_FILE):
-            with open(DEPLOY_COUNT_FILE, 'r') as f:
-                return int(f.read().strip() or '0')
-    except: pass
-    return 0
-
-def _inc_deploy_count():
-    c = _get_deploy_count() + 1
-    try:
-        with open(DEPLOY_COUNT_FILE, 'w') as f:
-            f.write(str(c))
-    except: pass
-    return c
-
-def save_checkpoint_summary(action='deploy', details=None):
-    count = _inc_deploy_count()
-    summary = {
-        'timestamp': _cp_dt.utcnow().isoformat() + 'Z',
-        'deploy_no': count,
-        'action': action,
-        'details': details or {},
-        'db_type': 'postgres' if USE_PG else 'sqlite'
-    }
-    # try get counts
-    try:
-        conn = get_conn(); cur = conn.cursor()
-        if USE_PG:
-            cur.execute('SELECT COUNT(*) FROM qc_sheets'); qc = cur.fetchone()[0]
-            cur.execute('SELECT COUNT(*) FROM gantt_tasks'); gantt = cur.fetchone()[0]
-            cur.execute('SELECT COUNT(*) FROM users'); users = cur.fetchone()[0]
-        else:
-            cur.execute('SELECT COUNT(*) FROM qc_sheets'); qc = cur.fetchone()[0]
-            cur.execute('SELECT COUNT(*) FROM gantt_tasks'); gantt = cur.fetchone()[0]
-            cur.execute('SELECT COUNT(*) FROM users'); users = cur.fetchone()[0]
-        conn.close()
-        summary['counts'] = {'qc_sheets': qc, 'gantt_tasks': gantt, 'users': users}
-    except Exception as e:
-        summary['counts_error'] = str(e)
-
-    # Append
-    try:
-        with open(CHECKPOINT_FILE, 'a') as f:
-            f.write(_cp_json.dumps(summary) + '\n')
-    except: pass
-
-    is_checkpoint = (count % CHECKPOINT_EVERY == 0)
-    if is_checkpoint:
-        print(f"[CHECKPOINT] #{count} - {action} - Summary saved")
-        # also create a readable md
-        try:
-            with open(f'checkpoint_{count}.md','w') as f:
-                f.write(f"# Checkpoint {count}\n\n- Time: {summary['timestamp']}\n- Action: {action}\n- Details: {summary.get('details')}\n- Counts: {summary.get('counts')}\n")
-        except: pass
-    return count, is_checkpoint
-
-# Hook into existing save endpoints via wrapper will be called manually
-
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -161,9 +92,6 @@ def init_db():
                 except Exception as e:
                     print(f"Migration add {col}: {e}")
             conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
             # Log current columns for debugging
             try:
                 cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='qc_sheets'")
@@ -194,15 +122,9 @@ def init_db():
                     # Column already exists in SQLite throws error, ignore
                     pass
             conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
     except Exception as e:
         print(f"Migration error: {e}")
         try: conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
         except: pass
     conn.close()
 
@@ -224,9 +146,6 @@ def init_users():
             else:
                 cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)', (u,p,r,dname,now))
         conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
     conn.close()
 
 init_db()
@@ -333,10 +252,7 @@ def public_save_qc():
                 else:
                     cur.execute('UPDATE qc_sheets SET project_name=?, location=?, structure_number=?, collector_number=?, section_number=?, chainage_extra=?, date=?, inspector=?, status=?, sheet_type=?, checklist_data=?, updated_at=? WHERE id=?',
                         (*vals, cdata, now, existing_id))
-                conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+                conn.commit(); conn.close()
                 return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no} Collector {collector_no} - ID {existing_id} (One ID per Structure+Collector)"})
         
         if USE_PG:
@@ -345,10 +261,7 @@ def public_save_qc():
         else:
             cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', (*vals,cdata,now,now))
             sid=cur.lastrowid
-        conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+        conn.commit(); conn.close()
         return jsonify({"id":sid, "created": True, "message": f"Created Structure {struct_no} - ID {sid}"})
     except Exception as e:
         print(f"public-save error (trying fallback): {e}")
@@ -371,10 +284,7 @@ def public_save_qc():
                     else:
                         cur.execute('UPDATE qc_sheets SET project_name=?, location=?, date=?, inspector=?, status=?, checklist_data=?, updated_at=? WHERE id=?',
                             (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, existing_id))
-                    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+                    conn.commit(); conn.close()
                     return jsonify({"id": existing_id, "updated": True, "message": f"Updated existing Structure {struct_no}"})
             
             if USE_PG:
@@ -385,10 +295,7 @@ def public_save_qc():
                 cur.execute('INSERT INTO qc_sheets (project_name,location,date,inspector,status,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)', 
                     (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, now))
                 sid=cur.lastrowid
-            conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+            conn.commit(); conn.close()
             return jsonify({"id":sid, "warning": "Saved via fallback"})
         except Exception as e2:
             conn.close()
@@ -408,10 +315,7 @@ def public_update_qc(sid):
         else:
             cur.execute('UPDATE qc_sheets SET project_name=?, location=?, chainage_extra=?, date=?, inspector=?, status=?, sheet_type=?, checklist_data=?, updated_at=? WHERE id=?',
                 (data.get('project_name',''), data.get('location',''), data.get('chainage_extra',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), data.get('sheet_type','steel_monopole'), cdata, now, sid))
-        conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+        conn.commit(); conn.close()
         return jsonify({"id": sid, "ok": True})
     except Exception as e:
         print(f"public-update error (fallback): {e}")
@@ -423,10 +327,7 @@ def public_update_qc(sid):
             else:
                 cur.execute('UPDATE qc_sheets SET project_name=?, location=?, date=?, inspector=?, status=?, checklist_data=?, updated_at=? WHERE id=?',
                     (data.get('project_name',''), data.get('location',''), data.get('date',''), data.get('inspector',''), data.get('status','draft'), cdata, now, sid))
-            conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+            conn.commit(); conn.close()
             return jsonify({"id": sid, "ok": True, "warning": "Updated without new columns"})
         except Exception as e2:
             conn.close()
@@ -464,10 +365,7 @@ def public_delete_qc(sid):
     try:
         if USE_PG: cur.execute('DELETE FROM qc_sheets WHERE id=%s',(sid,))
         else: cur.execute('DELETE FROM qc_sheets WHERE id=?',(sid,))
-        conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+        conn.commit(); conn.close()
         return jsonify({"ok":True, "id":sid})
     except Exception as e:
         conn.close()
@@ -501,9 +399,6 @@ def migrate_db():
                 except Exception as e:
                     print(f"Failed {col}: {e}")
             conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
             cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='qc_sheets' ORDER BY ordinal_position")
             cols = [r[0] for r in cur.fetchall()]
             conn.close()
@@ -696,10 +591,7 @@ def login():
         cur.execute('INSERT INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (token) DO NOTHING',(token,user['id'],user['username'],user['role'],user['display_name'],now))
     else:
         cur.execute('INSERT OR REPLACE INTO sessions (token,user_id,username,role,display_name,created_at) VALUES (?,?,?,?,?,?)',(token,user['id'],user['username'],user['role'],user['display_name'],now))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+    conn.commit(); conn.close()
     return jsonify({"id":user['id'],"username":user['username'],"role":user['role'],"display_name":user['display_name'],"token":token,"login_at":now})
 
 @app.route('/api/auth/logout', methods=['POST'])
@@ -711,10 +603,7 @@ def logout():
             conn=get_conn(); cur=conn.cursor()
             if USE_PG: cur.execute('DELETE FROM sessions WHERE token=%s',(token,))
             else: cur.execute('DELETE FROM sessions WHERE token=?',(token,))
-            conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+            conn.commit(); conn.close()
         except: pass
     return jsonify({"ok":True})
 
@@ -748,9 +637,6 @@ def create_user():
             cur.execute('INSERT INTO users (username,password_hash,role,display_name,created_at) VALUES (?,?,?,?,?)',(username,generate_password_hash(password),role,display_name,now))
             sid=cur.lastrowid
         conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass
     except Exception as e:
         conn.close(); return jsonify({"error":f"Username exists: {e}"}),400
     conn.close(); return jsonify({"id":sid})
@@ -781,10 +667,7 @@ def edit_user(uid):
         else: cur.execute('UPDATE users SET username=?, display_name=?, role=? WHERE id=?',(username,display_name,role,uid))
     if USE_PG: cur.execute('UPDATE sessions SET username=%s, role=%s, display_name=%s WHERE user_id=%s',(username,role,display_name,uid))
     else: cur.execute('UPDATE sessions SET username=?, role=?, display_name=? WHERE user_id=?',(username,role,display_name,uid))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close()
+    conn.commit(); conn.close()
     return jsonify({"ok":True})
 
 @app.route('/api/auth/users/<int:uid>', methods=['DELETE'])
@@ -794,10 +677,7 @@ def delete_user(uid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM users WHERE id=%s',(uid,))
     else: cur.execute('DELETE FROM users WHERE id=?',(uid,))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"ok":True})
+    conn.commit(); conn.close(); return jsonify({"ok":True})
 
 @app.route('/api/qc-sheets', methods=['GET'])
 def get_qc():
@@ -840,10 +720,7 @@ def create_qc():
     else:
         cur.execute('INSERT INTO qc_sheets (project_name,location,structure_number,collector_number,section_number,chainage_extra,date,inspector,status,sheet_type,checklist_data,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', (*vals,cdata,now,now))
         sid=cur.lastrowid
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"id":sid})
+    conn.commit(); conn.close(); return jsonify({"id":sid})
 
 @app.route('/api/qc-sheets/<int:sid>', methods=['PUT'])
 @require_role('inspector','qc_manager','admin')
@@ -858,10 +735,7 @@ def update_qc(sid):
     vals.extend([cdata, now, sid])
     if USE_PG: cur.execute(f'UPDATE qc_sheets SET {set_clause} WHERE id=%s', vals)
     else: cur.execute(f'UPDATE qc_sheets SET {set_clause} WHERE id=?', vals)
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"ok":True})
+    conn.commit(); conn.close(); return jsonify({"ok":True})
 
 @app.route('/api/qc-sheets/<int:sid>', methods=['DELETE'])
 @require_role('qc_manager','admin')
@@ -869,10 +743,7 @@ def delete_qc(sid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM qc_sheets WHERE id=%s',(sid,))
     else: cur.execute('DELETE FROM qc_sheets WHERE id=?',(sid,))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"ok":True})
+    conn.commit(); conn.close(); return jsonify({"ok":True})
 
 @app.route('/api/gantt-tasks', methods=['GET'])
 def get_gantt():
@@ -895,10 +766,7 @@ def create_gantt():
     else:
         cur.execute('INSERT INTO gantt_tasks (name,start_date,end_date,progress,assignee,dependencies,color,created_at) VALUES (?,?,?,?,?,?,?,?)',(name,start,end,data.get('progress',0),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),now))
         sid=cur.lastrowid
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"id":sid})
+    conn.commit(); conn.close(); return jsonify({"id":sid})
 
 @app.route('/api/gantt-tasks/<int:tid>', methods=['PUT'])
 @require_role('qc_manager','admin')
@@ -909,10 +777,7 @@ def update_gantt(tid):
         cur.execute('UPDATE gantt_tasks SET name=%s,start_date=%s,end_date=%s,progress=%s,assignee=%s,dependencies=%s,color=%s WHERE id=%s',(name,start,end,data.get('progress'),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),tid))
     else:
         cur.execute('UPDATE gantt_tasks SET name=?,start_date=?,end_date=?,progress=?,assignee=?,dependencies=?,color=? WHERE id=?',(name,start,end,data.get('progress'),data.get('assignee') or data.get('owner'),data.get('dependencies'),data.get('color'),tid))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"ok":True})
+    conn.commit(); conn.close(); return jsonify({"ok":True})
 
 @app.route('/api/gantt-tasks/<int:tid>', methods=['DELETE'])
 @require_role('qc_manager','admin')
@@ -920,10 +785,7 @@ def delete_gantt(tid):
     conn=get_conn(); cur=conn.cursor()
     if USE_PG: cur.execute('DELETE FROM gantt_tasks WHERE id=%s',(tid,))
     else: cur.execute('DELETE FROM gantt_tasks WHERE id=?',(tid,))
-    conn.commit()
-        try:
-            save_checkpoint_summary(action='qc_save', details={'project': payload.get('project_name') if 'payload' in locals() else ''})
-        except: pass; conn.close(); return jsonify({"ok":True})
+    conn.commit(); conn.close(); return jsonify({"ok":True})
 
 @app.route('/api/export/excel')
 def export_excel():
@@ -943,6 +805,80 @@ def export_excel():
     from io import BytesIO as Bio
     bio=Bio(); wb.save(bio); bio.seek(0)
     return app.response_class(bio.getvalue(), mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', headers={'Content-Disposition':'attachment; filename=QC_Export.xlsx'})
+
+
+# === v86 SAFE CHECKPOINT - Every 5 deployments / app actions ===
+import json as _cp_json
+import os as _cp_os
+from datetime import datetime as _cp_dt
+
+CHECKPOINT_FILE = 'checkpoints.jsonl'
+DEPLOY_COUNT_FILE = '.deploy_count'
+CHECKPOINT_EVERY = 5
+
+def _get_deploy_count():
+    try:
+        if _cp_os.path.exists(DEPLOY_COUNT_FILE):
+            with open(DEPLOY_COUNT_FILE, 'r') as f:
+                return int(f.read().strip() or '0')
+    except: pass
+    return 0
+
+def _inc_deploy_count():
+    c = _get_deploy_count() + 1
+    try:
+        with open(DEPLOY_COUNT_FILE, 'w') as f:
+            f.write(str(c))
+    except: pass
+    return c
+
+def save_checkpoint_summary(action='deploy', details=None):
+    count = _inc_deploy_count()
+    summary = {
+        'timestamp': _cp_dt.utcnow().isoformat() + 'Z',
+        'deploy_no': count,
+        'action': action,
+        'details': details or {},
+    }
+    try:
+        with open(CHECKPOINT_FILE, 'a') as f:
+            f.write(_cp_json.dumps(summary) + '\n')
+    except: pass
+    is_cp = (count % CHECKPOINT_EVERY == 0)
+    if is_cp:
+        try:
+            with open(f'checkpoint_{count}.md','w') as f:
+                f.write(f"# Checkpoint {count}\n- Time: {summary['timestamp']}\n- Action: {action}\n- Details: {details}\n")
+        except: pass
+    return count, is_cp
+
+@app.route('/api/checkpoints', methods=['GET'])
+def list_checkpoints():
+    if not _cp_os.path.exists(CHECKPOINT_FILE):
+        return jsonify([])
+    out=[]
+    try:
+        with open(CHECKPOINT_FILE,'r') as f:
+            for line in f:
+                if line.strip():
+                    out.append(_cp_json.loads(line))
+    except: pass
+    return jsonify(out[-50:])
+
+@app.route('/api/checkpoints/save', methods=['POST'])
+def manual_checkpoint():
+    data = request.get_json(silent=True) or {}
+    c, is_cp = save_checkpoint_summary(action=data.get('action','manual'), details=data)
+    return jsonify({'deploy_no': c, 'is_checkpoint': is_cp, 'every': CHECKPOINT_EVERY, 'message': 'Checkpoint saved' if is_cp else f'Count {c}, next checkpoint in {CHECKPOINT_EVERY - (c % CHECKPOINT_EVERY)}'})
+
+@app.route('/api/checkpoints/count', methods=['GET'])
+def get_count():
+    cnt = _get_deploy_count()
+    return jsonify({'count': cnt, 'next_checkpoint_in': CHECKPOINT_EVERY - (cnt % CHECKPOINT_EVERY) if cnt % CHECKPOINT_EVERY !=0 else 0})
+
+# Hook checkpoint on successful QC create - safe wrapper
+_original_create_qc = None
+
 
 if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8000)))
