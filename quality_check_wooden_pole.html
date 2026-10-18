@@ -22,7 +22,29 @@ tr:nth-child(even){background:#f8fafc}
 .btn-primary{background:#0f172a;color:#fff} .btn-save{background:#10b981;color:#fff}
 .check{width:18px;height:18px}
 .comment{width:100%}
-@media print{.no-print{display:none} body{background:#fff} .card{box-shadow:none} }
+
+/* === A4 FIT - ensures Wooden Pole fits A4 width for Print / Export to PDF === */
+@media print {
+  @page { size: A4 portrait; margin: 12mm 10mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background:#fff !important; margin:0 !important; padding:0 !important; width:210mm !important; }
+  .card { width:190mm !important; max-width:190mm !important; margin:0 auto 6mm auto !important; padding:4mm !important; box-shadow:none !important; border:1px solid #cbd5e1 !important; border-radius:6px !important; break-inside:avoid; }
+  .grid { grid-template-columns:1fr 1fr 1fr 1fr !important; gap:4px !important; margin-bottom:8px !important; }
+  input, select { padding:4px 6px !important; font-size:9px !important; }
+  label { font-size:7px !important; margin-bottom:2px !important; }
+  table { font-size:10px !important; }
+  th, td { padding:4px 5px !important; }
+  th { font-size:8px !important; }
+  .no-print, .hamburger { display:none !important; }
+  .header { display:none !important; }
+  h2 { font-size:14px !important; }
+  .sub { font-size:10px !important; }
+  .comment { padding:3px 5px !important; font-size:9px !important; }
+}
+@media screen and (min-width: 900px) {
+  .card { max-width: 800px; margin-left:auto; margin-right:auto; }
+}
+
 </style>
 </head>
 <body>
