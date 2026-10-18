@@ -7,7 +7,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#0f172a}
-.header{height:64px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:20}
+.header{height:60px;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-radius:12px;margin-bottom:20px;position:sticky;top:0;z-index:20}
 .header a{color:#fff;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:8px;font-size:13px;margin-left:8px}
 .btn{border:none;padding:10px 16px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
 .btn-blue{background:#3b82f6;color:#fff}.btn-dark{background:#0f172a;color:#fff}.btn-light{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
@@ -94,9 +94,15 @@
 </style>
 </head>
 <body>
-<div class="header">
-<div class="header-title" style="display:flex;justify-content:space-between;align-items:center;width:100%"><div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div><div class="hamburger" onclick="toggleNav()" id="hamburgerBtn"><span></span><span></span><span></span></div></div>
-<div class="nav-links" id="navLinks"><a href="#" onclick="goBack()" class="back-btn">← Previous</a><a href="/">🏠 Home</a><a href="/gantt">📅 Planner</a><a href="/quality">🏗️ Quality</a><a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a></div>
+<div class="header no-print">
+<div><b>🏗️ Steel Monopoles QC</b> <span style="opacity:.6;font-size:12px">Overberg WEF</span> <span id="roleBadge" style="background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px">Loading...</span></div>
+<div>
+<a href="./">🏠 Home</a>
+<a href="./gantt">📅 Planner</a>
+<a href="./quality">🏗️ Quality</a>
+<a href="#" onclick="window.print()">🖨️ Print</a>
+<a href="#" onclick="logout()" style="background:#ef4444">🚪 Logout</a>
+</div>
 </div>
 <div class="container">
 <div class="sidebar-list">
