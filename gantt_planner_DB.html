@@ -35,6 +35,38 @@
 .field input,.field select{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px}
 .kpi{display:flex;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #e2e8f0;font-size:12px}
 </style>
+
+<script>
+function getUser(){try{return JSON.parse(localStorage.getItem('projecttrack_user')||'null')}catch{return null}}
+function guardSimple(){
+  const u=getUser();
+  if(!u || !u.token){ window.location.href='./login'; return null; }
+  // Don't call /api/auth/me on page load - token is persistent now in DB, so no need to verify every load
+  const rb=document.getElementById('roleBadge'); if(rb){ rb.innerText=(u.display_name||u.username)+' ('+u.role+')'; rb.className='badge '+u.role; }
+  return u;
+}
+function authHeader(){
+  const u=getUser();
+  return u && u.token ? {'Authorization':'Bearer '+u.token,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
+}
+function logout(){
+  const u=getUser();
+  if(u && u.token){ fetch('./api/auth/logout',{method:'POST',headers:authHeader()}); }
+  localStorage.removeItem('projecttrack_user'); window.location.href='./login';
+}
+document.addEventListener('DOMContentLoaded', guardSimple);
+// Patch fetch to add token automatically
+const _f=window.fetch;
+window.fetch=function(url,opts){
+  if(typeof url==='string' && url.includes('/api/') && !url.includes('/api/auth/login')){
+    const u=getUser();
+    opts=opts||{}; opts.headers=opts.headers||{};
+    if(u && u.token && !opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+u.token;
+  }
+  return _f(url,opts);
+};
+</script>
+<style>.badge.viewer{background:#e0f2fe;color:#0369a1}.badge.inspector{background:#fef3c7;color:#92400e}.badge.qc_manager{background:#dbeafe;color:#1e40af}.badge.admin{background:#0f172a;color:#fff}#roleBadge{padding:4px 10px;border-radius:20px;font-size:11px;margin-left:8px;background:#0f172a;color:#fff}</style>
 </head>
 <body>
 <div class="header">
