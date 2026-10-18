@@ -93,6 +93,7 @@
 <div style="margin-top:8px"><span class="badge db">● Live DB Connected</span></div>
 </div>
 </div>
+</div>
 
 <!-- QC SHEETS HEADING -->
 <div class="section">
@@ -202,6 +203,10 @@ const _f=window.fetch; window.fetch=function(url,opts){if(typeof url==='string'&
 async function loadCounts(){
   try{
     const r=await fetch('/api/qc-sheets',{headers:authHeader()}); const data=await r.json();
+    const multi=data.filter(s=>!s.sheet_type || s.sheet_type==='trench' || s.sheet_type==='general').length;
+    const wooden=data.filter(s=>s.sheet_type==='wooden_pole').length;
+    document.getElementById('multiCount').innerText=multi+' sheets';
+    document.getElementById('sheetCount').innerText=(data.length)+' total QC sheets • '+wooden+' Wooden Pole';
   }catch{}
 }
 loadCounts();
