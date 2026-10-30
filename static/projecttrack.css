@@ -120,3 +120,17 @@ input:-webkit-autofill:active{
 /* Eye appears only on click/focus */
 .eye{display:none;align-items:center;justify-content:center}
 .eye.show{display:flex !important}
+
+/* LOGIN heading 36px per user request */
+h1.login-title, .login-title, h2.login-title, .title-login, .auth-title, #loginTitle, h1{
+}
+.login-box h1, .form-box h1, .auth-card h1, h1.auth-title{
+ font-size:36px !important;
+}
+.title, .login-h, .login-header{
+ font-size:36px !important;
+}
+/* Direct: find Login text - make any h1 in auth box 36px */
+.card h1, .box h1, .panel h1{
+ font-size:36px !important;
+}
