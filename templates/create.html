@@ -90,6 +90,69 @@ input{filter:none !important;}
  transform-origin:center !important;
  pointer-events:none !important;
 }
+
+/* FIX: Eye centered + white column even at end */
+.signin-wrapper, .signup-wrapper{
+ box-sizing:border-box !important;
+}
+.input-simple, .input-wrap-simple, .field, .field-full, .field-pass{
+ box-sizing:border-box !important;
+ width:100% !important;
+ height:44px !important;
+ background:#fff !important;
+ border:none !important;
+ display:flex !important;
+ align-items:center !important;
+ position:relative !important;
+ margin:0 !important;
+ padding:0 !important;
+ overflow:visible !important;
+}
+.input-simple input, .input-wrap-simple input, .field input, .field-full input{
+ box-sizing:border-box !important;
+ width:100% !important;
+ height:44px !important;
+ border:none !important;
+ outline:none !important;
+ padding-left:14px !important;
+ padding-right:48px !important;
+ margin:0 !important;
+ font-size:15px !important;
+ background:#fff !important;
+ display:block !important;
+ line-height:44px !important;
+}
+.eye{
+ position:absolute !important;
+ right:12px !important;
+ top:0 !important;
+ bottom:0 !important;
+ margin:auto 0 !important;
+ width:28px !important;
+ height:28px !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ transform:none !important;
+ line-height:28px !important;
+ font-size:20px !important;
+ padding:0 !important;
+ background:transparent !important;
+ border:none !important;
+ cursor:pointer !important;
+ z-index:10 !important;
+}
+.eye.slashed::after{
+ content:'' !important;
+ position:absolute !important;
+ left:2px !important;
+ top:50% !important;
+ width:24px !important;
+ height:2px !important;
+ background:#000 !important;
+ transform:translateY(-50%) rotate(-45deg) !important;
+ pointer-events:none !important;
+}
 </style>
 </head>
 <body>
