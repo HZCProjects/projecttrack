@@ -1,9 +1,0 @@
-*.zip
-*.tar.gz
-__pycache__/
-*.pyc
-.env
-*.db
-Sidebar.js
-SIDEBAR.JS
-header.js

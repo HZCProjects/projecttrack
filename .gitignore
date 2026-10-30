@@ -1,5 +1,16 @@
 *.zip
 __pycache__/
 *.pyc
-.env
+*.pyo
+instance/
+projecttrack.db
 *.db
+.env
+.venv
+venv/
+Sidebar.js
+sidebar.js
+header.js
+Header.js
+*.log
+.DS_Store
