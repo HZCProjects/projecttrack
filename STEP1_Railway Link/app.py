@@ -13,7 +13,7 @@ def static_files(path): return send_from_directory('static', path)
 @app.route('/projecttrack.css')
 def css_root(): return send_from_directory('static', 'projecttrack.css')
 @app.route('/health')
-def health(): return jsonify({"status":"ok","step":"STEP1_RAILWAY_LINK","db":"none"})
+def health(): return jsonify({"status":"ok","step":"STEP1_FIXED","db":"none"})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
