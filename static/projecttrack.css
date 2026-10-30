@@ -106,7 +106,7 @@ input:-webkit-autofill:active{
 
 /* ALIGN text in first box with password box - same padding, no eye */
 #loginEmail, #loginPass{
- padding-left:28px !important;
+ padding-left:14px !important;
  padding-right:14px !important;
  text-align:left !important;
 }
@@ -114,5 +114,5 @@ input:-webkit-autofill:active{
  padding:0 !important;
 }
 .input-simple input, .input-wrap-simple input{
- padding-left:28px !important;
+ padding-left:14px !important;
 }
