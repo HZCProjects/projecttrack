@@ -22,6 +22,19 @@ body{background:#383C40;margin:0;display:flex;justify-content:center;align-items
 .links{text-align:center;margin-top:18px;font-size:12px;line-height:2}
 .links a{color:#6B5BCE;text-decoration:none;font-weight:600}
 .links .black{color:#000;font-weight:700}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+ -webkit-box-shadow:0 0 0 1000px #fff inset !important;
+ box-shadow:0 0 0 1000px #fff inset !important;
+ background:#fff !important;
+ background-color:#fff !important;
+ -webkit-text-fill-color:#000 !important;
+ transition:background-color 5000s ease-in-out 0s !important;
+}
+input{filter:none !important;}
 </style>
 </head>
 <body>
@@ -29,11 +42,11 @@ body{background:#383C40;margin:0;display:flex;justify-content:center;align-items
 <h1>Sign In</h1>
 
 <div class="label">Email or Username</div>
-<div class="input-simple"><input id="loginEmail" type="text" autocomplete="off"></div>
+<div class="input-simple"><input id="loginEmail" type="text" autocomplete="new-username" name="pt_login_email_xyz" spellcheck="false"></div>
 
 <div class="label">Password</div>
 <div class="input-wrap-simple">
-<input id="loginPass" type="password">
+<input id="loginPass" type="password" autocomplete="new-password" name="pt_login_pass_xyz">
 <button class="eye" id="eyeLogin" onclick="toggle('loginPass')">👁</button>
 </div>
 

@@ -20,6 +20,19 @@ body{background:#383C40;margin:0;display:flex;justify-content:center;align-items
 .links a{color:#6B5BCE;text-decoration:none;font-weight:600}
 .links .black{color:#000;font-weight:700}
 .note{color:#6B5BCE;font-size:11px;text-align:center;margin-top:4px;font-weight:600}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+ -webkit-box-shadow:0 0 0 1000px #fff inset !important;
+ box-shadow:0 0 0 1000px #fff inset !important;
+ background:#fff !important;
+ background-color:#fff !important;
+ -webkit-text-fill-color:#000 !important;
+ transition:background-color 5000s ease-in-out 0s !important;
+}
+input{filter:none !important;}
 </style>
 </head>
 <body>
@@ -27,23 +40,23 @@ body{background:#383C40;margin:0;display:flex;justify-content:center;align-items
 <h1>Sign Up</h1>
 
 <div class="label">*Name</div>
-<div class="input-simple"><input id="regName" type="text" autocomplete="off"></div>
+<div class="input-simple"><input id="regName" type="text" autocomplete="off" name="pt_reg_name_xyz" spellcheck="false"></div>
 
 <div class="label">*Surname</div>
-<div class="input-simple"><input id="regSurname" type="text" autocomplete="off"></div>
+<div class="input-simple"><input id="regSurname" type="text" autocomplete="off" name="pt_reg_surname_xyz" spellcheck="false"></div>
 
 <div class="label">*Username / Email</div>
-<div class="input-simple"><input id="regEmail" type="text" autocomplete="off"></div>
+<div class="input-simple"><input id="regEmail" type="text" autocomplete="new-username" name="pt_reg_email_xyz" spellcheck="false"></div>
 
 <div class="label">*Password</div>
 <div class="input-wrap-simple">
-<input id="regPass" type="password">
+<input id="regPass" type="password" autocomplete="new-password" name="pt_reg_pass_xyz">
 <button class="eye" id="eyeReg" onclick="toggle('regPass')">👁</button>
 </div>
 
 <div class="label">*Repeat Password</div>
 <div class="input-wrap-simple">
-<input id="regRepeat" type="password">
+<input id="regRepeat" type="password" autocomplete="new-password" name="pt_reg_repeat_xyz">
 <button class="eye" id="eyeRegRep" onclick="toggle('regRepeat')">👁</button>
 </div>
 
