@@ -5,8 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-# STEP2: SQLite only - Real DB First
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projecttrack.db'
+os.makedirs(app.instance_path, exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'projecttrack.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -24,15 +24,20 @@ class User(db.Model):
     token_expiry=db.Column(db.DateTime, nullable=True)
 
 def init_db():
-    db.create_all()
-    defaults=[("ROOT","root@hzcprojects.com","root123","ROOT"),("Admin","admin@hzcprojects.com","admin123","admin"),("Viewer","viewer@hzcprojects.com","viewer123","viewer")]
-    for name,email,pwd,role in defaults:
-        if not User.query.filter_by(email=email).first():
-            u=User(name=name,email=email,password_hash=generate_password_hash(pwd),role=role)
-            db.session.add(u)
-    db.session.commit()
+    try:
+        db.create_all()
+        defaults=[("ROOT","root@hzcprojects.com","root123","ROOT"),("Admin","admin@hzcprojects.com","admin123","admin"),("Viewer","viewer@hzcprojects.com","viewer123","viewer")]
+        for name,email,pwd,role in defaults:
+            if not User.query.filter_by(email=email).first():
+                u=User(name=name,email=email,password_hash=generate_password_hash(pwd),role=role)
+                db.session.add(u)
+        db.session.commit()
+        print("DB initialized")
+    except Exception as e:
+        print("DB init error:", e)
 
-with app.app_context(): init_db()
+with app.app_context():
+    init_db()
 
 def get_user_by_token(t):
     if not t: return None
@@ -50,9 +55,12 @@ def log(): return send_from_directory('templates','login.html')
 @app.route('/static/<path:path>')
 def sf(path): return send_from_directory('static', path)
 @app.route('/projecttrack.css')
-def css(): return send_from_directory('static','projecttrack.css')
+def css_file(): return send_from_directory('static','projecttrack.css')
 @app.route('/health')
-def health(): return jsonify({"status":"ok","step":"STEP2_USER_DB_GREEN","db":"sqlite","users":User.query.count()})
+def health():
+    try: count = User.query.count()
+    except: count = 0
+    return jsonify({"status":"ok","step":"STEP2_FINAL_GREEN","db":"sqlite","users":count})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -86,16 +94,16 @@ def logout():
 @app.route('/api/users', methods=['GET'])
 def list_users():
     users=User.query.order_by(User.id).all()
-    return jsonify([{"id":x.id,"name":x.name,"email":x.email,"role":x.role,"last_login":x.last_login.isoformat() if x.last_login else None, "created_at":x.created_at.isoformat() if x.created_at else None} for x in users])
+    return jsonify([{"id":x.id,"name":x.name,"email":x.email,"role":x.role,"last_login":x.last_login.isoformat() if x.last_login else None} for x in users])
 
 @app.route('/api/users/<int:uid>', methods=['DELETE'])
 def del_user(uid):
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     caller=get_user_by_token(t)
     if not caller: return jsonify({"error":"Unauthorized"}),401
-    if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden - Admin only"}),403
+    if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden"}),403
     if caller.id==uid: return jsonify({"error":"Cannot delete self"}),400
-    u=User.query.get(uid)
+    u=db.session.get(User, uid)
     if not u: return jsonify({"error":"Not found"}),404
     if u.role=='ROOT' and caller.role!='ROOT': return jsonify({"error":"Only ROOT can delete ROOT"}),403
     db.session.delete(u); db.session.commit()
@@ -103,4 +111,5 @@ def del_user(uid):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
+    print(f"Starting on 0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port)
