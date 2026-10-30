@@ -57,7 +57,10 @@ function toggle(id){
  if(!inp) return;
  if(inp.type==='password'){inp.type='text';btn.innerHTML='◑';} else {inp.type='password';btn.innerHTML='👁';}
 }
+
 async function doCreate(){
+ console.log('Creating account...');
+
  let name=document.getElementById('regName').value.trim();
  let surname=document.getElementById('regSurname').value.trim();
  let email=document.getElementById('regEmail').value.trim();

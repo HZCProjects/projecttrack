@@ -135,3 +135,7 @@ def dashboard():
 @app.route('/index.html')
 def index_page():
     return render_template('index.html')
+
+@app.route('/signup')
+def signup_page():
+    return render_template('create.html')
