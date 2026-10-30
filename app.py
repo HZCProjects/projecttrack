@@ -24,17 +24,13 @@ class User(db.Model):
     token_expiry=db.Column(db.DateTime, nullable=True)
 
 def init_db():
-    try:
-        db.create_all()
-        defaults=[("ROOT","root@hzcprojects.com","root123","ROOT"),("Admin","admin@hzcprojects.com","admin123","admin"),("Viewer","viewer@hzcprojects.com","viewer123","viewer")]
-        for name,email,pwd,role in defaults:
-            if not User.query.filter_by(email=email).first():
-                u=User(name=name,email=email,password_hash=generate_password_hash(pwd),role=role)
-                db.session.add(u)
-        db.session.commit()
-        print("DB initialized")
-    except Exception as e:
-        print("DB init error:", e)
+    db.create_all()
+    defaults=[("ROOT","root@hzcprojects.com","root123","ROOT"),("Admin","admin@hzcprojects.com","admin123","admin"),("Viewer","viewer@hzcprojects.com","viewer123","viewer")]
+    for name,email,pwd,role in defaults:
+        if not User.query.filter_by(email=email).first():
+            u=User(name=name,email=email,password_hash=generate_password_hash(pwd),role=role)
+            db.session.add(u)
+    db.session.commit()
 
 with app.app_context():
     init_db()
@@ -58,27 +54,26 @@ def sf(path): return send_from_directory('static', path)
 def css_file(): return send_from_directory('static','projecttrack.css')
 @app.route('/health')
 def health():
-    try: count = User.query.count()
-    except: count = 0
-    return jsonify({"status":"ok","step":"STEP2_FINAL_GREEN","db":"sqlite","users":count})
+    try: c=User.query.count()
+    except: c=0
+    return jsonify({"status":"ok","step":"STEP2_NO_RUNTIME","db":"sqlite","users":c})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     d=request.get_json() or {}
     name=d.get('name','').strip(); email=d.get('email','').strip().lower(); pwd=d.get('password',''); role=d.get('role','viewer')
-    if not name or not email or not pwd: return jsonify({"error":"Name,email,password required"}),400
-    if role not in ['ROOT','admin','manager','viewer']: role='viewer'
-    if User.query.filter_by(email=email).first(): return jsonify({"error":"Email already exists"}),400
+    if not name or not email or not pwd: return jsonify({"error":"Required"}),400
+    if User.query.filter_by(email=email).first(): return jsonify({"error":"Exists"}),400
     u=User(name=name,email=email,password_hash=generate_password_hash(pwd),role=role)
     db.session.add(u); db.session.commit()
-    return jsonify({"message":"Created","user":{"id":u.id,"email":u.email}}),201
+    return jsonify({"message":"Created","user":{"id":u.id}}),201
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     d=request.get_json() or {}
     email=d.get('email','').strip().lower(); pwd=d.get('password','')
     u=User.query.filter_by(email=email).first()
-    if not u or not check_password_hash(u.password_hash,pwd): return jsonify({"error":"Invalid credentials"}),401
+    if not u or not check_password_hash(u.password_hash,pwd): return jsonify({"error":"Invalid"}),401
     token=secrets.token_urlsafe(32)
     u.token=token; u.token_expiry=datetime.utcnow()+timedelta(days=7); u.last_login=datetime.utcnow()
     db.session.commit()
@@ -89,12 +84,12 @@ def logout():
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     u=User.query.filter_by(token=t).first()
     if u: u.token=None; u.token_expiry=None; db.session.commit()
-    return jsonify({"message":"Logged out"})
+    return jsonify({"message":"ok"})
 
 @app.route('/api/users', methods=['GET'])
 def list_users():
     users=User.query.order_by(User.id).all()
-    return jsonify([{"id":x.id,"name":x.name,"email":x.email,"role":x.role,"last_login":x.last_login.isoformat() if x.last_login else None} for x in users])
+    return jsonify([{"id":x.id,"name":x.name,"email":x.email,"role":x.role} for x in users])
 
 @app.route('/api/users/<int:uid>', methods=['DELETE'])
 def del_user(uid):
@@ -102,14 +97,11 @@ def del_user(uid):
     caller=get_user_by_token(t)
     if not caller: return jsonify({"error":"Unauthorized"}),401
     if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden"}),403
-    if caller.id==uid: return jsonify({"error":"Cannot delete self"}),400
+    if caller.id==uid: return jsonify({"error":"Self"}),400
     u=db.session.get(User, uid)
     if not u: return jsonify({"error":"Not found"}),404
-    if u.role=='ROOT' and caller.role!='ROOT': return jsonify({"error":"Only ROOT can delete ROOT"}),403
     db.session.delete(u); db.session.commit()
     return jsonify({"message":"Deleted"})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
-    print(f"Starting on 0.0.0.0:{port}")
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8080)))
