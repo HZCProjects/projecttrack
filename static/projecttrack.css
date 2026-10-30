@@ -116,3 +116,7 @@ input:-webkit-autofill:active{
 .input-simple input, .input-wrap-simple input{
  padding-left:14px !important;
 }
+
+/* Eye appears only on click/focus */
+.eye{display:none;align-items:center;justify-content:center}
+.eye.show{display:flex !important}

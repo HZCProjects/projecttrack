@@ -32,8 +32,8 @@
 <div class="form-business">
 <div class="row-business"><div class="field-business"><label class="small">*Name</label><div class="input-wrap-business"><input id="regName" type="text"></div></div><div class="field-business"><label class="small">*Surname</label><div class="input-wrap-business"><input id="regSurname" type="text"></div></div></div>
 <div class="field-business"><label>*Email or Login Name</label><div class="input-wrap-business"><input id="regEmail" type="text"></div></div>
-<div class="field-business"><label>*Enter your password</label><div class="input-wrap-business"><input id="regPass" type="password"><button class="eye" onclick="toggle('regPass')">👁</button></div></div>
-<div class="field-business"><label>*Repeat password</label><div class="input-wrap-business"><input id="regRepeat" type="password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div></div>
+<div class="field-business"><label>*Enter your password</label><div class="input-wrap-business"><input id="regPass" type="password" onfocus="showEye('eyeReg')" onblur="hideEyeCheck('regPass','eyeReg')"><button class="eye" id="eyeReg" style="display:none" onclick="toggle('regPass')" onclick="toggle('regPass')">👁</button></div></div>
+<div class="field-business"><label>*Repeat password</label><div class="input-wrap-business"><input id="regRepeat" type="password" onfocus="showEye('eyeRegRep')" onblur="hideEyeCheck('regRepeat','eyeRegRep')"><button class="eye" id="eyeRegRep" style="display:none" onclick="toggle('regRepeat')" onclick="toggle('regRepeat')">👁</button></div></div>
 <div class="check-business"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
 <button class="btn-business" id="createBtn" onclick="doRegister()">Create Account</button>
 <div id="regMsg" class="msg"></div>
@@ -45,6 +45,18 @@
 </div>
 
 <script>
+
+function showEye(id){let el=document.getElementById(id);if(el)el.style.display='flex';}
+function hideEyeCheck(inputId, eyeId){
+ setTimeout(()=>{
+  let inp=document.getElementById(inputId);
+  let eye=document.getElementById(eyeId);
+  if(!inp || !eye) return;
+  if(document.activeElement===inp) return;
+  if(inp.value.length===0) eye.style.display='none';
+ },200);
+}
+
 function toggle(id){let el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';document.body.style.background='#F0F0F0';document.body.style.display='flex';}
 function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';document.body.style.background='#2B2E32';document.body.style.display='block';document.body.style.padding='20px';}
