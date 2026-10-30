@@ -57,3 +57,21 @@ body{font-family:Arial,Helvetica,sans-serif;background:#F0F0F0;display:flex;just
  .left-business{flex:0 0 auto;min-height:360px;padding:8px}
  .left-business img{min-height:360px}
 }
+
+/* Force white blocks, no blue autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+ -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+ box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+ background-color:#FFFFFF !important;
+ color:#000 !important;
+}
+.input-simple, .input-wrap-simple, .input-wrap-simple input, .input-simple input{
+ background:#FFFFFF !important;
+ background-color:#FFFFFF !important;
+}
+#loginEmail, #loginPass, #regEmail, #regPass, #regRepeat, #regName, #regSurname{
+ background:#FFFFFF !important;
+}

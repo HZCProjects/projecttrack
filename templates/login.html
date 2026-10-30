@@ -7,9 +7,9 @@
 <div class="login-inner">
 <h1>Login</h1>
 <div class="label-top">Email or Login Name</div>
-<div class="input-simple"><input id="loginEmail" type="text"></div>
+<div class="input-simple"><input id="loginEmail" value="" autocomplete="off" type="text"></div>
 <div class="label-top" style="margin-top:18px">Password</div>
-<div class="input-wrap-simple"><input id="loginPass" type="password"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
+<div class="input-wrap-simple"><input id="loginPass" value="" autocomplete="new-password" type="password"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
 <div class="check-simple"><input type="checkbox" id="keepSigned" checked><label for="keepSigned">Keep me signed in until I sign out</label></div>
 <div class="check-simple"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
 <button class="btn-simple" onclick="doLogin()">SIGN IN</button>
