@@ -1,1 +1,32 @@
-body{font-family:Inter,Arial;background:#F4F4F5;color:#383C40} .header{background:#383C40;color:#fff;padding:16px} .wrap{max-width:1000px;margin:24px auto;padding:0 16px} .card{background:#fff;border:1px solid #D1D1D1;border-radius:10px;overflow:hidden} .tabs{display:flex;background:#383C40} .tab{flex:1;padding:12px;color:#B2B2B2;background:transparent;border:none;cursor:pointer;text-transform:uppercase;font-size:12px} .tab.active{background:#fff;color:#383C40;font-weight:600} .tab-content{padding:20px;display:none} .tab-content.active{display:block} input,select{width:100%;padding:10px;border:1px solid #D1D1D1;border-radius:6px} .btn{margin-top:12px;width:100%;padding:10px;background:#383C40;color:#fff;border:none;border-radius:6px;text-transform:uppercase} .msg{margin-top:10px;padding:8px;border-radius:6px;font-size:12px;display:none} .msg.ok{display:block;background:#E8F5E9;color:#2E7D32} .msg.err{display:block;background:#FFEBEE;color:#C62828} .table{width:100%;border-collapse:collapse} .table th{font-size:10px;text-transform:uppercase;padding:8px;border-bottom:2px solid #383C40} .table td{padding:8px;border-bottom:1px solid #D1D1D1;font-size:12px}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{background:#383C40;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.outer{background:#2F3336;border-radius:14px;padding:14px;width:100%;max-width:1100px}
+.inner{background:#B2B2B2;border-radius:12px;display:flex;overflow:hidden;min-height:560px}
+.left{flex:1.2;background:#E9E9E9;padding:18px;display:flex;align-items:center;justify-content:center}
+.left img{width:100%;height:100%;object-fit:cover;border-radius:18px}
+.right{flex:1;padding:32px 36px;display:flex;flex-direction:column}
+.right h1{font-size:32px;font-weight:800;color:#1A1D20;line-height:1.1}
+.sub{margin-top:8px;font-size:13px;color:#4B4F53}
+.sub a{color:#5B5BD6;text-decoration:underline;font-weight:600}
+.form{margin-top:22px}
+.row{display:flex;gap:12px}
+.field{margin-top:14px;position:relative}
+.field input{width:100%;padding:12px 14px;background:#383C40;color:#fff;border:none;border-radius:3px;font-size:13px}
+.field input::placeholder{color:#B2B2B2}
+.field input:focus{outline:2px solid #5B5BD6}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#B2B2B2;font-size:14px;background:none;border:none}
+.check{margin-top:16px;display:flex;align-items:center;gap:8px;font-size:12px;color:#2F3336}
+.check input{width:16px;height:16px;accent-color:#383C40}
+.check a{color:#5B5BD6;text-decoration:underline}
+.btn{margin-top:22px;width:100%;padding:12px;background:#383C40;color:#fff;border:none;border-radius:3px;font-weight:600;text-transform:none;cursor:pointer}
+.btn:hover{opacity:0.9}
+.footer{margin-top:auto;padding-top:30px;text-align:center;font-size:11px;color:#2F3336;letter-spacing:0.5px}
+.msg{margin-top:12px;padding:8px;border-radius:4px;font-size:12px;display:none}
+.msg.ok{display:block;background:#E8F5E9;color:#2E7D32}
+.msg.err{display:block;background:#FFEBEE;color:#C62828}
+.users-table{margin-top:14px;background:#fff;border-radius:6px;padding:10px}
+.users-table table{width:100%;border-collapse:collapse}
+.users-table th{font-size:10px;text-transform:uppercase;text-align:left;padding:6px;border-bottom:2px solid #383C40}
+.users-table td{font-size:11px;padding:6px;border-bottom:1px solid #ddd}
+@media(max-width:800px){.inner{flex-direction:column}.left{height:260px}}

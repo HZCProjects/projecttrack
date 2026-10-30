@@ -1,14 +1,96 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>HZC STEP2 GREEN</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
-<body><div class="header"><h1>HZC Projects - STEP2 GREEN</h1><span id="dbStatus">SQLite - Real DB</span></div><div class="wrap"><div class="card"><div class="tabs"><button class="tab active" data-tab="signin">Sign In</button><button class="tab" data-tab="create">Create Account</button><button class="tab" data-tab="users">Users DB</button></div>
-<div id="signin" class="tab-content active"><label>Email</label><input id="loginEmail" type="email" placeholder="root@hzcprojects.com"><label>Password</label><input id="loginPass" type="password" placeholder="root123"><button class="btn" onclick="doLogin()">Sign In</button><div id="loginMsg" class="msg"></div><p style="margin-top:10px;font-size:11px;color:#888">Defaults: root@hzcprojects.com/root123 | admin@hzcprojects.com/admin123 | viewer@hzcprojects.com/viewer123</p></div>
-<div id="create" class="tab-content"><label>Name</label><input id="regName" placeholder="Your Name"><label>Email</label><input id="regEmail" type="email"><label>Password</label><input id="regPass" type="password"><label>Role</label><select id="regRole"><option value="viewer">Viewer</option><option value="manager">Manager</option><option value="admin">Admin</option></select><button class="btn" onclick="doRegister()">Create Account</button><div id="regMsg" class="msg"></div></div>
-<div id="users" class="tab-content"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="text-transform:uppercase;font-size:12px">Real Users from DB</h3><button class="btn btn-light" style="width:auto;padding:6px 12px;margin:0" onclick="loadUsers()">Refresh</button></div><table class="table" id="usersTable"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody></tbody></table><div id="usersMsg" class="msg"></div></div></div><div class="footer">STEP2 - SQLite - Hashed Passwords - Token 7 Days - HZC Only</div></div>
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>HZC Projects - ProjectTrack</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
+<body>
+<div class="outer">
+<div class="inner">
+<div class="left"><img src="/static/business-team.png" alt="Business Team"></div>
+<div class="right" id="createView">
+<h1>Create An Account</h1>
+<div class="sub">Already have an account? <a href="#" onclick="showLogin();return false;">Log In</a></div>
+<div class="form">
+<div class="row"><div class="field" style="flex:1"><input id="regName" placeholder="Name"></div><div class="field" style="flex:1"><input id="regSurname" placeholder="Surname"></div></div>
+<div class="field"><input id="regEmail" type="email" placeholder="Email or Login Name (More than 5 characters)"></div>
+<div class="field"><input id="regPass" type="password" placeholder="Enter your password (More than 6 characters)"><button class="eye" onclick="toggle('regPass')">👁</button></div>
+<div class="field"><input id="regRepeat" type="password" placeholder="Repeat password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div>
+<div class="check"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
+<button class="btn" onclick="doRegister()">Create Account</button>
+<div id="regMsg" class="msg"></div>
+<div class="users-table" id="usersBox" style="display:none"><table id="usersTable"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Del</th></tr></thead><tbody></tbody></table></div>
+</div>
+<div class="footer">www.projecttrack.co.za &nbsp;|&nbsp; DB: <span id="dbStatus">Checking</span></div>
+</div>
+
+<div class="right" id="loginView" style="display:none">
+<h1>Login To Account</h1>
+<div class="sub">Don't have an account? <a href="#" onclick="showCreate();return false;">Create One</a></div>
+<div class="form">
+<div class="field"><input id="loginEmail" type="email" placeholder="Email or Login Name"></div>
+<div class="field"><input id="loginPass" type="password" placeholder="Enter you password"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
+<div class="check"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
+<button class="btn" onclick="doLogin()">Enter To Login</button>
+<div id="loginMsg" class="msg"></div>
+</div>
+<div class="footer">www.projecttrack.co.za &nbsp;|&nbsp; <a href="/health" style="color:inherit">Health</a> - <span id="dbStatus2">SQLite</span></div>
+</div>
+
+</div>
+</div>
+
 <script>
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');if(t.dataset.tab==='users')loadUsers();}));
-function showMsg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');}
-fetch('/health').then(r=>r.json()).then(j=>document.getElementById('dbStatus').textContent='DB: '+j.db.toUpperCase()+' - Users: '+j.users);
-async function doLogin(){let email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPass').value;let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});let data=await res.json();if(!res.ok){showMsg('loginMsg',data.error,false);return;}localStorage.setItem('pt_token',data.token);localStorage.setItem('pt_user',JSON.stringify(data.user));showMsg('loginMsg','OK - redirect...',true);setTimeout(()=>location.href='/index.html',600);}
-async function doRegister(){let name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim(),password=document.getElementById('regPass').value,role=document.getElementById('regRole').value;let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password,role})});let d=await res.json();if(!res.ok){showMsg('regMsg',d.error,false);return;}showMsg('regMsg','Created ID '+d.user.id+' - Now sign in',true);loadUsers();}
-async function loadUsers(){let tbody=document.querySelector('#usersTable tbody');tbody.innerHTML='<tr><td colspan=5>Loading...</td></tr>';let res=await fetch('/api/users');let users=await res.json();tbody.innerHTML='';users.forEach(u=>{let tr=document.createElement('tr');tr.innerHTML=`<td>${u.id}</td><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td><span style="color:#C62828;cursor:pointer" onclick="deleteUser(${u.id})">Delete</span></td>`;tbody.appendChild(tr);});}
-async function deleteUser(id){if(!confirm('Delete '+id+'?'))return;let token=localStorage.getItem('pt_token');if(!token){alert('Login as admin first');return;}let res=await fetch('/api/users/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});let d=await res.json();if(!res.ok){document.getElementById('usersMsg').textContent=d.error;document.getElementById('usersMsg').className='msg err';return;}document.getElementById('usersMsg').textContent='Deleted';document.getElementById('usersMsg').className='msg ok';loadUsers();}
-</script></body></html>
+function toggle(id){let el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';}
+function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';loadUsers();}
+function msg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');}
+fetch('/health').then(r=>r.json()).then(j=>{document.getElementById('dbStatus').textContent=j.db.toUpperCase()+' - Users: '+j.users;document.getElementById('dbStatus2').textContent=j.db.toUpperCase()+' - Users: '+j.users;});
+
+async function doRegister(){
+ let name=document.getElementById('regName').value.trim();
+ let surname=document.getElementById('regSurname').value.trim();
+ let email=document.getElementById('regEmail').value.trim();
+ let pwd=document.getElementById('regPass').value;
+ let rep=document.getElementById('regRepeat').value;
+ if(email.length<6){msg('regMsg','Email must be >5 chars',false);return;}
+ if(pwd.length<7){msg('regMsg','Password must be >6 chars',false);return;}
+ if(pwd!==rep){msg('regMsg','Passwords do not match',false);return;}
+ if(!document.getElementById('agree1').checked){msg('regMsg','Agree to Terms',false);return;}
+ let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,surname,email,password:pwd})});
+ let data=await res.json();
+ if(!res.ok){msg('regMsg',data.error,false);return;}
+ msg('regMsg','Account created ID '+data.user.id+' - Now login',true);
+ loadUsers();
+}
+
+async function doLogin(){
+ let email=document.getElementById('loginEmail').value.trim();
+ let pwd=document.getElementById('loginPass').value;
+ let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})});
+ let data=await res.json();
+ if(!res.ok){msg('loginMsg',data.error,false);return;}
+ localStorage.setItem('pt_token',data.token);
+ localStorage.setItem('pt_user',JSON.stringify(data.user));
+ msg('loginMsg','OK redirect...',true);
+ setTimeout(()=>location.href='/index.html',600);
+}
+
+async function loadUsers(){
+ let res=await fetch('/api/users');let users=await res.json();
+ let box=document.getElementById('usersBox');let tbody=document.querySelector('#usersTable tbody');
+ if(users.length>0){box.style.display='block';}
+ tbody.innerHTML='';
+ users.forEach(u=>{
+  let tr=document.createElement('tr');
+  tr.innerHTML=`<td>${u.id}</td><td>${u.name} ${u.surname||''}</td><td>${u.email}</td><td>${u.role}</td><td><span style="color:#C00;cursor:pointer" onclick="del(${u.id})">X</span></td>`;
+  tbody.appendChild(tr);
+ });
+}
+async function del(id){
+ let token=localStorage.getItem('pt_token');
+ if(!token){msg('regMsg','Login as admin to delete',false);return;}
+ let res=await fetch('/api/users/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+ let d=await res.json();
+ if(!res.ok){msg('regMsg',d.error,false);return;}
+ loadUsers();
+}
+loadUsers();
+</script>
+</body></html>
