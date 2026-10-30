@@ -103,3 +103,16 @@ input:-webkit-autofill:active{
  border:none !important;
  outline:none !important;
 }
+
+/* ALIGN text in first box with password box - same padding, no eye */
+#loginEmail, #loginPass{
+ padding-left:28px !important;
+ padding-right:14px !important;
+ text-align:left !important;
+}
+.input-simple, .input-wrap-simple{
+ padding:0 !important;
+}
+.input-simple input, .input-wrap-simple input{
+ padding-left:28px !important;
+}
