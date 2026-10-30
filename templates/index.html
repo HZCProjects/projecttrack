@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>HZC Projects - STEP1</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
+<body><div class="header"><h1>HZC Projects - Dashboard STEP1</h1><span id="dbStatus">Dashboard</span></div>
+<div class="wrap"><div class="card"><div style="padding:28px"><h3 style="text-transform:uppercase">STEP 1 - Railway Link Details - Works</h3><p style="margin-top:10px;font-size:14px">Flask app serving login.html, index.html, projecttrack.css - Build Green on Railway</p><p style="margin-top:10px;font-size:13px">Check: <a href="/health">/health</a> should return ok</p><button class="btn" onclick="location.href='/index.html'">Go to Dashboard (STEP1)</button><div id="msg" style="margin-top:14px;font-size:13px"></div></div></div></div>
+<script>fetch('/health').then(r=>r.json()).then(j=>document.getElementById('msg').textContent=JSON.stringify(j)).catch(e=>document.getElementById('msg').textContent='health failed');</script>
+</body></html>
