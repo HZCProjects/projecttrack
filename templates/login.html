@@ -1,46 +1,53 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ProjectTrack - HZC Projects</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Login - ProjectTrack</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
 <body>
-<div class="outer">
-<div class="inner">
-<div class="left"><img src="/static/business-team.png" alt="Business Team"></div>
-
-<div class="right" id="loginView" style="display:flex;flex-direction:column">
-<h1>Login To Account</h1>
-<div class="sub">Don't have an account? <a onclick="showCreate()">Create One</a></div>
-<div class="form">
-<div class="field"><label>Email or Login Name</label><div class="input-wrap"><input id="loginEmail" type="text"></div></div>
-<div class="field"><label>Enter you password</label><div class="input-wrap"><input id="loginPass" type="password"><button class="eye" onclick="toggle('loginPass')">👁</button></div></div>
-<div class="check"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
-<button class="btn" onclick="doLogin()">Enter To Login</button>
+<!-- LOGIN VIEW - Exact match to image_10c249.png -->
+<div class="outer-simple" id="loginView">
+<div class="login-box">
+<div class="login-inner">
+<h1>Login</h1>
+<div class="label-top">Email or Login Name</div>
+<div class="input-simple"><input id="loginEmail" type="text"></div>
+<div class="label-top" style="margin-top:18px">Password</div>
+<div class="input-wrap-simple"><input id="loginPass" type="password"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
+<div class="check-simple"><input type="checkbox" id="keepSigned" checked><label for="keepSigned">Keep me signed in until I sign out</label></div>
+<div class="check-simple"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
+<button class="btn-simple" onclick="doLogin()">SIGN IN</button>
 <div id="loginMsg" class="msg"></div>
-<div class="forgot"><a>Forgot Your Password? Reset Here</a></div>
+<div class="links-bottom">
+<div><a class="purple">Forgot</a> <span style="font-weight:700;font-size:14px">Username / Password?</span></div>
+<div><a class="purple">Don't have an account?</a> <span style="font-weight:700;font-size:14px;cursor:pointer" onclick="showCreate()">Sign Up</span></div>
 </div>
-<div class="footer">www.projecttrack.co.za</div>
+</div>
+</div>
 </div>
 
-<div class="right" id="createView" style="display:none;flex-direction:column">
+<!-- CREATE VIEW - Keep business team design you liked -->
+<div class="outer-business" id="createView" style="display:none">
+<div class="inner-business">
+<div class="left-business"><img src="/static/business-team.png" alt="Business Team"></div>
+<div class="right-business">
 <h1>Create An Account</h1>
-<div class="sub">Already have an account? <a onclick="showLogin()">Log In</a></div>
-<div class="form">
-<div class="row"><div class="field"><label>*Name</label><div class="input-wrap"><input id="regName" type="text"></div></div><div class="field"><label>*Surname</label><div class="input-wrap"><input id="regSurname" type="text"></div></div></div>
-<div class="field"><label class="wide">*Email or Login Name</label><div class="input-wrap"><input id="regEmail" type="text"></div></div>
-<div class="field"><label class="wide">*Enter your password</label><div class="input-wrap"><input id="regPass" type="password"><button class="eye" onclick="toggle('regPass')">👁</button></div></div>
-<div class="field"><label class="wide">*Repeat password</label><div class="input-wrap"><input id="regRepeat" type="password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div></div>
-<div class="check"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
-<button class="btn" id="createBtn" onclick="doRegister()">Create Account</button>
+<div class="sub-business">Already have an account? <a onclick="showLogin()">Log In</a></div>
+<div class="form-business">
+<div class="row-business"><div class="field-business"><label class="small">*Name</label><div class="input-wrap-business"><input id="regName" type="text"></div></div><div class="field-business"><label class="small">*Surname</label><div class="input-wrap-business"><input id="regSurname" type="text"></div></div></div>
+<div class="field-business"><label>*Email or Login Name</label><div class="input-wrap-business"><input id="regEmail" type="text"></div></div>
+<div class="field-business"><label>*Enter your password</label><div class="input-wrap-business"><input id="regPass" type="password"><button class="eye" onclick="toggle('regPass')">👁</button></div></div>
+<div class="field-business"><label>*Repeat password</label><div class="input-wrap-business"><input id="regRepeat" type="password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div></div>
+<div class="check-business"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
+<button class="btn-business" id="createBtn" onclick="doRegister()">Create Account</button>
 <div id="regMsg" class="msg"></div>
-<div class="rules"><div>*All Fields Must Be Completed to Create an Account</div><div>*Login Name must be more than 5 Characters</div><div>*Password must be more than 6 Characters</div></div>
+<div class="rules-business"><div>*All Fields Must Be Completed to Create an Account</div><div>*Login Name must be more than 5 Characters</div><div>*Password must be more than 6 Characters</div></div>
+<div class="footer-business">www.projecttrack.co.za</div>
 </div>
-<div class="footer">www.projecttrack.co.za</div>
+</div>
+</div>
 </div>
 
-</div>
-</div>
 <script>
 function toggle(id){let el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
-function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';}
-function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';}
+function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';document.body.style.background='#F0F0F0';document.body.style.display='flex';}
+function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';document.body.style.background='#2B2E32';document.body.style.display='block';document.body.style.padding='20px';}
 function msg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');el.style.display='block';}
 async function doRegister(){
  let btn=document.getElementById('createBtn'); btn.disabled=true; btn.textContent='Creating...';
@@ -65,6 +72,8 @@ async function doLogin(){
  try{
   let email=document.getElementById('loginEmail').value.trim();
   let pwd=document.getElementById('loginPass').value;
+  if(email.length<3){msg('loginMsg','Enter Email or Login Name',false);return;}
+  if(pwd.length<1){msg('loginMsg','Enter Password',false);return;}
   let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})});
   let data=await res.json();
   if(!res.ok){msg('loginMsg',data.error,false);return;}
