@@ -1,25 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Create An Account - ProjectTrack</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Login To Account</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
 <body>
 <div class="outer">
 <div class="inner">
 <div class="left"><img src="/static/business-team.png" alt="Business Team"></div>
-
-<div class="right" id="createView" style="display:none;flex-direction:column">
-<h1>Create An Account</h1>
-<div class="sub">Already have an account? <a onclick="showLogin()">Log In</a></div>
-<div class="form">
-<div class="row"><div class="field"><label>*Name</label><input id="regName" type="text"></div><div class="field"><label>*Surname</label><input id="regSurname" type="text"></div></div>
-<div class="field"><label>*Email or Login Name</label><input id="regEmail" type="text"></div>
-<div class="field"><label>*Enter your password</label><input id="regPass" type="password"><button class="eye" onclick="toggle('regPass')">👁</button></div>
-<div class="field"><label>*Repeat password</label><input id="regRepeat" type="password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div>
-<div class="check"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
-<button class="btn" id="createBtn" onclick="doRegister()">Create Account</button>
-<div id="regMsg" class="msg"></div>
-<div class="rules"><div>*All Fields Must Be Completed to Create an Account</div><div>*Login Name must be more than 5 Characters</div><div>*Password must be more than 6 Characters</div></div>
-</div>
-<div class="footer">www.projecttrack.co.za</div>
-</div>
 
 <div class="right" id="loginView" style="display:flex;flex-direction:column">
 <h1>Login To Account</h1>
@@ -30,7 +14,23 @@
 <div class="check"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
 <button class="btn" onclick="doLogin()">Enter To Login</button>
 <div id="loginMsg" class="msg"></div>
-<div class="forgot"><a onclick="alert('Reset link coming soon')">Forgot Your Password? Reset Here</a></div>
+<div class="forgot"><a>Forgot Your Password? Reset Here</a></div>
+</div>
+<div class="footer">www.projecttrack.co.za</div>
+</div>
+
+<div class="right" id="createView" style="display:none;flex-direction:column">
+<h1>Create An Account</h1>
+<div class="sub">Already have an account? <a onclick="showLogin()">Log In</a></div>
+<div class="form">
+<div class="row"><div class="field" style="flex:1"><label>*Name</label><input id="regName" type="text"></div><div class="field" style="flex:1"><label>*Surname</label><input id="regSurname" type="text"></div></div>
+<div class="field"><label>*Email or Login Name</label><input id="regEmail" type="text"></div>
+<div class="field"><label>*Enter your password</label><input id="regPass" type="password"><button class="eye" onclick="toggle('regPass')">👁</button></div>
+<div class="field"><label>*Repeat password</label><input id="regRepeat" type="password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div>
+<div class="check"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
+<button class="btn" id="createBtn" onclick="doRegister()">Create Account</button>
+<div id="regMsg" class="msg"></div>
+<div class="rules"><div>*All Fields Must Be Completed to Create an Account</div><div>*Login Name must be more than 5 Characters</div><div>*Password must be more than 6 Characters</div></div>
 </div>
 <div class="footer">www.projecttrack.co.za</div>
 </div>
