@@ -75,3 +75,31 @@ input:-webkit-autofill:active{
 #loginEmail, #loginPass, #regEmail, #regPass, #regRepeat, #regName, #regSurname{
  background:#FFFFFF !important;
 }
+
+/* REMOVE small block inside first block - single clean white block */
+.input-simple, .input-wrap-simple, .input-wrap-business, .field-business .input-wrap-business{
+ border:none !important;
+ outline:none !important;
+ box-shadow:none !important;
+}
+.input-simple input,
+.input-wrap-simple input,
+.input-wrap-business input,
+.field-business input,
+.field input,
+.field-business .input-wrap-business input{
+ border:none !important;
+ outline:none !important;
+ box-shadow:none !important;
+ background:#FFFFFF !important;
+ width:100% !important;
+ height:100% !important;
+ margin:0 !important;
+ padding:0 14px !important;
+ appearance:none !important;
+ -webkit-appearance:none !important;
+}
+.field, .field-business{
+ border:none !important;
+ outline:none !important;
+}
