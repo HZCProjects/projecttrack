@@ -46,40 +46,6 @@
 
 <script>
 
-function showEye(id){let el=document.getElementById(id);if(el)el.style.display='flex';}
-function hideEyeCheck(inputId, eyeId){
- setTimeout(()=>{
-  let inp=document.getElementById(inputId);
-  let eye=document.getElementById(eyeId);
-  if(!inp || !eye) return;
-  if(document.activeElement===inp) return;
-  if(inp.value.length===0) eye.style.display='none';
- },200);
-}
-
-function toggle(id){let el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
-function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';document.body.style.background='#F0F0F0';document.body.style.display='flex';}
-function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';document.body.style.background='#2B2E32';document.body.style.display='block';document.body.style.padding='20px';}
-function msg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');el.style.display='block';}
-async function doRegister(){
- let btn=document.getElementById('createBtn'); btn.disabled=true; btn.textContent='Creating...';
- try{
-  let name=document.getElementById('regName').value.trim();
-  let surname=document.getElementById('regSurname').value.trim();
-  let email=document.getElementById('regEmail').value.trim();
-  let pwd=document.getElementById('regPass').value;
-  let rep=document.getElementById('regRepeat').value;
-  if(name.length<1){msg('regMsg','Name required',false); btn.disabled=false; btn.textContent='Create Account'; return;}
-  if(email.length<6){msg('regMsg','Login Name must be more than 5 Characters',false); btn.disabled=false; btn.textContent='Create Account'; return;}
-  if(pwd.length<7){msg('regMsg','Password must be more than 6 Characters',false); btn.disabled=false; btn.textContent='Create Account'; return;}
-  if(pwd!==rep){msg('regMsg','Passwords do not match',false); btn.disabled=false; btn.textContent='Create Account'; return;}
-  let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,surname,email,password:pwd})});
-  let data=await res.json();
-  if(!res.ok){msg('regMsg',data.error,false); btn.disabled=false; btn.textContent='Create Account'; return;}
-  msg('regMsg','Created as '+data.user.role+' - Please Log In',true);
-  setTimeout(()=>{document.getElementById('loginEmail').value=email; showLogin();},1000);
- }catch(e){msg('regMsg','Error: '+e.message,false);} finally{btn.disabled=false; btn.textContent='Create Account';}
-}
 async function doLogin(){
  try{
   let email=document.getElementById('loginEmail').value.trim();
@@ -95,6 +61,41 @@ async function doLogin(){
   setTimeout(()=>location.href='/index.html',800);
  }catch(e){msg('loginMsg','Error: '+e.message,false);}
 }
+
+
+}
+,200);
+}
+
+
+function toggle(id){
+ let inp=document.getElementById(id);
+ let eyeBtn = null;
+ if(id==='loginPass') eyeBtn=document.getElementById('eyeLogin');
+ if(id==='regPass') eyeBtn=document.getElementById('eyeReg');
+ if(id==='regRepeat') eyeBtn=document.getElementById('eyeRegRep');
+ if(!inp) return;
+ if(inp.type==='password'){
+   inp.type='text';
+   if(eyeBtn) eyeBtn.innerHTML='◑'; // half eye when visible
+   if(eyeBtn) eyeBtn.title='Hide password';
+ } else {
+   inp.type='password';
+   if(eyeBtn) eyeBtn.innerHTML='👁'; // full eye when hidden
+   if(eyeBtn) eyeBtn.title='Show password';
+ }
+}
+function showEye(id){let el=document.getElementById(id);if(el){el.style.display='flex';}}
+function hideEyeCheck(inputId, eyeId){
+ setTimeout(()=>{
+  let inp=document.getElementById(inputId);
+  let eye=document.getElementById(eyeId);
+  if(!inp || !eye) return;
+  if(document.activeElement===inp) return;
+  if(inp.value.length===0 && inp.type==='password'){eye.style.display='none';}
+ },200);
+}
+
 </script>
 </body></html>
 <style>h1{font-size:36px !important}</style>
