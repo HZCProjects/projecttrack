@@ -2,43 +2,51 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ProjectTrack - Login</title>
-<link rel="stylesheet" href="/static/projecttrack.css">
+<title>ProjectTrack - Sign In</title>
 <style>
-body{background:#383C40;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif}
-.login-wrapper{width:340px;background:#B2B2B2;border:14px solid #383C40;padding:20px 26px 16px 26px}
-.login-wrapper h1{font-size:36px !important;font-weight:900;text-align:center;margin:8px 0 18px 0;color:#000}
-.label{color:#fff;font-size:13px;margin:14px 0 6px 0;font-weight:600}
-.input-simple{background:#fff;border:1px solid #000;height:42px;display:flex;align-items:center}
-.input-simple input{width:100%;border:none;outline:none;padding-left:14px;font-size:15px}
-.input-wrap-simple{background:#fff;border:1px solid #000;height:42px;display:flex;align-items:center;position:relative}
+body{background:#383C40;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;padding:20px}
+.signin-wrapper{width:360px;background:#B2B2B2;border:14px solid #383C40;padding:20px 26px 20px 26px}
+.signin-wrapper h1{font-size:36px !important;font-weight:900;text-align:center;margin:4px 0 18px 0;color:#000}
+.label{color:#000;font-size:13px;margin:16px 0 6px 0;font-weight:700}
+.input-simple{background:#fff;border:none;height:44px;display:flex;align-items:center}
+.input-simple input{width:100%;border:none;outline:none;padding-left:14px;font-size:15px;height:100%}
+.input-wrap-simple{background:#fff;border:none;height:44px;display:flex;align-items:center;position:relative}
 .input-wrap-simple input{flex:1;border:none;outline:none;padding-left:14px;padding-right:42px;font-size:15px;height:100%}
-.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex !important;align-items:center;justify-content:center;z-index:10}
-.check-row{display:flex;align-items:center;margin:14px 0;gap:8px;font-size:12px}
-.check-row input{width:18px;height:18px;accent-color:#000}
-.btn-signin{background:#383C40;color:#fff;width:100%;height:46px;border:none;font-weight:700;cursor:pointer;margin-top:8px;font-size:14px}
-.links{text-align:center;margin-top:16px;font-size:12px;line-height:1.8}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex !important;align-items:center;justify-content:center;z-index:10}
+.check-row{display:flex;align-items:center;margin:18px 0;gap:10px;font-size:13px;font-weight:600;color:#000}
+.check-row input{width:22px;height:22px;accent-color:#fff;background:#fff;border:1px solid #000;appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.check-row input:checked{background:#fff}
+.check-row input:checked::after{content:'✔';font-size:14px;color:#000;font-weight:900;margin-top:-1px}
+.check-row a{color:#6B5BCE;text-decoration:none;font-weight:700}
+.btn-signin{background:#1A1A1A;color:#fff;width:100%;height:48px;border:none;font-weight:700;cursor:pointer;margin-top:6px;font-size:14px;letter-spacing:0.5px}
+.links{text-align:center;margin-top:18px;font-size:12px;line-height:2}
 .links a{color:#6B5BCE;text-decoration:none;font-weight:600}
 .links .black{color:#000;font-weight:700}
 </style>
 </head>
 <body>
-<div class="login-wrapper">
-<h1>Login</h1>
-<div class="label">Email or Login Name</div>
+<div class="signin-wrapper">
+<h1>Sign In</h1>
+
+<div class="label">Email or Username</div>
 <div class="input-simple"><input id="loginEmail" type="text" autocomplete="off"></div>
+
 <div class="label">Password</div>
 <div class="input-wrap-simple">
 <input id="loginPass" type="password">
 <button class="eye" id="eyeLogin" onclick="toggle('loginPass')">👁</button>
 </div>
+
 <div class="check-row"><input type="checkbox" id="keep" checked><label for="keep">Keep me signed in until I sign out</label></div>
-<div class="check-row"><input type="checkbox" id="agreeLogin" checked><label for="agreeLogin">I agree to the <a href="#" style="color:#6B5BCE">Terms&Conditions</a></label></div>
+<div class="check-row"><input type="checkbox" id="agreeLogin" checked><label for="agreeLogin">I agree to the <a href="#">Terms&Conditions</a></label></div>
+
 <button class="btn-signin" onclick="doLogin()">SIGN IN</button>
+
 <div class="links">
 <div><a href="#">Forgot</a> <span class="black">Username / Password?</span></div>
-<div><a href="#">Don't have an account?</a> <a href="/register" style="color:#000;font-weight:700;text-decoration:none"><span class="black">Sign Up</span></a></div>
+<div><a href="/register">Don't have an account?</a> <span class="black">Sign Up</span></div>
 </div>
+
 <div id="msg" style="color:red;font-size:12px;margin-top:10px;text-align:center"></div>
 </div>
 <script>
@@ -61,6 +69,7 @@ async function doLogin(){
  }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
 }
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+document.getElementById('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 </script>
 </body>
 </html>
