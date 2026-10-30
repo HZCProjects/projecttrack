@@ -12,9 +12,10 @@ body{font-family:Arial,Helvetica,sans-serif;background:#2B2E32;display:flex;just
 .sub a{color:#5B4FB7;text-decoration:underline;cursor:pointer;font-weight:800}
 .form{display:flex;flex-direction:column;gap:16px;width:100%;min-width:0}
 .row{display:flex;gap:16px;width:100%;min-width:0}
-.field{display:flex;height:42px;overflow:hidden;width:100%;min-width:0;border-radius:2px}
-.field label{background:#383C40;color:#FFF;font-size:14px;font-weight:700;display:flex;align-items:center;padding:0 12px;min-width:118px;max-width:200px;white-space:nowrap;flex-shrink:0}
-.field label.wide{min-width:180px}
+.field{display:flex;height:42px;overflow:hidden;width:100%;min-width:0;border-radius:2px;align-items:stretch}
+.field label{background:#383C40;color:#FFF;font-size:14px;font-weight:700;display:flex;align-items:center;padding:0 14px;width:200px;min-width:200px;max-width:200px;white-space:nowrap;flex-shrink:0;justify-content:flex-start}
+.field label.small{width:110px;min-width:110px;max-width:110px}
+.field label.wide{width:200px;min-width:200px;max-width:200px}
 .field .input-wrap{flex:1;display:flex;background:#FFF;min-width:0;position:relative}
 .field .input-wrap input{flex:1;border:none;outline:none;background:#FFF;font-size:14px;padding:0 12px;min-width:0;width:100%}
 .field .eye{background:#FFF;border:none;width:42px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:#000;flex-shrink:0}
@@ -40,6 +41,6 @@ body{font-family:Arial,Helvetica,sans-serif;background:#2B2E32;display:flex;just
  .right{border-radius:0 0 18px 18px}
  .right h1{font-size:30px}
  .row{flex-direction:column}
- .field label{min-width:100px;font-size:12px}
- .field label.wide{min-width:130px}
+ .field label{width:110px;min-width:110px;max-width:110px;font-size:12px}
+ .field label.wide{width:140px;min-width:140px;max-width:140px}
 }
