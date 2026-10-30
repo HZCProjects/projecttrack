@@ -33,6 +33,20 @@ input:-webkit-autofill:active{
  transition:background-color 5000s ease-in-out 0s !important;
 }
 input{filter:none !important;}
+
+.eye{position:relative}
+.eye.slashed::after{
+ content:'';
+ position:absolute;
+ left:4px;
+ top:50%;
+ width:24px;
+ height:2px;
+ background:#000;
+ transform:rotate(-45deg) translateY(-50%);
+ transform-origin:center;
+ pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -51,13 +65,13 @@ input{filter:none !important;}
 <div class="label">*Password</div>
 <div class="input-wrap-simple">
 <input id="regPass" type="password" autocomplete="new-password" name="pt_reg_pass_xyz">
-<button class="eye" id="eyeReg" onclick="toggle('regPass')">👁</button>
+<button class="eye" id="eyeReg" onclick="toggle('regPass')" class="eye slashed">👁</button>
 </div>
 
 <div class="label">*Repeat Password</div>
 <div class="input-wrap-simple">
 <input id="regRepeat" type="password" autocomplete="new-password" name="pt_reg_repeat_xyz">
-<button class="eye" id="eyeRegRep" onclick="toggle('regRepeat')">👁</button>
+<button class="eye" id="eyeRegRep" onclick="toggle('regRepeat')" class="eye slashed">👁</button>
 </div>
 
 <div class="check-row"><input type="checkbox" id="agree" checked><label for="agree">I agree to the <a href="#" style="color:#6B5BCE">Terms&Conditions</a></label></div>
@@ -72,12 +86,6 @@ input{filter:none !important;}
 <div id="msg" style="color:red;font-size:12px;margin-top:10px;text-align:center"></div>
 </div>
 <script>
-function toggle(id){
- let inp=document.getElementById(id);
- let btn=document.getElementById(id==='regPass'?'eyeReg':'eyeRegRep');
- if(!inp) return;
- if(inp.type==='password'){inp.type='text';btn.innerHTML='◑';} else {inp.type='password';btn.innerHTML='👁';}
-}
 async function doCreate(){
  let name=document.getElementById('regName').value.trim();
  let surname=document.getElementById('regSurname').value.trim();
@@ -95,6 +103,31 @@ async function doCreate(){
   window.location.href='/login';
  }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
 }
+
+function toggle(id){
+ let inp=document.getElementById(id);
+ let btn=null;
+ if(id==='loginPass') btn=document.getElementById('eyeLogin');
+ if(id==='regPass') btn=document.getElementById('eyeReg');
+ if(id==='regRepeat') btn=document.getElementById('eyeRegRep');
+ if(id==='regPass' || id==='regRepeat' || id==='loginPass'){
+   if(!btn){
+     // fallback find by id
+     if(id==='loginPass') btn=document.getElementById('eyeLogin');
+   }
+ }
+ if(!inp) return;
+ if(inp.type==='password'){
+   // make visible -> eye WITHOUT line
+   inp.type='text';
+   if(btn){btn.innerHTML='👁'; btn.classList.remove('slashed');}
+ } else {
+   // make hidden -> eye WITH line
+   inp.type='password';
+   if(btn){btn.innerHTML='👁'; btn.classList.add('slashed');}
+ }
+}
+
 </script>
 </body>
 </html>

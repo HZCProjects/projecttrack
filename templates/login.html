@@ -35,6 +35,20 @@ input:-webkit-autofill:active{
  transition:background-color 5000s ease-in-out 0s !important;
 }
 input{filter:none !important;}
+
+.eye{position:relative}
+.eye.slashed::after{
+ content:'';
+ position:absolute;
+ left:4px;
+ top:50%;
+ width:24px;
+ height:2px;
+ background:#000;
+ transform:rotate(-45deg) translateY(-50%);
+ transform-origin:center;
+ pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -47,7 +61,7 @@ input{filter:none !important;}
 <div class="label">Password</div>
 <div class="input-wrap-simple">
 <input id="loginPass" type="password" autocomplete="new-password" name="pt_login_pass_xyz">
-<button class="eye" id="eyeLogin" onclick="toggle('loginPass')">👁</button>
+<button class="eye" id="eyeLogin" onclick="toggle('loginPass')" class="eye slashed">👁</button>
 </div>
 
 <div class="check-row"><input type="checkbox" id="keep" checked><label for="keep">Keep me signed in until I sign out</label></div>
@@ -63,12 +77,6 @@ input{filter:none !important;}
 <div id="msg" style="color:red;font-size:12px;margin-top:10px;text-align:center"></div>
 </div>
 <script>
-function toggle(id){
- let inp=document.getElementById(id);
- let btn=document.getElementById('eyeLogin');
- if(!inp) return;
- if(inp.type==='password'){inp.type='text';btn.innerHTML='◑';} else {inp.type='password';btn.innerHTML='👁';}
-}
 async function doLogin(){
  let email=document.getElementById('loginEmail').value.trim();
  let pwd=document.getElementById('loginPass').value;
@@ -83,6 +91,31 @@ async function doLogin(){
 }
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 document.getElementById('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+function toggle(id){
+ let inp=document.getElementById(id);
+ let btn=null;
+ if(id==='loginPass') btn=document.getElementById('eyeLogin');
+ if(id==='regPass') btn=document.getElementById('eyeReg');
+ if(id==='regRepeat') btn=document.getElementById('eyeRegRep');
+ if(id==='regPass' || id==='regRepeat' || id==='loginPass'){
+   if(!btn){
+     // fallback find by id
+     if(id==='loginPass') btn=document.getElementById('eyeLogin');
+   }
+ }
+ if(!inp) return;
+ if(inp.type==='password'){
+   // make visible -> eye WITHOUT line
+   inp.type='text';
+   if(btn){btn.innerHTML='👁'; btn.classList.remove('slashed');}
+ } else {
+   // make hidden -> eye WITH line
+   inp.type='password';
+   if(btn){btn.innerHTML='👁'; btn.classList.add('slashed');}
+ }
+}
+
 </script>
 </body>
 </html>
