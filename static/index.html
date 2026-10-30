@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ProjectTrack - Dashboard</title>
+<style>
+body{background:#383C40;margin:0;font-family:Arial;padding:20px;color:#fff}
+.box{background:#B2B2B2;border:14px solid #383C40;padding:20px;border-radius:18px;max-width:900px;margin:auto;color:#000}
+h1{font-size:28px}
+.btn{background:#383C40;color:#fff;padding:10px 20px;border:none;cursor:pointer;margin-right:10px}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>ProjectTrack Dashboard</h1>
+<p>Welcome! You are logged in as <b id="user"></b> (<span id="role"></span>)</p>
+<p>DB: Postgres on Railway + SQLite local fallback OK</p>
+<button class="btn" onclick="logout()">Sign Out</button>
+<button class="btn" onclick="window.location.href='/login'">Back to Login</button>
+<div id="info" style="margin-top:20px;font-size:12px"></div>
+</div>
+<script>
+let u=localStorage.getItem('pt_user');
+if(u){try{let j=JSON.parse(u);document.getElementById('user').innerText=j.email||j.name;document.getElementById('role').innerText=j.role;}catch{}}
+async function load(){try{let r=await fetch('/api/health');let j=await r.json();document.getElementById('info').innerText='Health: '+JSON.stringify(j);}catch(e){}}
+function logout(){localStorage.removeItem('pt_user');window.location.href='/login';}
+load();
+</script>
+</body>
+</html>

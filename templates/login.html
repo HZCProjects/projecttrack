@@ -57,7 +57,7 @@ async function doLogin(){
   let j=await r.json();
   if(!r.ok){document.getElementById('msg').innerText=j.error||'Login failed';return;}
   localStorage.setItem('pt_user',JSON.stringify(j));
-  window.location.href='/static/index.html';
+  window.location.href='/dashboard';
  }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
 }
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
