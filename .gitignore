@@ -1,6 +1,2 @@
 *.zip
 __pycache__/
-*.pyc
-.env
-venv/
-*.db

@@ -1,9 +1,0 @@
-
-:root{--dark:#383C40;--light:#B2B2B2;--bg:#F4F4F5;--white:#FFF;--border:#D1D1D1}
-*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Segoe UI,Arial,sans-serif}
-body{background:var(--bg);color:var(--dark);min-height:100vh}
-.header{background:var(--dark);color:var(--white);padding:18px 28px;display:flex;justify-content:space-between;align-items:center}
-.header h1{font-size:18px;letter-spacing:1px;text-transform:uppercase}
-.wrap{max-width:1100px;margin:40px auto;padding:0 20px}
-.card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:28px}
-.btn{margin-top:18px;padding:12px 18px;background:var(--dark);color:var(--white);border:none;border-radius:6px;text-transform:uppercase;letter-spacing:1px;font-size:13px;cursor:pointer}
