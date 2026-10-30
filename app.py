@@ -7,24 +7,24 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_TYPE = 'SQLITE'
 DB_ERROR = None
 
-# Try Postgres first if DATABASE_URL exists, else SQLite
 db_url = os.environ.get('DATABASE_URL','').strip()
 if db_url:
+    # Railway gives postgres:// or postgresql:// - we MUST use postgresql+psycopg2:// for psycopg2-binary
     if db_url.startswith('postgres://'):
-        db_url = db_url.replace('postgres://','postgresql://',1)
-    # Test if we can use it, but we will try to connect later
+        db_url = db_url.replace('postgres://','postgresql+psycopg2://',1)
+    elif db_url.startswith('postgresql://') and '+psycopg2' not in db_url:
+        db_url = db_url.replace('postgresql://','postgresql+psycopg2://',1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     DB_TYPE = 'POSTGRES'
-    print(f"Trying POSTGRES env...", flush=True)
+    print(f"Trying {DB_TYPE} with psycopg2 driver", flush=True)
 else:
     DB_PATH = os.path.join(BASE_DIR, 'projecttrack.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB_PATH
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
     DB_TYPE = 'SQLITE'
-    print(f"Using SQLITE {DB_PATH}", flush=True)
+    print(f"Using SQLITE", flush=True)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Import SQLAlchemy
 try:
     from flask_sqlalchemy import SQLAlchemy
     from werkzeug.security import generate_password_hash, check_password_hash
@@ -54,50 +54,41 @@ try:
                 if not User.query.filter_by(email=e).first():
                     db.session.add(User(name=n,surname=s,email=e,password_hash=generate_password_hash(p),role=r))
                     added+=1
-            if added:
-                db.session.commit()
-            cnt = User.query.count()
+            if added: db.session.commit()
+            cnt=User.query.count()
             print(f"DB {DB_TYPE} OK users={cnt}", flush=True)
             return cnt
         except Exception as e:
-            DB_ERROR = str(e)[:500]
+            DB_ERROR=str(e)[:500]
             print(f"DB {DB_TYPE} FAILED: {e}", flush=True)
             traceback.print_exc()
-            # FALLBACK TO SQLITE if postgres fails
-            if DB_TYPE == 'POSTGRES':
-                print("Falling back to SQLITE...", flush=True)
+            # Fallback to SQLite
+            if 'POSTGRES' in DB_TYPE:
                 try:
-                    # Switch to SQLite
                     DB_PATH = os.path.join(BASE_DIR, 'projecttrack.db')
-                    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB_PATH
-                    # Need to re-init? We'll create new engine by removing old and creating tables with sqlite
-                    # For fallback, we create tables using sqlite file directly
-                    # Since db already bound, we can try again with sqlite uri via new app context trick
-                    # Simplest: use sqlite connection for ensure
-                    from sqlalchemy import create_engine
-                    from sqlalchemy.orm import scoped_session, sessionmaker
-                    # Fallback manual: just create sqlite tables via same db object by disposing
-                    db.engine.dispose()
-                    # Update to sqlite uri and try again
-                    db.session.remove()
-                    # Reconfigure - need new engine, easiest is to create all with sqlite uri
-                    # We'll just switch global and try again in same try block
-                    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB_PATH
-                    # Recreate engine
+                    # close old engine
+                    try: db.engine.dispose()
+                    except: pass
+                    try: db.session.remove()
+                    except: pass
+                    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
+                    # Need to create new engine - easiest: create tables via new connection
+                    # For SQLAlchemy, after changing URI, we need to bind new engine
+                    # Workaround: use sqlite directly for fallback count
+                    # Re-create tables
                     db.create_all()
                     added=0
-                    for n,s,e,p,r in defaults:
+                    for n,s,e,p,r in [("ROOT","Admin","root@hzcprojects.com","root123","ROOT"),("Admin","User","admin@hzcprojects.com","admin123","admin"),("Viewer","User","viewer@hzcprojects.com","viewer123","viewer")]:
                         if not User.query.filter_by(email=e).first():
                             db.session.add(User(name=n,surname=s,email=e,password_hash=generate_password_hash(p),role=r))
                             added+=1
-                    if added:
-                        db.session.commit()
-                    DB_TYPE = 'SQLITE (fallback from POSTGRES)'
-                    cnt = User.query.count()
-                    print(f"Fallback SQLITE OK users={cnt}", flush=True)
+                    if added: db.session.commit()
+                    DB_TYPE='SQLITE (fallback)'
+                    cnt=User.query.count()
+                    print(f"Fallback {DB_TYPE} OK {cnt}", flush=True)
                     return cnt
                 except Exception as e2:
-                    print(f"Fallback also failed: {e2}", flush=True)
+                    print(f"Fallback failed {e2}", flush=True)
                     traceback.print_exc()
                     return 0
             return 0
@@ -106,12 +97,11 @@ try:
         ensure_defaults()
 
 except Exception as e:
-    print(f"CRITICAL IMPORT FAIL: {e}", flush=True)
+    print(f"CRITICAL FAIL {e}", flush=True)
     traceback.print_exc()
-    DB_TYPE = f'ERROR: {e}'[:100]
-    DB_ERROR = str(e)
-    db = None
-    User = None
+    DB_TYPE=f'ERROR: {e}'[:100]
+    DB_ERROR=str(e)
+    db=None; User=None
     def ensure_defaults(): return 0
     def generate_password_hash(p): return p
     def check_password_hash(a,b): return False
@@ -137,13 +127,10 @@ def sf(p): return send_from_directory('static', p)
 def health():
     try:
         if db is not None:
-            with app.app_context():
-                ensure_defaults()
-        c = User.query.count() if db and User else 0
-    except Exception as e:
-        c = 0
-        DB_ERROR_LOCAL = str(e)
-    return jsonify({"status":"ok","db":DB_TYPE.lower(),"db_type":DB_TYPE,"users":c,"env_has_db":bool(os.environ.get('DATABASE_URL')),"error":str(DB_ERROR)[:500] if DB_ERROR else None})
+            with app.app_context(): ensure_defaults()
+        c=User.query.count() if db and User else 0
+    except: c=0
+    return jsonify({"status":"ok","db":DB_TYPE.lower(),"db_type":DB_TYPE,"users":c,"env_has_db":bool(os.environ.get('DATABASE_URL')),"error":DB_ERROR})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -172,7 +159,7 @@ def login():
 def logout():
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     try:
-        if db: 
+        if db:
             u=User.query.filter_by(token=t).first()
             if u: u.token=None; u.token_expiry=None; db.session.commit()
     except: pass
@@ -191,12 +178,12 @@ def del_user(uid):
     if db is None: return jsonify({"error":"No DB"}),500
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     caller=get_user_by_token(t)
-    if not caller: return jsonify({"error":"Login as ROOT/admin first"}),401
+    if not caller: return jsonify({"error":"Login as ROOT/admin"}),401
     if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden"}),403
     u=db.session.get(User, uid)
     if not u: return jsonify({"error":"Not found"}),404
     db.session.delete(u); db.session.commit()
     return jsonify({"message":"Deleted"})
 
-if __name__ == '__main__':
+if __name__=='__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT',8080)))
