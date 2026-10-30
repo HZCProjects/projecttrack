@@ -4,7 +4,6 @@ from flask import Flask, request, jsonify, send_from_directory
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_TYPE = 'SQLITE'
 
 db_url = os.environ.get('DATABASE_URL','').strip()
 if db_url:
@@ -46,10 +45,25 @@ def init_db():
         print(f"DB {DB_TYPE} init OK users={cnt}", flush=True)
         return cnt
     except Exception as e:
-        print(f"init_db error {e}", flush=True)
+        msg=str(e).lower()
+        print(f"init_db error {e} - will rebuild table", flush=True)
         traceback.print_exc()
         try: db.session.rollback()
         except: pass
+        # If column missing or table mismatch, drop and recreate
+        if 'undefinedcolumn' in msg or 'does not exist' in msg or 'no such column' in msg or 'name' in msg:
+            try:
+                print("Dropping and recreating users table...", flush=True)
+                db.drop_all()
+                db.create_all()
+                cnt = User.query.count()
+                print(f"Rebuilt OK users={cnt}", flush=True)
+                return cnt
+            except Exception as e2:
+                print(f"rebuild failed {e2}", flush=True)
+                traceback.print_exc()
+                try: db.session.rollback()
+                except: pass
         return 0
 
 with app.app_context():
@@ -75,25 +89,32 @@ def sf(p): return send_from_directory('static', p)
 @app.route('/health')
 def health():
     try:
-        with app.app_context():
-            db.create_all()
-            c = User.query.count()
+        c = User.query.count()
     except Exception as e:
-        print(f"health error {e}", flush=True)
-        c=0
+        print(f"health error {e} - init", flush=True)
+        with app.app_context():
+            c = init_db()
     return jsonify({"status":"ok","db":DB_TYPE.lower(),"db_type":DB_TYPE,"users":c,"env_has_db":bool(os.environ.get('DATABASE_URL'))})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
-        # Always ensure tables exist - this fixes 500 error when Postgres is empty
-        db.create_all()
+        try:
+            # Try count to detect missing column
+            User.query.count()
+        except Exception as ce:
+            print(f"Detected schema issue in register: {ce} - rebuilding", flush=True)
+            try: db.session.rollback()
+            except: pass
+            db.drop_all()
+            db.create_all()
+
         d=request.get_json() or {}
         name=d.get('name','').strip()
         surname=d.get('surname','').strip()
         email=d.get('email','').strip().lower()
         pwd=d.get('password','')
-        print(f"REGISTER attempt name={name} surname={surname} email={email} pwdLen={len(pwd)}", flush=True)
+        print(f"REGISTER name={name} surname={surname} email={email} pwdLen={len(pwd)}", flush=True)
         if len(name)<1: return jsonify({"error":"Name required"}),400
         if len(email)<6: return jsonify({"error":"Email must be >5 chars"}),400
         if len(pwd)<7: return jsonify({"error":"Password must be >6 chars"}),400
@@ -113,12 +134,11 @@ def register():
         traceback.print_exc()
         try: db.session.rollback()
         except: pass
-        return jsonify({"error":f"Server error: {str(e)[:300]}"}),500
+        return jsonify({"error":f"Server error: {str(e)[:400]}"}),500
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     try:
-        db.create_all()
         d=request.get_json() or {}
         email=d.get('email','').strip().lower(); pwd=d.get('password','')
         print(f"LOGIN attempt {email}", flush=True)
@@ -132,7 +152,7 @@ def login():
     except Exception as e:
         print(f"LOGIN FAILED {e}", flush=True)
         traceback.print_exc()
-        return jsonify({"error":f"Login error: {str(e)[:300]}"}),500
+        return jsonify({"error":f"Login error: {str(e)[:400]}"}),500
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
@@ -146,7 +166,6 @@ def logout():
 @app.route('/api/users', methods=['GET'])
 def list_users():
     try:
-        db.create_all()
         users=User.query.order_by(User.id).all()
         return jsonify([{"id":x.id,"name":x.name,"surname":x.surname or "", "email":x.email,"role":x.role} for x in users])
     except Exception as e:
