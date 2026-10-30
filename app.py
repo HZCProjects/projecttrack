@@ -5,109 +5,56 @@ from flask import Flask, request, jsonify, send_from_directory
 app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_TYPE = 'SQLITE'
-DB_ERROR = None
 
 db_url = os.environ.get('DATABASE_URL','').strip()
 if db_url:
-    # Railway gives postgres:// or postgresql:// - we MUST use postgresql+psycopg2:// for psycopg2-binary
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://','postgresql+psycopg2://',1)
     elif db_url.startswith('postgresql://') and '+psycopg2' not in db_url:
         db_url = db_url.replace('postgresql://','postgresql+psycopg2://',1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     DB_TYPE = 'POSTGRES'
-    print(f"Trying {DB_TYPE} with psycopg2 driver", flush=True)
 else:
     DB_PATH = os.path.join(BASE_DIR, 'projecttrack.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
     DB_TYPE = 'SQLITE'
-    print(f"Using SQLITE", flush=True)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-try:
-    from flask_sqlalchemy import SQLAlchemy
-    from werkzeug.security import generate_password_hash, check_password_hash
-    db = SQLAlchemy(app)
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+db = SQLAlchemy(app)
 
-    class User(db.Model):
-        __tablename__='users'
-        id=db.Column(db.Integer, primary_key=True)
-        name=db.Column(db.String(120), nullable=False)
-        surname=db.Column(db.String(120), nullable=True)
-        email=db.Column(db.String(120), unique=True, nullable=False)
-        password_hash=db.Column(db.String(255), nullable=False)
-        role=db.Column(db.String(20), default='viewer')
-        is_active=db.Column(db.Boolean, default=True)
-        created_at=db.Column(db.DateTime, default=datetime.utcnow)
-        last_login=db.Column(db.DateTime, nullable=True)
-        token=db.Column(db.String(255), nullable=True)
-        token_expiry=db.Column(db.DateTime, nullable=True)
+class User(db.Model):
+    __tablename__='users'
+    id=db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(120), nullable=False)
+    surname=db.Column(db.String(120), nullable=True)
+    email=db.Column(db.String(120), unique=True, nullable=False)
+    password_hash=db.Column(db.String(255), nullable=False)
+    role=db.Column(db.String(20), default='viewer')
+    is_active=db.Column(db.Boolean, default=True)
+    created_at=db.Column(db.DateTime, default=datetime.utcnow)
+    last_login=db.Column(db.DateTime, nullable=True)
+    token=db.Column(db.String(255), nullable=True)
+    token_expiry=db.Column(db.DateTime, nullable=True)
 
-    def ensure_defaults():
-        global DB_TYPE, DB_ERROR
-        try:
-            db.create_all()
-            defaults=[("ROOT","Admin","root@hzcprojects.com","root123","ROOT"),("Admin","User","admin@hzcprojects.com","admin123","admin"),("Viewer","User","viewer@hzcprojects.com","viewer123","viewer")]
-            added=0
-            for n,s,e,p,r in defaults:
-                if not User.query.filter_by(email=e).first():
-                    db.session.add(User(name=n,surname=s,email=e,password_hash=generate_password_hash(p),role=r))
-                    added+=1
-            if added: db.session.commit()
-            cnt=User.query.count()
-            print(f"DB {DB_TYPE} OK users={cnt}", flush=True)
-            return cnt
-        except Exception as e:
-            DB_ERROR=str(e)[:500]
-            print(f"DB {DB_TYPE} FAILED: {e}", flush=True)
-            traceback.print_exc()
-            # Fallback to SQLite
-            if 'POSTGRES' in DB_TYPE:
-                try:
-                    DB_PATH = os.path.join(BASE_DIR, 'projecttrack.db')
-                    # close old engine
-                    try: db.engine.dispose()
-                    except: pass
-                    try: db.session.remove()
-                    except: pass
-                    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
-                    # Need to create new engine - easiest: create tables via new connection
-                    # For SQLAlchemy, after changing URI, we need to bind new engine
-                    # Workaround: use sqlite directly for fallback count
-                    # Re-create tables
-                    db.create_all()
-                    added=0
-                    for n,s,e,p,r in [("ROOT","Admin","root@hzcprojects.com","root123","ROOT"),("Admin","User","admin@hzcprojects.com","admin123","admin"),("Viewer","User","viewer@hzcprojects.com","viewer123","viewer")]:
-                        if not User.query.filter_by(email=e).first():
-                            db.session.add(User(name=n,surname=s,email=e,password_hash=generate_password_hash(p),role=r))
-                            added+=1
-                    if added: db.session.commit()
-                    DB_TYPE='SQLITE (fallback)'
-                    cnt=User.query.count()
-                    print(f"Fallback {DB_TYPE} OK {cnt}", flush=True)
-                    return cnt
-                except Exception as e2:
-                    print(f"Fallback failed {e2}", flush=True)
-                    traceback.print_exc()
-                    return 0
-            return 0
+def init_db():
+    try:
+        db.create_all()
+        cnt = User.query.count()
+        print(f"DB {DB_TYPE} ready users={cnt}", flush=True)
+        return cnt
+    except Exception as e:
+        print(f"init_db fail {e}", flush=True)
+        traceback.print_exc()
+        return 0
 
-    with app.app_context():
-        ensure_defaults()
-
-except Exception as e:
-    print(f"CRITICAL FAIL {e}", flush=True)
-    traceback.print_exc()
-    DB_TYPE=f'ERROR: {e}'[:100]
-    DB_ERROR=str(e)
-    db=None; User=None
-    def ensure_defaults(): return 0
-    def generate_password_hash(p): return p
-    def check_password_hash(a,b): return False
+with app.app_context():
+    init_db()
 
 def get_user_by_token(t):
-    if not t or db is None: return None
+    if not t: return None
     try:
         u=User.query.filter_by(token=t).first()
         if not u or (u.token_expiry and u.token_expiry < datetime.utcnow()): return None
@@ -126,48 +73,57 @@ def sf(p): return send_from_directory('static', p)
 @app.route('/health')
 def health():
     try:
-        if db is not None:
-            with app.app_context(): ensure_defaults()
-        c=User.query.count() if db and User else 0
-    except: c=0
-    return jsonify({"status":"ok","db":DB_TYPE.lower(),"db_type":DB_TYPE,"users":c,"env_has_db":bool(os.environ.get('DATABASE_URL')),"error":DB_ERROR})
+        c = User.query.count()
+    except:
+        c=0
+    return jsonify({"status":"ok","db":DB_TYPE.lower(),"db_type":DB_TYPE,"users":c,"env_has_db":bool(os.environ.get('DATABASE_URL'))})
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    if db is None: return jsonify({"error":"DB not ready"}),500
     d=request.get_json() or {}
-    name=d.get('name','').strip(); surname=d.get('surname','').strip(); email=d.get('email','').strip().lower(); pwd=d.get('password','')
+    name=d.get('name','').strip()
+    surname=d.get('surname','').strip()
+    email=d.get('email','').strip().lower()
+    pwd=d.get('password','')
     if len(name)<1: return jsonify({"error":"Name required"}),400
     if len(email)<6: return jsonify({"error":"Email must be >5 chars"}),400
     if len(pwd)<7: return jsonify({"error":"Password must be >6 chars"}),400
-    if User.query.filter_by(email=email).first(): return jsonify({"error":"Email exists"}),400
-    u=User(name=name,surname=surname,email=email,password_hash=generate_password_hash(pwd),role=d.get('role','viewer'))
-    db.session.add(u); db.session.commit()
-    return jsonify({"message":"Created","user":{"id":u.id}}),201
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error":"Email exists"}),400
+    
+    # First user ever becomes ROOT automatically
+    is_first = User.query.count() == 0
+    role = 'ROOT' if is_first else d.get('role','viewer')
+    
+    u=User(name=name,surname=surname,email=email,password_hash=generate_password_hash(pwd),role=role)
+    db.session.add(u)
+    db.session.commit()
+    print(f"Created user {email} role={role} first={is_first}", flush=True)
+    return jsonify({"message":"Created as "+role,"user":{"id":u.id,"role":role}}),201
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    if db is None: return jsonify({"error":"DB not ready"}),500
     d=request.get_json() or {}
     email=d.get('email','').strip().lower(); pwd=d.get('password','')
     u=User.query.filter_by(email=email).first()
-    if not u or not check_password_hash(u.password_hash,pwd): return jsonify({"error":"Invalid credentials"}),401
-    token=secrets.token_urlsafe(32); u.token=token; u.token_expiry=datetime.utcnow()+timedelta(days=7); u.last_login=datetime.utcnow(); db.session.commit()
+    if not u or not check_password_hash(u.password_hash,pwd):
+        return jsonify({"error":"Invalid credentials"}),401
+    token=secrets.token_urlsafe(32)
+    u.token=token; u.token_expiry=datetime.utcnow()+timedelta(days=7); u.last_login=datetime.utcnow()
+    db.session.commit()
     return jsonify({"token":token,"user":{"id":u.id,"name":u.name,"email":u.email,"role":u.role}})
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     try:
-        if db:
-            u=User.query.filter_by(token=t).first()
-            if u: u.token=None; u.token_expiry=None; db.session.commit()
+        u=User.query.filter_by(token=t).first()
+        if u: u.token=None; u.token_expiry=None; db.session.commit()
     except: pass
     return jsonify({"message":"ok"})
 
 @app.route('/api/users', methods=['GET'])
 def list_users():
-    if db is None: return jsonify([])
     try:
         users=User.query.order_by(User.id).all()
         return jsonify([{"id":x.id,"name":x.name,"surname":x.surname or "", "email":x.email,"role":x.role} for x in users])
@@ -175,13 +131,13 @@ def list_users():
 
 @app.route('/api/users/<int:uid>', methods=['DELETE'])
 def del_user(uid):
-    if db is None: return jsonify({"error":"No DB"}),500
     t=request.headers.get('Authorization','').replace('Bearer ','').strip()
     caller=get_user_by_token(t)
-    if not caller: return jsonify({"error":"Login as ROOT/admin"}),401
-    if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden"}),403
+    if not caller: return jsonify({"error":"Login as ROOT first"}),401
+    if caller.role not in ['ROOT','admin']: return jsonify({"error":"Forbidden - need ROOT"}),403
     u=db.session.get(User, uid)
     if not u: return jsonify({"error":"Not found"}),404
+    if u.id==caller.id: return jsonify({"error":"Cannot delete yourself"}),400
     db.session.delete(u); db.session.commit()
     return jsonify({"message":"Deleted"})
 

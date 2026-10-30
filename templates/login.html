@@ -8,14 +8,15 @@
 <h1>Create An Account</h1>
 <div class="sub">Already have an account? <a onclick="showLogin()">Log In</a></div>
 <div class="form">
-<div class="row"><div class="field" style="flex:1"><input id="regName" placeholder="Name"></div><div class="field" style="flex:1"><input id="regSurname" placeholder="Surname"></div></div>
-<div class="field"><input id="regEmail" type="email" placeholder="Email or Login Name (More than 5 characters)"></div>
-<div class="field"><input id="regPass" type="password" placeholder="Enter your password (More than 6 characters)"><button class="eye" onclick="toggle('regPass')">👁</button></div>
-<div class="field"><input id="regRepeat" type="password" placeholder="Repeat password"><button class="eye" onclick="toggle('regRepeat')">👁</button></div>
+<div class="row"><div class="field" style="flex:1"><input id="regName" placeholder="Name" value="Hennie"></div><div class="field" style="flex:1"><input id="regSurname" placeholder="Surname" value="Esterhuizen"></div></div>
+<div class="field"><input id="regEmail" type="text" placeholder="Email - use HCE@Projects2026" value="HCE@Projects2026"></div>
+<div class="field"><input id="regPass" type="password" placeholder="Enter your password (More than 6 characters)" value="HZC@2026"><button class="eye" onclick="toggle('regPass')">👁</button></div>
+<div class="field"><input id="regRepeat" type="password" placeholder="Repeat password" value="HZC@2026"><button class="eye" onclick="toggle('regRepeat')">👁</button></div>
 <div class="check"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
-<button class="btn" onclick="doRegister()">Create Account</button>
+<button class="btn" id="createBtn" onclick="doRegister()">Create Account</button>
 <div id="regMsg" class="msg"></div>
-<div class="users-table" id="usersBox" style="display:none"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:12px">Users DB</b><span id="dbBadge" class="badge">SQLITE</span></div><table id="usersTable"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody></tbody></table></div>
+<div id="debugLog" style="margin-top:10px;font-size:10px;color:#333;background:#fff;padding:6px;border-radius:4px;white-space:pre-wrap;display:none"></div>
+<div class="users-table" id="usersBox" style="display:none"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b style="font-size:12px">Users DB</b><span id="dbBadge" class="badge">POSTGRES</span></div><table id="usersTable"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th></th></tr></thead><tbody></tbody></table></div>
 </div>
 <div class="footer">www.projecttrack.co.za | <span id="dbStatus">Checking DB...</span></div>
 </div>
@@ -24,63 +25,93 @@
 <h1>Login To Account</h1>
 <div class="sub">Don't have an account? <a onclick="showCreate()">Create One</a></div>
 <div class="form">
-<div class="field"><input id="loginEmail" type="email" placeholder="Email or Login Name"></div>
-<div class="field"><input id="loginPass" type="password" placeholder="Enter you password"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
+<div class="field"><input id="loginEmail" type="text" placeholder="Email - HCE@Projects2026" value="HCE@Projects2026"></div>
+<div class="field"><input id="loginPass" type="password" placeholder="Enter you password" value="HZC@2026"><button class="eye" onclick="toggle('loginPass')">👁</button></div>
 <div class="check"><input type="checkbox" id="agree2" checked><label for="agree2">I agree to the <a href="#">Terms&Conditions</a></label></div>
 <button class="btn" onclick="doLogin()">Enter To Login</button>
 <div id="loginMsg" class="msg"></div>
-<div class="users-table" style="margin-top:20px"><div style="font-size:11px;color:#666">Defaults: root@hzcprojects.com / root123 | admin@hzcprojects.com / admin123 | viewer@hzcprojects.com / viewer123</div></div>
 </div>
-<div class="footer">www.projecttrack.co.za | <span id="dbStatus2">SQLITE</span> | <a href="/health" style="color:inherit">Health</a></div>
+<div class="footer">www.projecttrack.co.za | <span id="dbStatus2">POSTGRES</span> | <a href="/health" style="color:inherit">Health</a></div>
 </div>
 
 </div>
 </div>
 
 <script>
+function logDebug(txt){
+  let el=document.getElementById('debugLog');
+  el.style.display='block';
+  el.textContent+=txt+'\n';
+  console.log(txt);
+}
 function toggle(id){let el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 function showLogin(){document.getElementById('createView').style.display='none';document.getElementById('loginView').style.display='flex';}
 function showCreate(){document.getElementById('loginView').style.display='none';document.getElementById('createView').style.display='flex';loadUsers();}
-function msg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');}
+function msg(id,txt,ok){let el=document.getElementById(id);el.textContent=txt;el.className='msg '+(ok?'ok':'err');el.style.display='block';logDebug(id+': '+txt);}
+
 async function checkHealth(){
  try{
   let r=await fetch('/health');let j=await r.json();
   let txt=`DB: ${j.db_type} - Users: ${j.users} ${j.env_has_db?'(Postgres env)':'(SQLite)'}`;
+  if(j.error) txt+=` | Error: ${j.error.substring(0,100)}`;
   document.getElementById('dbStatus').textContent=txt;
   document.getElementById('dbStatus2').textContent=txt;
-  let b=document.getElementById('dbBadge'); if(b){b.textContent=j.db_type; b.className='badge '+(j.db_type==='POSTGRES'?'postgres':'');}
- }catch(e){document.getElementById('dbStatus').textContent='DB check failed';}
+  let b=document.getElementById('dbBadge'); if(b){b.textContent=j.db_type;}
+  logDebug('health: '+JSON.stringify(j));
+ }catch(e){document.getElementById('dbStatus').textContent='DB check failed: '+e; logDebug('health fail '+e);}
 }
 checkHealth();
 
 async function doRegister(){
- let name=document.getElementById('regName').value.trim();
- let surname=document.getElementById('regSurname').value.trim();
- let email=document.getElementById('regEmail').value.trim();
- let pwd=document.getElementById('regPass').value;
- let rep=document.getElementById('regRepeat').value;
- if(name.length<1){msg('regMsg','Name required',false);return;}
- if(email.length<6){msg('regMsg','Email must be >5 chars (example: hennie@hzcprojects.com)',false);return;}
- if(pwd.length<7){msg('regMsg','Password must be >6 chars',false);return;}
- if(pwd!==rep){msg('regMsg','Passwords do not match',false);return;}
- if(!document.getElementById('agree1').checked){msg('regMsg','Agree to Terms',false);return;}
- let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,surname,email,password:pwd})});
- let data=await res.json();
- if(!res.ok){msg('regMsg',data.error,false);return;}
- msg('regMsg','Account created ID '+data.user.id+' - Now Log In',true);
- checkHealth(); loadUsers();
+  let btn=document.getElementById('createBtn');
+  btn.disabled=true; btn.textContent='Creating...';
+  try{
+   let name=document.getElementById('regName').value.trim();
+   let surname=document.getElementById('regSurname').value.trim();
+   let email=document.getElementById('regEmail').value.trim();
+   let pwd=document.getElementById('regPass').value;
+   let rep=document.getElementById('regRepeat').value;
+   logDebug(`Register attempt name=${name} surname=${surname} email=${email} pwdLen=${pwd.length}`);
+   if(name.length<1){msg('regMsg','Name required',false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   if(email.length<6){msg('regMsg','Email must be >5 chars - you entered: '+email+' len='+email.length,false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   if(pwd.length<7){msg('regMsg','Password must be >6 chars - you entered len='+pwd.length,false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   if(pwd!==rep){msg('regMsg','Passwords do not match',false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   if(!document.getElementById('agree1').checked){msg('regMsg','Agree to Terms',false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   
+   logDebug('Sending POST /api/auth/register');
+   let res=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,surname,email,password:pwd})});
+   let text=await res.text();
+   logDebug(`Response status=${res.status} body=${text}`);
+   let data;
+   try{ data=JSON.parse(text); }catch{ data={error:text}; }
+   if(!res.ok){msg('regMsg',data.error||text,false); btn.disabled=false; btn.textContent='Create Account'; return;}
+   msg('regMsg','Created as '+data.user.role+' ID '+data.user.id+' - Now Log In! (HCE@Projects2026 is ROOT)',true);
+   checkHealth(); loadUsers();
+   // auto switch to login after 2 sec
+   setTimeout(()=>{document.getElementById('loginEmail').value=email; document.getElementById('loginPass').value=pwd; showLogin();},1500);
+  }catch(e){
+   msg('regMsg','JS Error: '+e.message,false);
+   logDebug('Exception: '+e.stack);
+  }finally{
+   btn.disabled=false; btn.textContent='Create Account';
+  }
 }
 
 async function doLogin(){
- let email=document.getElementById('loginEmail').value.trim();
- let pwd=document.getElementById('loginPass').value;
- let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})});
- let data=await res.json();
- if(!res.ok){msg('loginMsg',data.error,false);return;}
- localStorage.setItem('pt_token',data.token);
- localStorage.setItem('pt_user',JSON.stringify(data.user));
- msg('loginMsg','OK - redirect to dashboard...',true);
- setTimeout(()=>location.href='/index.html',600);
+ try{
+  let email=document.getElementById('loginEmail').value.trim();
+  let pwd=document.getElementById('loginPass').value;
+  logDebug(`Login attempt ${email}`);
+  let res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})});
+  let text=await res.text();
+  logDebug(`Login response ${res.status} ${text}`);
+  let data; try{ data=JSON.parse(text);}catch{ data={error:text};}
+  if(!res.ok){msg('loginMsg',data.error,false);return;}
+  localStorage.setItem('pt_token',data.token);
+  localStorage.setItem('pt_user',JSON.stringify(data.user));
+  msg('loginMsg','OK '+data.user.role+' - redirect...',true);
+  setTimeout(()=>location.href='/index.html',800);
+ }catch(e){msg('loginMsg','Error: '+e.message,false);}
 }
 
 async function loadUsers(){
@@ -94,18 +125,18 @@ async function loadUsers(){
    tr.innerHTML=`<td>${u.id}</td><td>${u.name} ${u.surname||''}</td><td>${u.email}</td><td>${u.role}</td><td><span style="color:#C00;cursor:pointer" onclick="del(${u.id})">X</span></td>`;
    tbody.appendChild(tr);
   });
- }catch(e){}
+ }catch(e){logDebug('loadUsers fail '+e);}
 }
 async function del(id){
  let token=localStorage.getItem('pt_token');
- if(!token){msg('regMsg','Login as ROOT or admin to delete (root@hzcprojects.com / root123)',false);return;}
+ if(!token){msg('regMsg','Login as ROOT first',false);return;}
  let res=await fetch('/api/users/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
  let d=await res.json();
  if(!res.ok){msg('regMsg',d.error,false);return;}
- msg('regMsg','Deleted user '+id,true);
+ msg('regMsg','Deleted '+id,true);
  checkHealth(); loadUsers();
 }
 loadUsers();
-setInterval(checkHealth,5000);
+setInterval(checkHealth,8000);
 </script>
 </body></html>
