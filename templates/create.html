@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ProjectTrack - Create Account</title>
+<link rel="stylesheet" href="/static/projecttrack.css">
+<style>
+body{background:#383C40;margin:0;padding:20px;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.create-wrapper{width:980px;max-width:96vw;background:#B2B2B2;border:14px solid #383C40;display:flex;overflow:hidden;border-radius:18px}
+.left-img{width:38%;background:#fff;display:flex;align-items:center;justify-content:center}
+.left-img img{width:100%;height:100%;object-fit:cover}
+.right-form{width:62%;padding:22px 24px}
+.right-form h1{font-size:28px;font-weight:900;margin:0 0 6px 0;color:#000}
+.sub{font-size:12px;color:#6B5BCE;margin-bottom:16px}
+.row{display:flex;gap:12px;margin-bottom:12px}
+.field{flex:1;display:flex;height:38px;background:#fff;border:1px solid #000}
+.field-label{background:#383C40;color:#fff;font-size:11px;font-weight:700;width:110px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.field input{flex:1;border:none;outline:none;padding-left:14px;font-size:13px}
+.field-full{display:flex;height:38px;background:#fff;border:1px solid #000;margin-bottom:12px}
+.field-full .field-label{width:150px}
+.field-full input{flex:1;border:none;outline:none;padding-left:14px;font-size:13px}
+.field-pass{position:relative}
+.field-pass input{padding-right:42px}
+.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:18px;display:flex !important;align-items:center;justify-content:center}
+.check-row{display:flex;align-items:center;gap:8px;font-size:12px;margin:12px 0}
+.btn-create{background:#383C40;color:#fff;width:100%;height:44px;border:none;font-weight:700;cursor:pointer}
+.notes{font-size:10px;color:#6B5BCE;text-align:right;margin-top:12px;line-height:1.5}
+.foot{font-size:11px;text-align:right;margin-top:14px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="create-wrapper">
+<div class="left-img"><img src="/static/team-puzzle.jpg" onerror="this.style.display='none'"></div>
+<div class="right-form">
+<h1>Create An Account</h1>
+<div class="sub">Already have an account? <a href="/login" style="color:#6B5BCE;font-weight:700">Log In</a></div>
+
+<div class="row">
+<div class="field"><div class="field-label">*Name</div><input id="regName" type="text"></div>
+<div class="field"><div class="field-label">*Surname</div><input id="regSurname" type="text"></div>
+</div>
+<div class="field-full"><div class="field-label">*Email or Login Name</div><input id="regEmail" type="text"></div>
+<div class="field-full field-pass"><div class="field-label">*Enter your password</div><input id="regPass" type="password"><button class="eye" id="eyeReg" onclick="toggle('regPass')">👁</button></div>
+<div class="field-full field-pass"><div class="field-label">*Repeat password</div><input id="regRepeat" type="password"><button class="eye" id="eyeRegRep" onclick="toggle('regRepeat')">👁</button></div>
+
+<div class="check-row"><input type="checkbox" id="agree" checked><label for="agree">I agree to the <a href="#" style="color:#6B5BCE">Terms&Conditions</a></label></div>
+<button class="btn-create" onclick="doCreate()">Create Account</button>
+<div id="msg" style="font-size:12px;margin-top:10px;text-align:center;color:red"></div>
+<div class="notes">*All Fields Must Be Completed to Create an Account<br>*Login Name must be more than 5 Characters<br>*Password must be more than 6 Characters</div>
+<div class="foot">www.projecttrack.co.za</div>
+</div>
+</div>
+<script>
+function toggle(id){
+ let inp=document.getElementById(id);
+ let btn=document.getElementById(id==='regPass'?'eyeReg':'eyeRegRep');
+ if(!inp) return;
+ if(inp.type==='password'){inp.type='text';btn.innerHTML='◑';} else {inp.type='password';btn.innerHTML='👁';}
+}
+async function doCreate(){
+ let name=document.getElementById('regName').value.trim();
+ let surname=document.getElementById('regSurname').value.trim();
+ let email=document.getElementById('regEmail').value.trim();
+ let pwd=document.getElementById('regPass').value;
+ let rep=document.getElementById('regRepeat').value;
+ if(!name||!surname||!email||!pwd||!rep){document.getElementById('msg').innerText='All fields required';return;}
+ try{
+  let r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,surname:surname,email:email,password:pwd,repeatPassword:rep})});
+  let j=await r.json();
+  if(!r.ok){document.getElementById('msg').innerText=j.error;return;}
+  alert('Account created! Role: '+j.role+' Please login.');
+  window.location.href='/login';
+ }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
+}
+</script>
+</body>
+</html>
