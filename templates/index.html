@@ -1,3 +1,36 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
-<body><div class="outer"><div class="inner" style="flex-direction:column;padding:30px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><h1 style="font-size:26px">HZC Projects - Dashboard <span id="dbBadge" class="badge">SQLITE</span></h1><span id="userInfo" style="font-size:12px"></span></div><p id="welcome" style="margin-top:16px;font-size:14px"></p><div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" style="width:auto;padding:10px 20px" onclick="location.href='/login.html'">Back to Accounts</button><button class="btn" style="width:auto;padding:10px 20px;background:#B2B2B2;color:#383C40" onclick="doLogout()">Logout</button></div><pre id="sys" style="margin-top:20px;background:#fff;padding:12px;border-radius:6px;font-size:11px;overflow:auto"></pre><div class="footer">www.projecttrack.co.za - STEP3 Both Postgres & SQLite</div></div></div>
-<script>let t=localStorage.getItem('pt_token'),u=localStorage.getItem('pt_user');if(!t||!u)location.href='/login.html';let user=JSON.parse(u);document.getElementById('userInfo').textContent=user.email+' ('+user.role+')';document.getElementById('welcome').textContent='Logged as '+user.name+' - Role: '+user.role;fetch('/health').then(r=>r.json()).then(j=>{document.getElementById('sys').textContent=JSON.stringify(j,null,2);let b=document.getElementById('dbBadge');b.textContent=j.db_type;b.className='badge '+(j.db_type==='POSTGRES'?'postgres':'');});function doLogout(){fetch('/api/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+t}}).finally(()=>{localStorage.clear();location.href='/login.html';});}</script></body></html>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard - HZC Projects</title><link rel="stylesheet" href="/static/projecttrack.css"></head>
+<body><div class="outer"><div class="inner" style="flex-direction:column;padding:30px">
+<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="font-size:26px">HZC Projects - Dashboard</h1><span id="userInfo" style="font-size:12px"></span></div>
+<p id="welcome" style="margin-top:16px;font-size:14px"></p>
+<div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" style="width:auto;padding:10px 20px" onclick="location.href='/login.html'">Accounts</button><button class="btn" style="width:auto;padding:10px 20px;background:#B2B2B2;color:#383C40" onclick="doLogout()">Logout</button></div>
+<div id="adminPanel" style="display:none;margin-top:20px;background:#fff;border-radius:8px;padding:16px"><h3 style="font-size:14px;margin-bottom:10px">Users</h3><table id="usersTable" style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:6px;border-bottom:2px solid #383C40">ID</th><th style="text-align:left;padding:6px;border-bottom:2px solid #383C40">Name</th><th style="text-align:left;padding:6px;border-bottom:2px solid #383C40">Email</th><th style="text-align:left;padding:6px;border-bottom:2px solid #383C40">Role</th><th style="padding:6px;border-bottom:2px solid #383C40"></th></tr></thead><tbody></tbody></table></div>
+<div class="footer" style="margin-top:30px">www.projecttrack.co.za</div>
+</div></div>
+<script>
+let t=localStorage.getItem('pt_token'),u=localStorage.getItem('pt_user');
+if(!t||!u) location.href='/login.html';
+let user=JSON.parse(u);
+document.getElementById('userInfo').textContent=user.email+' ('+user.role+')';
+document.getElementById('welcome').textContent='Logged in as '+user.name+' - Role: '+user.role;
+if(user.role==='ROOT' || user.role==='admin'){
+  document.getElementById('adminPanel').style.display='block';
+  loadUsers();
+}
+async function loadUsers(){
+  let res=await fetch('/api/users'); let users=await res.json();
+  let tbody=document.querySelector('#usersTable tbody'); tbody.innerHTML='';
+  users.forEach(u=>{
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td style="padding:6px;border-bottom:1px solid #ddd">${u.id}</td><td style="padding:6px;border-bottom:1px solid #ddd">${u.name} ${u.surname||''}</td><td style="padding:6px;border-bottom:1px solid #ddd">${u.email}</td><td style="padding:6px;border-bottom:1px solid #ddd">${u.role}</td><td style="padding:6px;border-bottom:1px solid #ddd">${u.id!==user.id?`<span style="color:#C00;cursor:pointer" onclick="delUser(${u.id})">X</span>`:''}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+async function delUser(id){
+  let res=await fetch('/api/users/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+t}});
+  let d=await res.json();
+  if(!res.ok){alert(d.error);return;}
+  loadUsers();
+}
+function doLogout(){fetch('/api/auth/logout',{method:'POST',headers:{'Authorization':'Bearer '+t}}).finally(()=>{localStorage.clear();location.href='/login.html';});}
+</script>
+</body></html>
