@@ -160,3 +160,26 @@ h1{font-size:36px !important;}
 /* Half eye style - when password visible show half eye */
 .eye{font-size:20px !important; line-height:1;}
 h1{font-size:36px !important;}
+
+/* HALF EYE PERMANENT - always visible */
+.eye{
+ display:flex !important;
+ position:absolute !important;
+ right:8px !important;
+ top:50% !important;
+ transform:translateY(-50%) !important;
+ width:32px !important;
+ height:32px !important;
+ border:none !important;
+ background:transparent !important;
+ cursor:pointer !important;
+ font-size:20px !important;
+ z-index:10 !important;
+ align-items:center !important;
+ justify-content:center !important;
+}
+#loginPass, #regPass, #regRepeat{
+ padding-right:42px !important;
+}
+h1{font-size:36px !important;}
+#loginEmail, #loginPass{padding-left:14px !important;}

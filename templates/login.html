@@ -23,7 +23,7 @@
 </div>
 
 <!-- CREATE VIEW - Keep business team design you liked -->
-<div class="outer-business" id="createView" style="display:none">
+<div class="outer-business" id="createView" style="display:flex">
 <div class="inner-business">
 <div class="left-business"><img src="/static/business-team.png" alt="Business Team"></div>
 <div class="right-business">
@@ -32,8 +32,8 @@
 <div class="form-business">
 <div class="row-business"><div class="field-business"><label class="small">*Name</label><div class="input-wrap-business"><input id="regName" type="text"></div></div><div class="field-business"><label class="small">*Surname</label><div class="input-wrap-business"><input id="regSurname" type="text"></div></div></div>
 <div class="field-business"><label>*Email or Login Name</label><div class="input-wrap-business"><input id="regEmail" type="text"></div></div>
-<div class="field-business"><label>*Enter your password</label><div class="input-wrap-business"><input id="regPass" type="password" onfocus="showEye('eyeReg')" onblur="hideEyeCheck('regPass','eyeReg')"><button class="eye" id="eyeReg" style="display:none" onclick="toggle('regPass')" onclick="toggle('regPass')">👁</button></div></div>
-<div class="field-business"><label>*Repeat password</label><div class="input-wrap-business"><input id="regRepeat" type="password" onfocus="showEye('eyeRegRep')" onblur="hideEyeCheck('regRepeat','eyeRegRep')"><button class="eye" id="eyeRegRep" style="display:none" onclick="toggle('regRepeat')" onclick="toggle('regRepeat')">👁</button></div></div>
+<div class="field-business"><label>*Enter your password</label><div class="input-wrap-business"><input id="regPass" type="password"><button class="eye" id="eyeReg" style="display:flex" onclick="toggle('regPass')" onclick="toggle('regPass')">👁</button></div></div>
+<div class="field-business"><label>*Repeat password</label><div class="input-wrap-business"><input id="regRepeat" type="password"><button class="eye" id="eyeRegRep" style="display:flex" onclick="toggle('regRepeat')" onclick="toggle('regRepeat')">👁</button></div></div>
 <div class="check-business"><input type="checkbox" id="agree1" checked><label for="agree1">I agree to the <a href="#">Terms&Conditions</a></label></div>
 <button class="btn-business" id="createBtn" onclick="doRegister()">Create Account</button>
 <div id="regMsg" class="msg"></div>
@@ -68,6 +68,8 @@ async function doLogin(){
 }
 
 
+
+
 function toggle(id){
  let inp=document.getElementById(id);
  let eyeBtn = null;
@@ -77,24 +79,17 @@ function toggle(id){
  if(!inp) return;
  if(inp.type==='password'){
    inp.type='text';
-   if(eyeBtn) eyeBtn.innerHTML='◑'; // half eye when visible
+   if(eyeBtn) eyeBtn.innerHTML='◑';
    if(eyeBtn) eyeBtn.title='Hide password';
  } else {
    inp.type='password';
-   if(eyeBtn) eyeBtn.innerHTML='👁'; // full eye when hidden
+   if(eyeBtn) eyeBtn.innerHTML='👁';
    if(eyeBtn) eyeBtn.title='Show password';
  }
 }
+// keep eye always visible
 function showEye(id){let el=document.getElementById(id);if(el){el.style.display='flex';}}
-function hideEyeCheck(inputId, eyeId){
- setTimeout(()=>{
-  let inp=document.getElementById(inputId);
-  let eye=document.getElementById(eyeId);
-  if(!inp || !eye) return;
-  if(document.activeElement===inp) return;
-  if(inp.value.length===0 && inp.type==='password'){eye.style.display='none';}
- },200);
-}
+function hideEyeCheck(inputId, eyeId){ /* permanent - do nothing */ }
 
 </script>
 </body></html>
