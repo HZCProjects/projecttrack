@@ -53,7 +53,7 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 <body>
 <div class="topbar">
 <h2>User Management</h2>
-<div><a href="/logout" style="font-size:13px;color:#6b7280;text-decoration:none;">Logout ({{ current.username or current.email }})</a> | <span style="font-size:12px;color:#6b7280;">{{ current.role }}</span></div>
+<div><a href="/logout" style="font-size:13px;color:#6b7280;text-decoration:none;">Logout ({{ (edit_user.display_name or edit_user.username) if edit_user else (current.display_name or current.username or current.email) }})</a> | <span style="font-size:12px;color:#6b7280;">{{ (edit_user.role if edit_user else current.role) }}</span></div>
 </div>
 
 {% if msg %}
@@ -64,7 +64,7 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 <div class="left {{ 'editing' if edit_user else '' }}">
 {% if edit_user %}
 <div class="edit-banner">
-<span>✏️ Editing: <b>{{ edit_user.username }}</b> (ID {{ edit_user.id }})</span>
+<span>✏️ Editing: <b>{{ edit_user.display_name or edit_user.username }}</b> ({{ edit_user.username }}) - ID {{ edit_user.id }} - Role {{ edit_user.role }}</span>
 <a href="/users" style="color:#9ca3af;text-decoration:none;font-size:12px;">✕ Cancel</a>
 </div>
 {% endif %}
