@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Management - ProjectTrack</title>
+<style>
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#111827}
+.topbar{background:white;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb}
+.topbar h2{margin:0;font-size:18px}
+.container{display:flex;gap:20px;padding:20px;max-width:1400px;margin:auto}
+.left{width:340px;background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);height:fit-content}
+.right{flex:1;background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 6px 0;display:block;font-weight:600}
+.input, .select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;background:#f9fafb}
+.input:focus, .select:focus{outline:none;border-color:#111827;background:white}
+.btn{width:100%;padding:11px;background:#111827;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px}
+.btn:hover{background:#1f2937}
+.msg{padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.msg.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.role-perm{margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px}
+.role-perm h4{font-size:13px;margin:0 0 12px 0}
+.role-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
+.role-item:last-child{border:none}
+.role-badge{font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;height:fit-content;white-space:nowrap}
+.role-badge.root{background:#fee2e2;color:#991b1b}
+.role-badge.admin{background:#e0e7ff;color:#3730a3}
+.role-badge.qc_manager{background:#dbeafe;color:#1e40af}
+.role-badge.inspector{background:#fef3c7;color:#92400e}
+.role-badge.viewer{background:#f3f4f6;color:#4b5563}
+.role-desc{font-size:12px;color:#4b5563;line-height:1.4}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;text-transform:uppercase;color:#6b7280;font-weight:600;text-align:left;padding:10px 8px;border-bottom:1px solid #e5e7eb}
+.table td{padding:12px 8px;font-size:13px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.badge.admin{background:#111827;color:white}
+.badge.qc_manager{background:#dbeafe;color:#1e40af}
+.badge.inspector{background:#fef3c7;color:#92400e}
+.badge.viewer{background:#f3f4f6;color:#4b5563}
+.badge.root{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.action-btn{padding:5px 10px;border-radius:6px;border:none;font-size:12px;cursor:pointer;margin-right:4px}
+.action-btn.edit{background:#f3f4f6;color:#111827}
+.action-btn.delete{background:#fee2e2;color:#991b1b}
+.note{font-size:11px;color:#9ca3af;background:#f9fafb;padding:10px;border-radius:8px;margin-top:16px}
+.header-right{font-size:12px;color:#6b7280}
+</style>
+</head>
+<body>
+<div class="topbar">
+<h2>User Management</h2>
+<div><a href="/logout" style="font-size:13px;color:#6b7280;text-decoration:none;">Logout ({{ current.username or current.email }})</a> | <span class="header-right">{{ current.role }}</span></div>
+</div>
+
+{% if msg %}
+<div style="max-width:1400px;margin:10px auto;padding:0 20px;"><div class="msg {{ 'error' if 'exists' in msg or 'Only' in msg or 'required' in msg else 'success' }}">{{ msg }}</div></div>
+{% endif %}
+
+<div class="container">
+<div class="left">
+<form method="POST" action="/users">
+<input type="hidden" name="action" value="{{ 'edit' if edit_user else 'add' }}">
+{% if edit_user %}<input type="hidden" name="id" value="{{ edit_user.id }}">{% endif %}
+
+<label class="label">Username</label>
+<input class="input" name="username" placeholder="Hennie" value="{{ edit_user.username if edit_user else '' }}" required>
+
+<label class="label">Display Name</label>
+<input class="input" name="display_name" placeholder="e.g. John Smith" value="{{ edit_user.display_name if edit_user else '' }}">
+
+<label class="label">Password</label>
+<input class="input" type="password" name="password" placeholder="{{ 'Leave blank to keep' if edit_user else '••••••••' }}" {{ '' if edit_user else 'required' }}>
+
+<label class="label">Role</label>
+<select class="select" name="role">
+<option value="viewer" {{ 'selected' if edit_user and edit_user.role=='viewer' else '' }}>Viewer</option>
+<option value="inspector" {{ 'selected' if edit_user and edit_user.role=='inspector' else '' }}>Inspector</option>
+<option value="qc_manager" {{ 'selected' if edit_user and edit_user.role=='qc_manager' else '' }}>QC Manager</option>
+<option value="admin" {{ 'selected' if edit_user and edit_user.role=='admin' else '' }}>Admin</option>
+<option value="root" {{ 'selected' if edit_user and edit_user.role=='root' else '' }}>Root</option>
+</select>
+
+<button class="btn" type="submit">{{ 'Update User' if edit_user else 'Add User' }}</button>
+{% if edit_user %}<a href="/users" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:#6b7280;text-decoration:none;">Cancel</a>{% endif %}
+</form>
+
+<div class="role-perm">
+<h4>Role Permissions</h4>
+<div class="role-item"><span class="role-badge root">ROOT</span><span class="role-desc">Full system access — manage all users, QC, planner, datalogs, settings</span></div>
+<div class="role-item"><span class="role-badge admin">ADMIN</span><span class="role-desc">Full access — users, QC, planner, datalogs</span></div>
+<div class="role-item"><span class="role-badge qc_manager">QC MANAGER</span><span class="role-desc">Create/edit/delete QC sheets & planner tasks</span></div>
+<div class="role-item"><span class="role-badge inspector">INSPECTOR</span><span class="role-desc">Create & edit QC sheets, view planner</span></div>
+<div class="role-item"><span class="role-badge viewer">VIEWER</span><span class="role-desc">View-only — cannot save or delete</span></div>
+<div class="note">Root is super-admin. Only Root can create other Root users. Admin cannot delete main user (ID 1).</div>
+</div>
+</div>
+
+<div class="right">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<h3 style="margin:0;">All Users <span style="font-size:12px;color:#6b7280;font-weight:400;">{{ users|length }} users</span></h3>
+</div>
+<table class="table">
+<thead>
+<tr><th>ID</th><th>USERNAME</th><th>NAME</th><th>ROLE</th><th>LAST LOGIN</th><th>ACTIONS</th></tr>
+</thead>
+<tbody>
+{% for u in users %}
+<tr>
+<td>{{ u.id }}</td>
+<td><b>{{ u.username or u.email }}</b>{% if u.id==current.id %} <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:999px;">You</span>{% endif %}</td>
+<td>{{ u.display_name or (u.name + ' ' + u.surname) }}</td>
+<td><span class="badge {{ u.role }}">{{ u.role }}</span></td>
+<td style="color:#6b7280;">{{ u.last_login or 'Never' }}</td>
+<td>
+<a href="/users?edit={{ u.id }}"><button class="action-btn edit">Edit</button></a>
+{% if u.id != current.id and not (u.id==1 and current.role!='root') %}
+<a href="/users/delete/{{ u.id }}" onclick="return confirm('Delete {{ u.username }}?')"><button class="action-btn delete">Delete</button></a>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+</body>
+</html>
