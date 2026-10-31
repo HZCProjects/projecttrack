@@ -258,3 +258,14 @@ def terms():
 @app.route("/health")
 def health():
     return "ok", 200
+
+if __name__ == "__main__":
+    # Local testing - runs on http://127.0.0.1:5000
+    # Keep me signed in: session.permanent = True gives 30-day cookie
+    print("=== LOCAL TEST ===")
+    print("Open: http://127.0.0.1:5000")
+    print("Sign Up page: http://127.0.0.1:5000/create - check Keep me signed in")
+    print("Login: Root / HZC@2026 or HCE@Projects2026 / HZC@2026")
+    print("User Management: http://127.0.0.1:5000/users")
+    print("Database: projecttrack.db in current folder (or /data if exists)")
+    app.run(host="127.0.0.1", port=5000, debug=True)
