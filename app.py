@@ -1,100 +1,101 @@
-
-import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
+import os, sqlite3
+from flask import Flask, render_template, request, redirect, session, g
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "projecttrack-secret-2026")
-DATA_DIR = os.getenv("DATA_DIR", "/data")
-os.makedirs(DATA_DIR, exist_ok=True)
+app.secret_key = os.environ.get("SECRET_KEY", "projecttrack-secret-2026")
+DATABASE = "/data/projecttrack.db" if os.path.exists("/data") else "projecttrack.db"
 
-# Simple in-memory + sqlite fallback - first user = ROOT
-users = {}
-
-# ROOT creds
 ROOT_EMAIL = "HCE@Projects2026"
 ROOT_PASS = "HZC@2026"
 
-def init_root():
-    if ROOT_EMAIL not in users:
-        users[ROOT_EMAIL] = {
-            "email": ROOT_EMAIL,
-            "password": generate_password_hash(ROOT_PASS),
-            "role": "ROOT",
-            "name": "Hennie",
-            "surname": "ROOT"
-        }
+def get_db():
+    db = getattr(g, "_db", None)
+    if db is None:
+        os.makedirs(os.path.dirname(DATABASE) if "/" in DATABASE else ".", exist_ok=True)
+        db = g._db = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+    return db
 
-init_root()
+def init_db():
+    db = get_db()
+    db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password TEXT, is_root INTEGER DEFAULT 0)")
+    db.commit()
+    # ensure ROOT exists first
+    cur = db.execute("SELECT * FROM users WHERE email=?", (ROOT_EMAIL,))
+    if not cur.fetchone():
+        db.execute("INSERT INTO users (email,password,is_root) VALUES (?,?,1)", (ROOT_EMAIL, ROOT_PASS))
+        db.commit()
+
+@app.before_request
+def before():
+    init_db()
+
+@app.teardown_appcontext
+def close_db(exc):
+    db = getattr(g, "_db", None)
+    if db is not None:
+        db.close()
 
 @app.route("/")
-def home():
-    return redirect(url_for("login_page"))
+def index():
+    if "user" in session:
+        return redirect("/dashboard")
+    return redirect("/login")
 
-@app.route("/login")
-def login_page():
-    return render_template("login.html")
+@app.route("/register", methods=["GET","POST"])
+@app.route("/create", methods=["GET","POST"])
+def create():
+    msg=""
+    if request.method=="POST":
+        email=request.form.get("email","").strip()
+        pwd=request.form.get("password","").strip()
+        if not email or not pwd:
+            msg="Fill all fields"
+        else:
+            try:
+                db=get_db()
+                is_root=1 if (email==ROOT_EMAIL and db.execute("SELECT COUNT(*) FROM users").fetchone()[0]==0) else 0
+                # first user logic: if ROOT already exists, this is normal user
+                # if email is ROOT and first = ROOT per your spec
+                if email==ROOT_EMAIL:
+                    is_root=1
+                db.execute("INSERT INTO users (email,password,is_root) VALUES (?,?,?)",(email,pwd,is_root))
+                db.commit()
+                return redirect("/login")
+            except sqlite3.IntegrityError:
+                msg="Email exists"
+    return render_template("create.html", msg=msg)
 
-@app.route("/register")
-@app.route("/create")
-@app.route("/signup")
-def register_page():
-    return render_template("create.html")
+@app.route("/login", methods=["GET","POST"])
+def login():
+    msg=""
+    if request.method=="POST":
+        email=request.form.get("email","").strip()
+        pwd=request.form.get("password","").strip()
+        db=get_db()
+        cur=db.execute("SELECT * FROM users WHERE email=? AND password=?",(email,pwd))
+        u=cur.fetchone()
+        if u:
+            session["user"]=u["email"]
+            return redirect("/dashboard")
+        else:
+            msg="Invalid login"
+    return render_template("login.html", msg=msg)
 
 @app.route("/dashboard")
 def dashboard():
-    user = session.get("user")
-    if not user:
+    if "user" not in session:
         return redirect("/login")
-    return render_template("index.html", user=user)
+    return f"<h2>Welcome {session['user']}</h2><p><a href='/logout'>Logout</a></p><p>Fly primary: https://projecttrack.fly.dev</p>"
 
-@app.route("/api/auth/login", methods=["POST"])
-def api_login():
-    data = request.get_json() or {}
-    email = data.get("email") or data.get("username") or ""
-    pwd = data.get("password") or ""
-    u = users.get(email)
-    if not u or not check_password_hash(u["password"], pwd):
-        return jsonify({"error": "Invalid credentials"}), 401
-    session["user"] = {"email": u["email"], "role": u["role"]}
-    return jsonify({"ok": True, "role": u["role"]})
-
-@app.route("/api/auth/register", methods=["POST"])
-def api_register():
-    data = request.get_json() or {}
-    name = data.get("name","").strip()
-    surname = data.get("surname","").strip()
-    email = data.get("email") or data.get("username") or ""
-    pwd = data.get("password") or ""
-    repeat = data.get("repeat") or data.get("confirm") or ""
-    if not all([name, surname, email, pwd]):
-        return jsonify({"error": "All fields required"}), 400
-    if len(email) < 5 or len(pwd) < 6:
-        return jsonify({"error": "Email >5 chars, Password >6"}), 400
-    if repeat and pwd != repeat:
-        return jsonify({"error": "Passwords don't match"}), 400
-    if email in users:
-        return jsonify({"error": "User exists"}), 400
-    role = "USER"
-    if not users:
-        role = "ROOT"
-    else:
-        # second user check - if only ROOT exists, next is still USER
-        if len(users)==1 and ROOT_EMAIL in users:
-            role = "USER"
-    users[email] = {
-        "email": email,
-        "password": generate_password_hash(pwd),
-        "role": role,
-        "name": name,
-        "surname": surname
-    }
-    return jsonify({"ok": True, "role": role, "msg": "Account created!"})
+@app.route("/forgot")
+def forgot():
+    return "<h3>Reset - contact ROOT HCE@Projects2026</h3><a href='/login'>Back</a>"
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
+if __name__=="__main__":
+    app.run(host="0.0.0.0", port=8080)

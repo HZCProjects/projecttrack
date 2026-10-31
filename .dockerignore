@@ -1,8 +1,11 @@
+
 __pycache__
 *.pyc
-*.db
 .git
 .github
-venv
-.env
 *.zip
+*FLY*
+*.toml
+.env
+venv
+/data
