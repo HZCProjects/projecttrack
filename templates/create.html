@@ -18,16 +18,37 @@ label{font-size:11px;font-weight:700;display:block;margin:0 0 3px 2px;}
 <body><div class="page"><div class="card">
 <h1>Sign Up</h1>
 <div class="msg">{{msg}}</div>
-<form method="post">
-<label>*Name</label><div class="input"><input name="name" required></div>
-<label>*Surname</label><div class="input"><input name="surname" required></div>
-<label>*Username / Email</label><div class="input"><input name="email" required></div>
-<label>*Password</label><div class="input"><input id="p1" name="password" type="password" required><span class="eye" onclick="t1()" id="e1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
-<label>*Repeat Password</label><div class="input"><input id="p2" name="repeat" type="password" required><span class="eye" onclick="t2()" id="e2"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
-<div class="check"><input type="checkbox" required> I agree to the <a href="/terms">Terms&Conditions</a></div>
+<form method="post" autocomplete="on">
+<label>*Name</label><div class="input"><input name="name" type="text" autocomplete="given-name" required></div>
+<label>*Surname</label><div class="input"><input name="surname" type="text" autocomplete="family-name" id="surname" required></div>
+<label>*Username / Email</label><div class="input"><input name="email" type="text" autocomplete="username" required></div>
+<label>*Password</label><div class="input"><input id="p1" name="password" type="password" autocomplete="new-password" required><span class="eye" onclick="var i=document.getElementById('p1'); i.type=i.type==='password'?'text':'password'">&#128065;</span></div>
+<label>*Repeat Password</label><div class="input"><input id="p2" name="repeat" type="password" autocomplete="new-password" required><span class="eye" onclick="var i=document.getElementById('p2'); i.type=i.type==='password'?'text':'password'">&#128065;</span></div>
+<div class="check"><input type="checkbox" required><span>I accept <a href="/terms">Terms&Conditions - ProjectTrack SaaS</a></span></div>
 <button class="btn">SIGN UP</button>
+<div class="links">Have an account? <a href="/login" class="b">Sign In</a><br><span>*All Fields Must Be Completed</span></div>
 </form>
-<div class="links"><div><a href="/login" style="text-decoration:none;">Have an account? <span class="b">Sign In</span></a></div><div style="color:#2E4A8A;font-weight:700;">*All Fields Must Be Completed</div></div>
 </div></div>
-<script>let a=true,b=true;function t1(){const i=document.getElementById('p1'),e=document.getElementById('e1');a=!a;if(a){i.type='password';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`}else{i.type='text';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 2l22 22"/><path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/><path d="M9.53 9.53A10.07 10.07 0 0 0 2 12s4 8 11 8a10.07 10.07 0 0 0 7.94-3.06"/></svg>`}}function t2(){const i=document.getElementById('p2'),e=document.getElementById('e2');b=!b;if(b){i.type='password';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`}else{i.type='text';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 2l22 22"/><path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/><path d="M9.53 9.53A10.07 10.07 0 0 0 2 12s4 8 11 8a10.07 10.07 0 0 0 7.94-3.06"/></svg>`}}</script>
+<script>
+// Save last surname + password hint to localStorage for auto-fill, cleared by browser cache history
+(function(){
+  const surnameEl = document.getElementById('surname');
+  const p1El = document.getElementById('p1');
+  const p2El = document.getElementById('p2');
+  // Load saved values if browser didn't auto-fill
+  try {
+    const savedSurname = localStorage.getItem('pt_last_surname');
+    const savedPwd = localStorage.getItem('pt_last_password');
+    if (savedSurname && !surnameEl.value) surnameEl.value = savedSurname;
+    if (savedPwd && !p1El.value) { p1El.value = savedPwd; p2El.value = savedPwd; }
+  } catch(e){}
+  // Save on submit
+  document.querySelector('form').addEventListener('submit', function(){
+    try {
+      if (surnameEl.value) localStorage.setItem('pt_last_surname', surnameEl.value);
+      if (p1El.value) localStorage.setItem('pt_last_password', p1El.value);
+    } catch(e){}
+  });
+})();
+</script>
 </body></html>

@@ -18,9 +18,9 @@ label{font-size:11px;font-weight:700;display:block;margin:0 0 3px 2px;}
 <body><div class="page"><div class="card">
 <h1>Sign In</h1>
 <div class="msg">{{msg}}</div>
-<form method="post">
-<label>Email or Username</label><div class="input"><input name="email" required></div>
-<label>Password</label><div class="input"><input id="p1" name="password" type="password" required><span class="eye" onclick="t1()" id="e1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+<form method="post" autocomplete="on">
+<label>Email or Username</label><div class="input"><input name="email" autocomplete="username" required></div>
+<label>Password</label><div class="input"><input id="p1" name="password" autocomplete="current-password" type="password" required><span class="eye" onclick="t1()" id="e1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
 <div class="check"><input type="checkbox" checked> Keep me signed in until I sign out</div>
 <div class="check"><input type="checkbox" required> I agree to the <a href="/terms">Terms&Conditions</a></div>
 <button class="btn">SIGN IN</button>
