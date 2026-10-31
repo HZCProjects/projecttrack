@@ -9,16 +9,20 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 .topbar{background:white;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb}
 .topbar h2{margin:0;font-size:18px}
 .container{display:flex;gap:20px;padding:20px;max-width:1400px;margin:auto}
-.left{width:340px;background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);height:fit-content}
+.left{width:340px;background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);height:fit-content;transition:all 0.2s}
+.left.editing{border:2px solid #111827;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
 .right{flex:1;background:white;border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 .label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:12px 0 6px 0;display:block;font-weight:600}
 .input, .select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;background:#f9fafb}
-.input:focus, .select:focus{outline:none;border-color:#111827;background:white}
+.input:focus, .select:focus{outline:none;border-color:#111827;background:white;box-shadow:0 0 0 2px rgba(17,24,39,0.1)}
 .btn{width:100%;padding:11px;background:#111827;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px}
 .btn:hover{background:#1f2937}
+.btn.update{background:#2563eb}
+.btn.update:hover{background:#1d4ed8}
 .msg{padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px}
 .msg.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .msg.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.edit-banner{background:#111827;color:white;padding:10px 12px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .role-perm{margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px}
 .role-perm h4{font-size:13px;margin:0 0 12px 0}
 .role-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6}
@@ -41,15 +45,15 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 .badge.root{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
 .action-btn{padding:5px 10px;border-radius:6px;border:none;font-size:12px;cursor:pointer;margin-right:4px}
 .action-btn.edit{background:#f3f4f6;color:#111827}
+.action-btn.edit.active{background:#111827;color:white}
 .action-btn.delete{background:#fee2e2;color:#991b1b}
 .note{font-size:11px;color:#9ca3af;background:#f9fafb;padding:10px;border-radius:8px;margin-top:16px}
-.header-right{font-size:12px;color:#6b7280}
 </style>
 </head>
 <body>
 <div class="topbar">
 <h2>User Management</h2>
-<div><a href="/logout" style="font-size:13px;color:#6b7280;text-decoration:none;">Logout ({{ current.username or current.email }})</a> | <span class="header-right">{{ current.role }}</span></div>
+<div><a href="/logout" style="font-size:13px;color:#6b7280;text-decoration:none;">Logout ({{ current.username or current.email }})</a> | <span style="font-size:12px;color:#6b7280;">{{ current.role }}</span></div>
 </div>
 
 {% if msg %}
@@ -57,22 +61,29 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 {% endif %}
 
 <div class="container">
-<div class="left">
-<form method="POST" action="/users">
+<div class="left {{ 'editing' if edit_user else '' }}">
+{% if edit_user %}
+<div class="edit-banner">
+<span>✏️ Editing: <b>{{ edit_user.username }}</b> (ID {{ edit_user.id }})</span>
+<a href="/users" style="color:#9ca3af;text-decoration:none;font-size:12px;">✕ Cancel</a>
+</div>
+{% endif %}
+
+<form method="POST" action="/users" id="userForm">
 <input type="hidden" name="action" value="{{ 'edit' if edit_user else 'add' }}">
 {% if edit_user %}<input type="hidden" name="id" value="{{ edit_user.id }}">{% endif %}
 
 <label class="label">Username</label>
-<input class="input" name="username" placeholder="Hennie" value="{{ edit_user.username if edit_user else '' }}" required>
+<input class="input" name="username" id="username" placeholder="e.g. Hennie" value="{{ edit_user.username if edit_user else '' }}" required autofocus="{{ 'true' if edit_user else 'false' }}">
 
 <label class="label">Display Name</label>
-<input class="input" name="display_name" placeholder="e.g. John Smith" value="{{ edit_user.display_name if edit_user else '' }}">
+<input class="input" name="display_name" id="display_name" placeholder="e.g. John Smith" value="{{ edit_user.display_name if edit_user else '' }}">
 
 <label class="label">Password</label>
-<input class="input" type="password" name="password" placeholder="{{ 'Leave blank to keep' if edit_user else '••••••••' }}" {{ '' if edit_user else 'required' }}>
+<input class="input" type="password" name="password" id="password" placeholder="{{ 'Leave blank to keep current' if edit_user else '••••••••' }}" {{ '' if edit_user else 'required' }}>
 
 <label class="label">Role</label>
-<select class="select" name="role">
+<select class="select" name="role" id="role">
 <option value="viewer" {{ 'selected' if edit_user and edit_user.role=='viewer' else '' }}>Viewer</option>
 <option value="inspector" {{ 'selected' if edit_user and edit_user.role=='inspector' else '' }}>Inspector</option>
 <option value="qc_manager" {{ 'selected' if edit_user and edit_user.role=='qc_manager' else '' }}>QC Manager</option>
@@ -80,8 +91,10 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 <option value="root" {{ 'selected' if edit_user and edit_user.role=='root' else '' }}>Root</option>
 </select>
 
-<button class="btn" type="submit">{{ 'Update User' if edit_user else 'Add User' }}</button>
-{% if edit_user %}<a href="/users" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:#6b7280;text-decoration:none;">Cancel</a>{% endif %}
+<button class="btn {{ 'update' if edit_user else '' }}" type="submit">{{ 'Update User' if edit_user else 'Add User' }}</button>
+{% if edit_user %}
+<a href="/users" style="display:block;text-align:center;margin-top:10px;font-size:13px;color:#6b7280;text-decoration:none;">Cancel Editing</a>
+{% endif %}
 </form>
 
 <div class="role-perm">
@@ -105,14 +118,14 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 </thead>
 <tbody>
 {% for u in users %}
-<tr>
+<tr style="{{ 'background:#f9fafb;' if edit_user and edit_user.id==u.id else '' }}">
 <td>{{ u.id }}</td>
 <td><b>{{ u.username or u.email }}</b>{% if u.id==current.id %} <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:999px;">You</span>{% endif %}</td>
 <td>{{ u.display_name or (u.name + ' ' + u.surname) }}</td>
 <td><span class="badge {{ u.role }}">{{ u.role }}</span></td>
 <td style="color:#6b7280;">{{ u.last_login or 'Never' }}</td>
 <td>
-<a href="/users?edit={{ u.id }}"><button class="action-btn edit">Edit</button></a>
+<a href="/users?edit={{ u.id }}"><button class="action-btn edit {{ 'active' if edit_user and edit_user.id==u.id else '' }}">{{ 'Editing' if edit_user and edit_user.id==u.id else 'Edit' }}</button></a>
 {% if u.id != current.id and not (u.id==1 and current.role!='root') %}
 <a href="/users/delete/{{ u.id }}" onclick="return confirm('Delete {{ u.username }}?')"><button class="action-btn delete">Delete</button></a>
 {% endif %}
@@ -123,5 +136,18 @@ body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f6f8;color:#11182
 </table>
 </div>
 </div>
+
+<script>
+// Auto-focus and highlight when editing
+{% if edit_user %}
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('username').focus();
+  document.getElementById('username').select();
+  // Scroll to form on mobile
+  document.querySelector('.left').scrollIntoView({behavior:'smooth'});
+});
+{% endif %}
+</script>
+
 </body>
 </html>
