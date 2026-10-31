@@ -1,6 +1,17 @@
 __pycache__/
 *.pyc
-*.zip
-/data
+*.pyo
+*.db
+*.sqlite
 .env
+.venv/
 venv/
+projecttrack.db
+/data/
+
+# Permanent: ignore README clutter - keep base clean 10 files locked
+README*.md
+LOCAL_TEST_README.md
+README_BOTH_OPTIONS.md
+README_PERMANENT.md
+README_VERSION_31_FINAL_LOCKED.md

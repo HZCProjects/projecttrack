@@ -6,6 +6,8 @@ echo ===========================================
 echo Option 1: Test Locally First (recommended)
 echo Option 2: Deploy Direct to Fly is .\deploy.bat
 echo.
+echo Cleaning README clutter permanently...
+del /q README*.md LOCAL_TEST_README.md 2>nul
 echo Installing requirements...
 pip install -r requirements.txt
 echo.
