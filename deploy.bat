@@ -5,7 +5,7 @@ if exist VERSION (
 ) else (
   set VERSION=32
 )
-echo VERSION %VERSION%
+echo VERSION 33 - Keep me signed in
 
 if not exist ".git" (
   echo .git missing - restoring...
@@ -17,7 +17,7 @@ if not exist ".git" (
 
 echo 1. Backing up to GitHub...
 git add -A --force
-git commit -m "VERSION %VERSION% - User Management - Root displays selected username - %date% %time% - direct fly + backup github"
+git commit -m "VERSION 33 - Keep me signed in - User Management - Root displays selected username - %date% %time% - direct fly + backup github"
 git push origin main
 
 echo 2. Deploying DIRECT to Fly...
@@ -27,7 +27,7 @@ echo 3. Locking restart always...
 fly machine update 8d9231ae37d0e8 --restart always -a projecttrack --yes
 fly machine start 8d9231ae37d0e8 -a projecttrack
 
-echo === DONE VERSION %VERSION% ===
+echo === DONE VERSION 33 - Keep me signed in ===
 fly status -a projecttrack
 curl.exe https://projecttrack.fly.dev/health
 pause

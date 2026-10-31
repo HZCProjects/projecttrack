@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, session, g
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "projecttrack-secret-2026-HZC")
+app.config["PERMANENT_SESSION_LIFETIME"] = 60*60*24*30  # 30 days - keep me signed in until logout
 
 DATA_DIR = Path("/data")
 try:
@@ -103,7 +104,10 @@ def login():
             cur=db.execute("SELECT * FROM users WHERE (LOWER(email)=LOWER(?) OR LOWER(username)=LOWER(?)) AND password=?",(email,email,pwd))
             u=cur.fetchone()
             if u:
+                keep = request.form.get("keep_signed_in")
+                session.permanent = True if keep else False
                 session["user"]=u["email"] or u["username"]
+                session["keep_signed_in"] = bool(keep)
                 now = datetime.now().strftime("%d %b %Y, %H:%M")
                 db.execute("UPDATE users SET last_login=? WHERE id=?", (now, u["id"]))
                 db.commit()
@@ -135,6 +139,16 @@ def register():
                 role="root" if is_root else "viewer"
                 db.execute("INSERT INTO users (name,surname,email,username,password,is_root,role,display_name) VALUES (?,?,?,?,?,?,?,?)",(name,surname,email,email,pwd,is_root,role,f"{name} {surname}"))
                 db.commit()
+                # Activate keep me signed in if selected on sign up page
+                keep = request.form.get("keep_signed_in")
+                if keep:
+                    session.permanent = True
+                    session["user"]=email
+                    session["keep_signed_in"] = True
+                    now = datetime.now().strftime("%d %b %Y, %H:%M")
+                    db.execute("UPDATE users SET last_login=? WHERE email=?", (now, email))
+                    db.commit()
+                    return redirect("/dashboard")
                 return redirect("/login")
             except Exception as e:
                 msg="Username / Email exists"
