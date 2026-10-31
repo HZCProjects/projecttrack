@@ -10,6 +10,7 @@ primary_region = "jnb"
   auto_stop_machines = "off"
   auto_start_machines = true
   min_machines_running = 1
+  processes = ["app"]
 
 [[vm]]
   memory = "512mb"
@@ -19,3 +20,4 @@ primary_region = "jnb"
 [[mounts]]
   source = "projecttrack_data"
   destination = "/data"
+  initial_size = "1GB"
