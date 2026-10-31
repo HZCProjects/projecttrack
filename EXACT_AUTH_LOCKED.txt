@@ -1,8 +1,0 @@
-
-LOCKED AUTH UI - DO NOT MODIFY
-- login.html: 346px width, 36px heading, padding-left 14px, white blocks 44px, eye centered vertical, eye logic hidden=with line visible=no line, no Hennie, separate page /login
-- create.html: same 346px, same eye, same padding, separate page /register
-- Future STEP4+ must NOT change templates/login.html or templates/create.html
-- Use these exact files for all future builds
-Date: 2026-05-13
-Return Point: FINAL_WORKING_RETURN_POINT / STEP3_RETURN_POINT

@@ -1,227 +1,46 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>ProjectTrack - Sign In</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login - ProjectTrack</title>
 <style>
-body{background:#383C40;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;padding:20px}
-.signin-wrapper{width:346px;background:#B2B2B2;border:14px solid #383C40;padding:20px 26px 20px 26px}
-.signin-wrapper h1{font-size:36px !important;font-weight:900;text-align:center;margin:4px 0 18px 0;color:#000}
-.label{color:#000;font-size:13px;margin:16px 0 6px 0;font-weight:700}
-.input-simple{background:#fff;border:none;height:44px;display:flex;align-items:center}
-.input-simple input{width:100%;border:none;outline:none;padding-left:14px;font-size:15px;height:100%}
-.input-wrap-simple{background:#fff;border:none;height:44px;display:flex;align-items:center;position:relative}
-.input-wrap-simple input{flex:1;border:none;outline:none;padding-left:14px;padding-right:42px;font-size:15px;height:100%}
-.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:20px;display:flex !important;align-items:center;justify-content:center;z-index:10}
-.check-row{display:flex;align-items:center;margin:18px 0;gap:10px;font-size:13px;font-weight:600;color:#000}
-.check-row input{width:22px;height:22px;accent-color:#fff;background:#fff;border:1px solid #000;appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.check-row input:checked{background:#fff}
-.check-row input:checked::after{content:'✔';font-size:14px;color:#000;font-weight:900;margin-top:-1px}
-.check-row a{color:#6B5BCE;text-decoration:none;font-weight:700}
-.btn-signin{background:#1A1A1A;color:#fff;width:100%;height:48px;border:none;font-weight:700;cursor:pointer;margin-top:6px;font-size:14px;letter-spacing:0.5px}
-.links{text-align:center;margin-top:18px;font-size:12px;line-height:2}
-.links a{color:#6B5BCE;text-decoration:none;font-weight:600}
-.links .black{color:#000;font-weight:700}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active{
- -webkit-box-shadow:0 0 0 1000px #fff inset !important;
- box-shadow:0 0 0 1000px #fff inset !important;
- background:#fff !important;
- background-color:#fff !important;
- -webkit-text-fill-color:#000 !important;
- transition:background-color 5000s ease-in-out 0s !important;
-}
-input{filter:none !important;}
-
-
-.eye.slashed::after{
- content:'';
- position:absolute;
- left:4px;
- top:50%;
- width:24px;
- height:2px;
- background:#000;
- transform:rotate(-45deg) translateY(-50%);
- transform-origin:center;
- pointer-events:none;
-}
-
-/* Eye icon vertically centered in white block - same right position */
-.input-wrap-simple, .field-pass, .input-wrap-simple{
- position:relative !important;
- display:flex !important;
- align-items:center !important;
-}
-.input-wrap-simple input, .field-pass input{
- height:100% !important;
- display:flex !important;
- align-items:center !important;
-}
-.eye{
- position:absolute !important;
- right:10px !important;
- top:50% !important;
- transform:translateY(-50%) !important;
- margin:0 !important;
- padding:0 !important;
- width:28px !important;
- height:28px !important;
- display:flex !important;
- align-items:center !important;
- justify-content:center !important;
- line-height:28px !important;
- font-size:20px !important;
- background:transparent !important;
- border:none !important;
- cursor:pointer !important;
- z-index:10 !important;
-}
-.eye.slashed::after{
- content:'' !important;
- position:absolute !important;
- left:2px !important;
- top:50% !important;
- width:24px !important;
- height:2px !important;
- background:#000 !important;
- transform:translateY(-50%) rotate(-45deg) !important;
- transform-origin:center !important;
- pointer-events:none !important;
-}
-
-/* FIX: Eye centered + white column even at end */
-.signin-wrapper, .signup-wrapper{
- box-sizing:border-box !important;
-}
-.input-simple, .input-wrap-simple, .field, .field-full, .field-pass{
- box-sizing:border-box !important;
- width:100% !important;
- height:44px !important;
- background:#fff !important;
- border:none !important;
- display:flex !important;
- align-items:center !important;
- position:relative !important;
- margin:0 !important;
- padding:0 !important;
- overflow:visible !important;
-}
-.input-simple input, .input-wrap-simple input, .field input, .field-full input{
- box-sizing:border-box !important;
- width:100% !important;
- height:44px !important;
- border:none !important;
- outline:none !important;
- padding-left:14px !important;
- padding-right:48px !important;
- margin:0 !important;
- font-size:15px !important;
- background:#fff !important;
- display:block !important;
- line-height:44px !important;
-}
-.eye{
- position:absolute !important;
- right:12px !important;
- top:0 !important;
- bottom:0 !important;
- margin:auto 0 !important;
- width:28px !important;
- height:28px !important;
- display:flex !important;
- align-items:center !important;
- justify-content:center !important;
- transform:none !important;
- line-height:28px !important;
- font-size:20px !important;
- padding:0 !important;
- background:transparent !important;
- border:none !important;
- cursor:pointer !important;
- z-index:10 !important;
-}
-.eye.slashed::after{
- content:'' !important;
- position:absolute !important;
- left:2px !important;
- top:50% !important;
- width:24px !important;
- height:2px !important;
- background:#000 !important;
- transform:translateY(-50%) rotate(-45deg) !important;
- pointer-events:none !important;
-}
+body{margin:0;background:#383C40;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Inter,Arial,sans-serif}
+.card{width:346px;background:#B2B2B2;border-radius:14px;padding:24px 22px;box-sizing:border-box}
+h1{font-size:36px;margin:0 0 18px 0;padding-left:14px;font-weight:800}
+.label{font-weight:700;font-size:14px;margin:10px 0 6px 14px;display:block}
+.input-wrap{position:relative;width:100%}
+.input-wrap input{width:100%;height:44px;background:#fff;border:none;border-radius:6px;padding-left:14px;box-sizing:border-box;font-size:14px;outline:none}
+.eye{position:absolute;top:0;bottom:0;margin:auto;right:12px;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
+.btn{width:100%;height:44px;background:#383C40;color:#fff;border:none;border-radius:6px;margin-top:18px;font-weight:700;cursor:pointer}
+.black{color:#000;font-weight:700}
+.links{margin-top:14px;text-align:center;font-size:14px;line-height:22px}
 </style>
 </head>
 <body>
-<div class="signin-wrapper">
-<h1>Sign In</h1>
-
-<div class="label">Email or Username</div>
-<div class="input-simple"><input id="loginEmail" type="text" autocomplete="new-username" name="pt_login_email_xyz" spellcheck="false"></div>
-
-<div class="label">Password</div>
-<div class="input-wrap-simple">
-<input id="loginPass" type="password" autocomplete="new-password" name="pt_login_pass_xyz">
-<button class="eye" id="eyeLogin" onclick="toggle('loginPass')" class="eye slashed">👁</button>
-</div>
-
-<div class="check-row"><input type="checkbox" id="keep" checked><label for="keep">Keep me signed in until I sign out</label></div>
-<div class="check-row"><input type="checkbox" id="agreeLogin" checked><label for="agreeLogin">I agree to the <a href="#">Terms&Conditions</a></label></div>
-
-<button class="btn-signin" onclick="doLogin()">SIGN IN</button>
-
+<div class="card">
+<h1>Login To Account</h1>
+<div><span class="label">Email or Login Name</span><div class="input-wrap"><input id="email" placeholder="Email or Login Name"></div></div>
+<div><span class="label">Enter your password</span><div class="input-wrap"><input id="pwd" type="password" placeholder="Password"><span class="eye" onclick="toggle('pwd', this)">👁️</span></div></div>
+<button class="btn" onclick="doLogin()">Enter To Login</button>
 <div class="links">
-<div><a href="#">Forgot</a> <span class="black">Username / Password?</span></div>
-<div><a href="/register">Don't have an account? <a href="/register" style="color:#000;font-weight:600;text-decoration:none;cursor:pointer;">Sign Up</a>
+<!-- FIXED: whole line clickable for Forgot -->
+<div><a href="/forgot" style="text-decoration:none;color:#000;">Forgot Your Password? <span style="color:#5B4FB7;font-weight:700">Reset Here</span></a></div>
+<!-- FIXED: whole line clickable for Sign Up -->
+<div style="margin-top:6px"><a href="/register" style="text-decoration:none;color:#000;">Don't have an account? <span class="black">Sign Up</span></a></div>
+<div style="margin-top:8px;font-weight:700">www.projecttrack.co.za</div>
 </div>
-
-<div id="msg" style="color:red;font-size:12px;margin-top:10px;text-align:center"></div>
 </div>
 <script>
+function toggle(id, el){
+  const i=document.getElementById(id);
+  if(i.type==='password'){i.type='text'; el.textContent='🙈';}else{i.type='password'; el.textContent='👁️';}
+}
 async function doLogin(){
- let email=document.getElementById('loginEmail').value.trim();
- let pwd=document.getElementById('loginPass').value;
- if(!email||!pwd){document.getElementById('msg').innerText='Enter email and password';return;}
- try{
-  let r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pwd})});
-  let j=await r.json();
-  if(!r.ok){document.getElementById('msg').innerText=j.error||'Login failed';return;}
-  localStorage.setItem('pt_user',JSON.stringify(j));
-  window.location.href='/dashboard';
- }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
+  const body={email:document.getElementById('email').value, password:document.getElementById('pwd').value};
+  const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json(); if(j.ok) location.href='/dashboard'; else alert(j.error);
 }
-document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-document.getElementById('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-
-function toggle(id){
- let inp=document.getElementById(id);
- let btn=null;
- if(id==='loginPass') btn=document.getElementById('eyeLogin');
- if(id==='regPass') btn=document.getElementById('eyeReg');
- if(id==='regRepeat') btn=document.getElementById('eyeRegRep');
- if(id==='regPass' || id==='regRepeat' || id==='loginPass'){
-   if(!btn){
-     // fallback find by id
-     if(id==='loginPass') btn=document.getElementById('eyeLogin');
-   }
- }
- if(!inp) return;
- if(inp.type==='password'){
-   // make visible -> eye WITHOUT line
-   inp.type='text';
-   if(btn){btn.innerHTML='👁'; btn.classList.remove('slashed');}
- } else {
-   // make hidden -> eye WITH line
-   inp.type='password';
-   if(btn){btn.innerHTML='👁'; btn.classList.add('slashed');}
- }
-}
-
 </script>
 </body>
 </html>
