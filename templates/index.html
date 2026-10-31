@@ -3,27 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <title>ProjectTrack - Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{background:#383C40;margin:0;font-family:Arial;padding:20px;color:#fff}
-.box{background:#B2B2B2;border:14px solid #383C40;padding:20px;border-radius:18px;max-width:900px;margin:auto;color:#000}
-h1{font-size:28px}
-.btn{background:#383C40;color:#fff;padding:10px 20px;border:none;cursor:pointer;margin-right:10px}
+body{background:#383C40;margin:0;font-family:Arial,sans-serif;min-height:100vh;padding:20px;color:#000}
+.header{background:#B2B2B2;border:14px solid #383C40;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto 20px auto;border-radius:2px}
+.header h1{font-size:24px;margin:0}
+.header .user{font-size:14px}
+.btn{background:#383C40;color:#fff;border:none;padding:10px 18px;cursor:pointer;font-weight:700;margin-left:8px}
+.btn:hover{background:#2B2E32}
+.btn-small{padding:6px 12px;font-size:13px}
+.btn-danger{background:#8B0000}
+.box{background:#B2B2B2;border:14px solid #383C40;padding:20px;max-width:1100px;margin:0 auto 20px auto}
+.box h2{font-size:20px;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/3}
+.input{width:100%;height:44px;padding:0 14px;border:none;background:#fff;box-sizing:border-box;font-size:14px}
+.textarea{width:100%;height:80px;padding:10px 14px;border:none;background:#fff;box-sizing:border-box;font-size:14px;resize:vertical}
+.select{width:100%;height:44px;padding:0 14px;border:none;background:#fff;box-sizing:border-box}
+.table{width:100%;border-collapse:collapse;background:#fff}
+.table th,.table td{padding:10px 12px;text-align:left;border-bottom:1px solid #B2B2B2;font-size:14px}
+.table th{background:#383C40;color:#fff}
+.status{padding:4px 8px;border-radius:3px;font-size:12px;font-weight:700}
+.status.Planning{background:#FFD700;color:#000}
+.status.Active{background:#4CAF50;color:#fff}
+.status.On Hold{background:#FF9800;color:#fff}
+.status.Completed{background:#2196F3;color:#fff}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:1}.header{flex-direction:column;gap:10px}}
 </style>
 </head>
 <body>
-<div class="box">
-<h1>ProjectTrack Dashboard</h1>
-<p>Welcome! You are logged in as <b id="user"></b> (<span id="role"></span>)</p>
-<p>DB: Postgres on Railway + SQLite local fallback OK</p>
-<button class="btn" onclick="logout()">Sign Out</button>
-<button class="btn" onclick="window.location.href='/login'">Back to Login</button>
-<div id="info" style="margin-top:20px;font-size:12px"></div>
+<div class="header">
+<h1>ProjectTrack - HZC Projects</h1>
+<div><span class="user" id="userInfo"></span><button class="btn btn-small" onclick="logout()">Sign Out</button></div>
 </div>
+
+<div class="box">
+<h2>+ New Project</h2>
+<div class="form-grid">
+<div><label style="font-size:13px;font-weight:700">Project Name *</label><input id="pName" class="input" placeholder="e.g. Mall Construction"></div>
+<div><label style="font-size:13px;font-weight:700">Client *</label><input id="pClient" class="input" placeholder="e.g. HZC Client"></div>
+<div><label style="font-size:13px;font-weight:700">Status</label><select id="pStatus" class="select"><option>Planning</option><option>Active</option><option>On Hold</option><option>Completed</option></select></div>
+<div><label style="font-size:13px;font-weight:700">Start Date</label><input id="pStart" class="input" type="date"></div>
+<div><label style="font-size:13px;font-weight:700">End Date</label><input id="pEnd" class="input" type="date"></div>
+<div class="full"><label style="font-size:13px;font-weight:700">Description</label><textarea id="pDesc" class="textarea" placeholder="Project details..."></textarea></div>
+<div class="full"><button class="btn" onclick="createProject()">Create Project</button><span id="msg" style="margin-left:12px;font-size:13px"></span></div>
+</div>
+</div>
+
+<div class="box">
+<h2>Projects (<span id="count">0</span>)</h2>
+<table class="table" id="tbl"><thead><tr><th>Name</th><th>Client</th><th>Status</th><th>Dates</th><th>By</th><th>Action</th></tr></thead><tbody></tbody></table>
+</div>
+
 <script>
-let u=localStorage.getItem('pt_user');
-if(u){try{let j=JSON.parse(u);document.getElementById('user').innerText=j.email||j.name;document.getElementById('role').innerText=j.role;}catch{}}
-async function load(){try{let r=await fetch('/api/health');let j=await r.json();document.getElementById('info').innerText='Health: '+JSON.stringify(j);}catch(e){}}
+let curUser=null;
+try{curUser=JSON.parse(localStorage.getItem('pt_user')||'null');}catch{}
+if(!curUser||!curUser.email){window.location.href='/login';}
+document.getElementById('userInfo').innerText=(curUser?curUser.email+' ('+curUser.role+')':'');
 function logout(){localStorage.removeItem('pt_user');window.location.href='/login';}
+async function load(){
+ let r=await fetch('/api/projects'); let data=await r.json();
+ let tbody=document.querySelector('#tbl tbody'); tbody.innerHTML='';
+ document.getElementById('count').innerText=data.length;
+ data.forEach(p=>{
+   let tr=document.createElement('tr');
+   tr.innerHTML=`<td><b>${p.name}</b><br><small>${p.description||''}</small></td><td>${p.client}</td><td><span class="status ${p.status}">${p.status}</span></td><td>${p.start_date||''} - ${p.end_date||''}</td><td>${p.created_by||''}</td><td><button class="btn btn-small btn-danger" onclick="delProject(${p.id})">Delete</button></td>`;
+   tbody.appendChild(tr);
+ });
+}
+async function createProject(){
+ let name=document.getElementById('pName').value.trim();
+ let client=document.getElementById('pClient').value.trim();
+ if(!name||!client){document.getElementById('msg').innerText='Name and Client required';return;}
+ let payload={name,client,status:document.getElementById('pStatus').value,start_date:document.getElementById('pStart').value,end_date:document.getElementById('pEnd').value,description:document.getElementById('pDesc').value,created_by:curUser?curUser.email:''};
+ let r=await fetch('/api/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+ let j=await r.json();
+ if(j.ok){document.getElementById('msg').innerText='Created!'; document.getElementById('pName').value=''; document.getElementById('pClient').value=''; document.getElementById('pDesc').value=''; load();}
+ else{document.getElementById('msg').innerText=j.error||'Error';}
+}
+async function delProject(id){
+ if(!confirm('Delete project?'))return;
+ let r=await fetch('/api/projects/'+id,{method:'DELETE'});
+ let j=await r.json();
+ if(j.ok)load();
+}
 load();
 </script>
 </body>

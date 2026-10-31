@@ -18,8 +18,6 @@ if db_url:
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projecttrack.db'
 
-
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY','projecttrack-secret-2026')
 
@@ -36,14 +34,23 @@ class User(db.Model):
     is_active=db.Column(db.Boolean, default=True)
     created_at=db.Column(db.DateTime, default=datetime.datetime.utcnow)
     last_login=db.Column(db.DateTime)
-    token=db.Column(db.String(500))
-    token_expiry=db.Column(db.DateTime)
+
+class Project(db.Model):
+    __tablename__='projects'
+    id=db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(200), nullable=False)
+    client=db.Column(db.String(200), nullable=False)
+    status=db.Column(db.String(50), default='Planning')
+    start_date=db.Column(db.String(20))
+    end_date=db.Column(db.String(20))
+    description=db.Column(db.Text)
+    created_by=db.Column(db.String(200))
+    created_at=db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 with app.app_context():
     try:
         db.create_all()
     except Exception as e:
-        # Rebuild if old schema
         try:
             db.drop_all()
             db.create_all()
@@ -69,6 +76,10 @@ def register_page():
 @app.route('/index.html')
 def dashboard():
     return render_template('index.html')
+
+@app.route('/projects')
+def projects_page():
+    return render_template('projects.html')
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -114,11 +125,58 @@ def login():
 @app.route('/api/health')
 def health():
     try:
-        c=User.query.count()
-        return jsonify({'status':'ok','users':c})
+        return jsonify({'status':'ok','users':User.query.count(),'projects':Project.query.count()})
     except Exception as e:
         return jsonify({'status':'error','error':str(e)}),500
 
+# --- PROJECTS CRUD ---
+@app.route('/api/projects', methods=['GET'])
+def list_projects():
+    try:
+        projects=Project.query.order_by(Project.created_at.desc()).all()
+        out=[]
+        for p in projects:
+            out.append({'id':p.id,'name':p.name,'client':p.client,'status':p.status,'start_date':p.start_date,'end_date':p.end_date,'description':p.description,'created_by':p.created_by,'created_at':p.created_at.isoformat() if p.created_at else ''})
+        return jsonify(out)
+    except Exception as e:
+        return jsonify({'error':str(e)}),500
+
+@app.route('/api/projects', methods=['POST'])
+def create_project():
+    data=request.get_json() or {}
+    name=data.get('name','').strip()
+    client=data.get('client','').strip()
+    if not name or not client:
+        return jsonify({'error':'Name and Client required'}),400
+    p=Project(name=name,client=client,status=data.get('status','Planning'),start_date=data.get('start_date',''),end_date=data.get('end_date',''),description=data.get('description',''),created_by=data.get('created_by',''))
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({'ok':True,'id':p.id})
+
+@app.route('/api/projects/<int:pid>', methods=['PUT'])
+def update_project(pid):
+    p=Project.query.get(pid)
+    if not p:
+        return jsonify({'error':'Not found'}),404
+    data=request.get_json() or {}
+    p.name=data.get('name',p.name)
+    p.client=data.get('client',p.client)
+    p.status=data.get('status',p.status)
+    p.start_date=data.get('start_date',p.start_date)
+    p.end_date=data.get('end_date',p.end_date)
+    p.description=data.get('description',p.description)
+    db.session.commit()
+    return jsonify({'ok':True})
+
+@app.route('/api/projects/<int:pid>', methods=['DELETE'])
+def delete_project(pid):
+    p=Project.query.get(pid)
+    if not p:
+        return jsonify({'error':'Not found'}),404
+    db.session.delete(p)
+    db.session.commit()
+    return jsonify({'ok':True})
+
 if __name__=='__main__':
     port=int(os.environ.get('PORT',5000))
-    app.run(host='0.0.0.0',port=port)
+    app.run(host='0.0.0.0',port=port,debug=False)
