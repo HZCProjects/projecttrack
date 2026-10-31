@@ -1,9 +1,17 @@
-import os, sqlite3
+from pathlib import Path
+import sqlite3, os
 from flask import Flask, render_template, request, redirect, session, g
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "projecttrack-secret-2026")
-DATABASE = "/data/projecttrack.db" if os.path.exists("/data") else "projecttrack.db"
+app.secret_key = os.environ.get("SECRET_KEY", "projecttrack-secret-2026-HZC")
+
+# Step2: SQLite on volume
+DATA_DIR = Path("/data")
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DATABASE = str(DATA_DIR / "projecttrack.db")
+except Exception:
+    DATABASE = "projecttrack.db"
 
 ROOT_EMAIL = "HCE@Projects2026"
 ROOT_PASS = "HZC@2026"
@@ -11,20 +19,39 @@ ROOT_PASS = "HZC@2026"
 def get_db():
     db = getattr(g, "_db", None)
     if db is None:
-        os.makedirs(os.path.dirname(DATABASE) if "/" in DATABASE else ".", exist_ok=True)
-        db = g._db = sqlite3.connect(DATABASE)
+        db = g._db = sqlite3.connect(DATABASE, check_same_thread=False)
         db.row_factory = sqlite3.Row
     return db
 
 def init_db():
-    db = get_db()
-    db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password TEXT, is_root INTEGER DEFAULT 0)")
-    db.commit()
-    # ensure ROOT exists first
-    cur = db.execute("SELECT * FROM users WHERE email=?", (ROOT_EMAIL,))
-    if not cur.fetchone():
-        db.execute("INSERT INTO users (email,password,is_root) VALUES (?,?,1)", (ROOT_EMAIL, ROOT_PASS))
+    try:
+        db = get_db()
+        # check if old schema without password
+        cur = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+        if cur.fetchone():
+            cols = [r["name"] for r in db.execute("PRAGMA table_info(users)")]
+            if "password" not in cols or "email" not in cols:
+                print(f"Old schema {cols} -> drop")
+                db.execute("DROP TABLE users")
+                db.commit()
+        db.execute("""CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            surname TEXT,
+            email TEXT UNIQUE,
+            password TEXT,
+            is_root INTEGER DEFAULT 0
+        )""")
         db.commit()
+        # ensure ROOT first = ROOT
+        cur = db.execute("SELECT COUNT(*) as c FROM users")
+        if cur.fetchone()["c"] == 0:
+            db.execute("INSERT INTO users (name,surname,email,password,is_root) VALUES (?,?,?,?,1)", ("ROOT","ROOT", ROOT_EMAIL, ROOT_PASS))
+            db.commit()
+            print(f"ROOT created {ROOT_EMAIL}")
+    except Exception as e:
+        print(f"init_db error {e}")
+        import traceback; traceback.print_exc()
 
 @app.before_request
 def before():
@@ -33,38 +60,15 @@ def before():
 @app.teardown_appcontext
 def close_db(exc):
     db = getattr(g, "_db", None)
-    if db is not None:
-        db.close()
+    if db:
+        try:
+            db.close()
+        except:
+            pass
 
 @app.route("/")
 def index():
-    if "user" in session:
-        return redirect("/dashboard")
     return redirect("/login")
-
-@app.route("/register", methods=["GET","POST"])
-@app.route("/create", methods=["GET","POST"])
-def create():
-    msg=""
-    if request.method=="POST":
-        email=request.form.get("email","").strip()
-        pwd=request.form.get("password","").strip()
-        if not email or not pwd:
-            msg="Fill all fields"
-        else:
-            try:
-                db=get_db()
-                is_root=1 if (email==ROOT_EMAIL and db.execute("SELECT COUNT(*) FROM users").fetchone()[0]==0) else 0
-                # first user logic: if ROOT already exists, this is normal user
-                # if email is ROOT and first = ROOT per your spec
-                if email==ROOT_EMAIL:
-                    is_root=1
-                db.execute("INSERT INTO users (email,password,is_root) VALUES (?,?,?)",(email,pwd,is_root))
-                db.commit()
-                return redirect("/login")
-            except sqlite3.IntegrityError:
-                msg="Email exists"
-    return render_template("create.html", msg=msg)
 
 @app.route("/login", methods=["GET","POST"])
 def login():
@@ -72,30 +76,65 @@ def login():
     if request.method=="POST":
         email=request.form.get("email","").strip()
         pwd=request.form.get("password","").strip()
-        db=get_db()
-        cur=db.execute("SELECT * FROM users WHERE email=? AND password=?",(email,pwd))
-        u=cur.fetchone()
-        if u:
-            session["user"]=u["email"]
-            return redirect("/dashboard")
-        else:
-            msg="Invalid login"
+        try:
+            db=get_db()
+            cur=db.execute("SELECT * FROM users WHERE email=? AND password=?",(email,pwd))
+            u=cur.fetchone()
+            if u:
+                session["user"]=u["email"]
+                return redirect("/dashboard")
+            msg="Invalid Username / Password"
+        except Exception as e:
+            msg=str(e)
     return render_template("login.html", msg=msg)
+
+@app.route("/register", methods=["GET","POST"])
+@app.route("/create", methods=["GET","POST"])
+@app.route("/signup", methods=["GET","POST"])
+def register():
+    msg=""
+    if request.method=="POST":
+        name=request.form.get("name","").strip()
+        surname=request.form.get("surname","").strip()
+        email=request.form.get("email","").strip()
+        pwd=request.form.get("password","").strip()
+        repeat=request.form.get("repeat","").strip()
+        if not name or not surname or not email or not pwd:
+            msg="*All Fields Must Be Completed"
+        elif repeat and pwd!=repeat:
+            msg="Passwords do not match"
+        else:
+            try:
+                db=get_db()
+                is_root=1 if email==ROOT_EMAIL else 0
+                db.execute("INSERT INTO users (name,surname,email,password,is_root) VALUES (?,?,?,?,?)",(name,surname,email,pwd,is_root))
+                db.commit()
+                return redirect("/login")
+            except sqlite3.IntegrityError:
+                msg="Username / Email exists"
+            except Exception as e:
+                msg=str(e)
+    return render_template("create.html", msg=msg)
 
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
         return redirect("/login")
-    return f"<h2>Welcome {session['user']}</h2><p><a href='/logout'>Logout</a></p><p>Fly primary: https://projecttrack.fly.dev</p>"
-
-@app.route("/forgot")
-def forgot():
-    return "<h3>Reset - contact ROOT HCE@Projects2026</h3><a href='/login'>Back</a>"
+    return f'<div style="font-family:Arial;padding:30px;"><h2>Welcome {session["user"]}</h2><p><a href="/logout">Logout</a></p><p>Step2 Clean: Volume /data/projecttrack.db | Fly jnb 512MB | Machine 815617f903d378</p><p>Primary: https://projecttrack.fly.dev | Railway backup: projecttrack-production-4ed6.up.railway.app</p></div>'
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
 
-if __name__=="__main__":
-    app.run(host="0.0.0.0", port=8080)
+@app.route("/forgot")
+def forgot():
+    return '<div style="font-family:Arial;padding:20px;"><h3>Forgot Username / Password?</h3><p>Contact ROOT HCE@Projects2026</p><a href="/login">Back</a></div>'
+
+@app.route("/terms")
+def terms():
+    return '<div style="font-family:Arial;padding:20px;"><h3>Terms&Conditions - ProjectTrack SaaS</h3><p>Clean Step2 - No backup old mess</p><a href="/login">Back</a></div>'
+
+@app.route("/health")
+def health():
+    return "ok", 200

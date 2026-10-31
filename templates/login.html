@@ -1,41 +1,31 @@
-<!doctype html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{background:#383C40; font-family:Arial; display:flex; justify-content:center; padding-top:60px;}
-.card{width:346px; background:#B2B2B2; border-radius:8px; padding:24px; box-sizing:border-box;}
-h2{font-size:36px; padding-left:14px; margin:0 0 16px 0; color:#000;}
-.input-wrap{position:relative; width:100%; margin-bottom:12px;}
-.input-wrap input{width:100%; height:44px; box-sizing:border-box; padding-left:14px; font-size:14px; border:none; border-radius:4px; background:white;}
-.eye{position:absolute; top:0; bottom:0; margin:auto; right:12px; height:20px; cursor:pointer; display:flex; align-items:center;}
-.btn{width:100%; height:44px; background:#000; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;}
-.black{color:#000; font-weight:bold;}
-.msg{color:red; font-size:13px; padding-left:14px;}
-a{color:#000;}
-</style>
-</head>
-<body>
-<div class="card">
-<h2>Login</h2>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{margin:0;background:#383C40;font-family:Arial,Helvetica,sans-serif;display:flex;justify-content:center;padding:20px 10px;}
+.page{width:346px;}
+.card{background:#B2B2B2;border-radius:2px;padding:22px 18px 16px 18px;box-sizing:border-box;border:1px solid #2E3236;}
+h1{font-size:26px;text-align:center;margin:0 0 16px 0;font-weight:800;letter-spacing:-0.3px;}
+label{font-size:11px;font-weight:700;display:block;margin:0 0 3px 2px;}
+.input{position:relative;width:100%;height:38px;background:#fff;border:1px solid #8A8A8A;margin-bottom:12px;box-sizing:border-box;}
+.input input{width:100%;height:100%;border:none;outline:none;padding:0 34px 0 10px;font-size:13px;box-sizing:border-box;background:#fff;}
+.eye{position:absolute;top:0;bottom:0;margin:auto;right:8px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.check{display:flex;align-items:center;margin:8px 0;font-size:11px;}
+.check input{margin:0 6px 0 0;width:14px;height:14px;accent-color:#000;}
+.btn{width:100%;height:40px;background:#383C40;color:#fff;border:none;font-weight:700;font-size:13px;letter-spacing:0.5px;cursor:pointer;margin-top:8px;}
+.links{margin-top:14px;text-align:center;font-size:11px;line-height:17px;}
+.links a{text-decoration:none;color:#2E4A8A;}
+.links .b{color:#000;font-weight:800;}
+.msg{font-size:11px;color:#8B0000;text-align:center;min-height:12px;margin-bottom:4px;}
+</style></head>
+<body><div class="page"><div class="card">
+<h1>Sign In</h1>
 <div class="msg">{{msg}}</div>
 <form method="post">
-<div class="input-wrap"><input name="email" placeholder="Email" required></div>
-<div class="input-wrap"><input id="pwd" name="password" type="password" placeholder="Password" required><span class="eye" onclick="togglePwd()"><span id="eyeIcon">👁️</span></span></div>
-<button class="btn">Sign In</button>
+<label>Email or Username</label><div class="input"><input name="email" required></div>
+<label>Password</label><div class="input"><input id="p1" name="password" type="password" required><span class="eye" onclick="t1()" id="e1"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+<div class="check"><input type="checkbox" checked> Keep me signed in until I sign out</div>
+<div class="check"><input type="checkbox" required> I agree to the <a href="/terms">Terms&Conditions</a></div>
+<button class="btn">SIGN IN</button>
 </form>
-<div style="margin-top:16px; text-align:center; font-size:14px; line-height:24px;">
-<!-- FIXED: whole lines clickable -->
-<div><a href="/forgot" style="text-decoration:none;">Forgot Your Password? <span style="color:#5B4FB7; font-weight:bold;">Reset Here</span></a></div>
-<div><a href="/register" style="text-decoration:none;">Don't have an account? <span class="black">Sign Up</span></a></div>
-</div>
-</div>
-<script>
-let hidden=false;
-function togglePwd(){
-  const i=document.getElementById('pwd');
-  const e=document.getElementById('eyeIcon');
-  hidden=!hidden;
-  i.type=hidden?'text':'password';
-  e.textContent=hidden?'🙈':'👁️';
-}
-</script>
+<div class="links"><div><a href="/forgot">Forgot</a> Username / Password?</div><div><a href="/register" style="text-decoration:none;">Don't have an account? <span class="b">Sign Up</span></a></div></div>
+</div></div>
+<script>let h=true;function t1(){const i=document.getElementById('p1'),e=document.getElementById('e1');h=!h;if(h){i.type='password';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`}else{i.type='text';e.innerHTML=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#000" stroke-width="1.8"><path d="M1 2l22 22"/><path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/><path d="M9.53 9.53A10.07 10.07 0 0 0 2 12s4 8 11 8a10.07 10.07 0 0 0 7.94-3.06"/></svg>`}}</script>
 </body></html>
