@@ -7,16 +7,18 @@ import datetime
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-# DUAL DB: Postgres on Railway if DATABASE_URL exists, SQLite fallback locally
+# DUAL DB: Postgres (psycopg3 for Python 3.15) + SQLite fallback
 db_url = os.environ.get('DATABASE_URL','').strip()
 if db_url:
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://','postgresql://',1)
     if db_url.startswith('postgresql://'):
-        db_url = db_url.replace('postgresql://','postgresql+psycopg2://',1)
+        db_url = db_url.replace('postgresql://','postgresql+psycopg://',1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projecttrack.db'
+
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY','projecttrack-secret-2026')
