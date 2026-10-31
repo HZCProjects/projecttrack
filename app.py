@@ -1,34 +1,33 @@
 
 import os
-from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+# DUAL DB: Postgres on Railway if DATABASE_URL exists, SQLite fallback locally
 db_url = os.environ.get('DATABASE_URL','').strip()
 if db_url:
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://','postgresql://',1)
     if db_url.startswith('postgresql://'):
         db_url = db_url.replace('postgresql://','postgresql+psycopg2://',1)
-    try:
-        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    except:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projecttrack.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///projecttrack.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY','projecttrack-secret')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY','projecttrack-secret-2026')
 
 db = SQLAlchemy(app)
 
 class User(db.Model):
     __tablename__='users'
     id=db.Column(db.Integer, primary_key=True)
-    name=db.Column(db.String(100))
-    surname=db.Column(db.String(100))
+    name=db.Column(db.String(120), nullable=False)
+    surname=db.Column(db.String(120))
     email=db.Column(db.String(200), unique=True, nullable=False)
     password_hash=db.Column(db.String(300), nullable=False)
     role=db.Column(db.String(20), default='USER')
@@ -42,11 +41,10 @@ with app.app_context():
     try:
         db.create_all()
     except Exception as e:
-        # try drop old schema and recreate
+        # Rebuild if old schema
         try:
-            if 'does not exist' in str(e) or 'UndefinedColumn' in str(type(e).__name__):
-                db.drop_all()
-                db.create_all()
+            db.drop_all()
+            db.create_all()
         except:
             app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///projecttrack.db'
             db.create_all()
@@ -60,21 +58,24 @@ def login_page():
     return render_template('login.html')
 
 @app.route('/register')
+@app.route('/create')
+@app.route('/signup')
 def register_page():
     return render_template('create.html')
 
-@app.route('/create')
-def create_page():
-    return render_template('create.html')
+@app.route('/dashboard')
+@app.route('/index.html')
+def dashboard():
+    return render_template('index.html')
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data=request.get_json() or {}
     name=data.get('name','').strip()
     surname=data.get('surname','').strip()
-    email=(data.get('email') or data.get('login') or '').strip().lower()
+    email=(data.get('email') or '').strip().lower()
     pwd=data.get('password','')
-    repeat=data.get('repeatPassword') or data.get('repeat') or ''
+    repeat=data.get('repeatPassword','') or data.get('repeat','')
     if not all([name,surname,email,pwd,repeat]):
         return jsonify({'error':'All fields required'}),400
     if len(email)<6:
@@ -111,31 +112,11 @@ def login():
 @app.route('/api/health')
 def health():
     try:
-        count=User.query.count()
-        return jsonify({'db':'ok','users':count})
+        c=User.query.count()
+        return jsonify({'status':'ok','users':c})
     except Exception as e:
-        return jsonify({'db':'error','error':str(e)}),500
-
-@app.route('/<path:path>')
-def static_files(path):
-    if os.path.exists(os.path.join('static',path)):
-        return send_from_directory('static',path)
-    if os.path.exists(os.path.join('templates',path)):
-        return send_from_directory('templates',path)
-    return '',404
+        return jsonify({'status':'error','error':str(e)}),500
 
 if __name__=='__main__':
     port=int(os.environ.get('PORT',5000))
     app.run(host='0.0.0.0',port=port)
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template('index.html')
-
-@app.route('/index.html')
-def index_page():
-    return render_template('index.html')
-
-@app.route('/signup')
-def signup_page():
-    return render_template('create.html')

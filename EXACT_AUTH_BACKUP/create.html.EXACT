@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ProjectTrack - Sign Up</title>
+<style>
+body{background:#383C40;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:Arial,sans-serif;padding:20px}
+.signup-wrapper{width:346px;background:#B2B2B2;border:14px solid #383C40;padding:20px 26px 16px 26px}
+.signup-wrapper h1{font-size:36px !important;font-weight:900;text-align:center;margin:4px 0 16px 0;color:#000}
+.label{color:#000;font-size:13px;margin:14px 0 6px 0;font-weight:700}
+.input-simple{background:#fff;border:none;height:42px;display:flex;align-items:center}
+.input-simple input{width:100%;border:none;outline:none;padding-left:14px;font-size:15px;height:100%}
+.input-wrap-simple{background:#fff;border:none;height:42px;display:flex;align-items:center;position:relative}
+.input-wrap-simple input{flex:1;border:none;outline:none;padding-left:14px;padding-right:42px;font-size:15px;height:100%}
+.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:18px;display:flex !important;align-items:center;justify-content:center;z-index:10}
+.check-row{display:flex;align-items:center;margin:14px 0;gap:8px;font-size:12px}
+.check-row input{width:18px;height:18px;accent-color:#000}
+.btn-signup{background:#383C40;color:#fff;width:100%;height:46px;border:none;font-weight:700;cursor:pointer;margin-top:4px;font-size:14px}
+.links{text-align:center;margin-top:16px;font-size:12px;line-height:1.8}
+.links a{color:#6B5BCE;text-decoration:none;font-weight:600}
+.links .black{color:#000;font-weight:700}
+.note{color:#6B5BCE;font-size:11px;text-align:center;margin-top:4px;font-weight:600}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active{
+ -webkit-box-shadow:0 0 0 1000px #fff inset !important;
+ box-shadow:0 0 0 1000px #fff inset !important;
+ background:#fff !important;
+ background-color:#fff !important;
+ -webkit-text-fill-color:#000 !important;
+ transition:background-color 5000s ease-in-out 0s !important;
+}
+input{filter:none !important;}
+
+
+.eye.slashed::after{
+ content:'';
+ position:absolute;
+ left:4px;
+ top:50%;
+ width:24px;
+ height:2px;
+ background:#000;
+ transform:rotate(-45deg) translateY(-50%);
+ transform-origin:center;
+ pointer-events:none;
+}
+
+/* Eye icon vertically centered in white block - same right position */
+.input-wrap-simple, .field-pass, .input-wrap-simple{
+ position:relative !important;
+ display:flex !important;
+ align-items:center !important;
+}
+.input-wrap-simple input, .field-pass input{
+ height:100% !important;
+ display:flex !important;
+ align-items:center !important;
+}
+.eye{
+ position:absolute !important;
+ right:10px !important;
+ top:50% !important;
+ transform:translateY(-50%) !important;
+ margin:0 !important;
+ padding:0 !important;
+ width:28px !important;
+ height:28px !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ line-height:28px !important;
+ font-size:20px !important;
+ background:transparent !important;
+ border:none !important;
+ cursor:pointer !important;
+ z-index:10 !important;
+}
+.eye.slashed::after{
+ content:'' !important;
+ position:absolute !important;
+ left:2px !important;
+ top:50% !important;
+ width:24px !important;
+ height:2px !important;
+ background:#000 !important;
+ transform:translateY(-50%) rotate(-45deg) !important;
+ transform-origin:center !important;
+ pointer-events:none !important;
+}
+
+/* FIX: Eye centered + white column even at end */
+.signin-wrapper, .signup-wrapper{
+ box-sizing:border-box !important;
+}
+.input-simple, .input-wrap-simple, .field, .field-full, .field-pass{
+ box-sizing:border-box !important;
+ width:100% !important;
+ height:44px !important;
+ background:#fff !important;
+ border:none !important;
+ display:flex !important;
+ align-items:center !important;
+ position:relative !important;
+ margin:0 !important;
+ padding:0 !important;
+ overflow:visible !important;
+}
+.input-simple input, .input-wrap-simple input, .field input, .field-full input{
+ box-sizing:border-box !important;
+ width:100% !important;
+ height:44px !important;
+ border:none !important;
+ outline:none !important;
+ padding-left:14px !important;
+ padding-right:48px !important;
+ margin:0 !important;
+ font-size:15px !important;
+ background:#fff !important;
+ display:block !important;
+ line-height:44px !important;
+}
+.eye{
+ position:absolute !important;
+ right:12px !important;
+ top:0 !important;
+ bottom:0 !important;
+ margin:auto 0 !important;
+ width:28px !important;
+ height:28px !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ transform:none !important;
+ line-height:28px !important;
+ font-size:20px !important;
+ padding:0 !important;
+ background:transparent !important;
+ border:none !important;
+ cursor:pointer !important;
+ z-index:10 !important;
+}
+.eye.slashed::after{
+ content:'' !important;
+ position:absolute !important;
+ left:2px !important;
+ top:50% !important;
+ width:24px !important;
+ height:2px !important;
+ background:#000 !important;
+ transform:translateY(-50%) rotate(-45deg) !important;
+ pointer-events:none !important;
+}
+</style>
+</head>
+<body>
+<div class="signup-wrapper">
+<h1>Sign Up</h1>
+
+<div class="label">*Name</div>
+<div class="input-simple"><input id="regName" type="text" autocomplete="off" name="pt_reg_name_xyz" spellcheck="false"></div>
+
+<div class="label">*Surname</div>
+<div class="input-simple"><input id="regSurname" type="text" autocomplete="off" name="pt_reg_surname_xyz" spellcheck="false"></div>
+
+<div class="label">*Username / Email</div>
+<div class="input-simple"><input id="regEmail" type="text" autocomplete="new-username" name="pt_reg_email_xyz" spellcheck="false"></div>
+
+<div class="label">*Password</div>
+<div class="input-wrap-simple">
+<input id="regPass" type="password" autocomplete="new-password" name="pt_reg_pass_xyz">
+<button class="eye" id="eyeReg" onclick="toggle('regPass')" class="eye slashed">👁</button>
+</div>
+
+<div class="label">*Repeat Password</div>
+<div class="input-wrap-simple">
+<input id="regRepeat" type="password" autocomplete="new-password" name="pt_reg_repeat_xyz">
+<button class="eye" id="eyeRegRep" onclick="toggle('regRepeat')" class="eye slashed">👁</button>
+</div>
+
+<div class="check-row"><input type="checkbox" id="agree" checked><label for="agree">I agree to the <a href="#" style="color:#6B5BCE">Terms&Conditions</a></label></div>
+
+<button class="btn-signup" onclick="doCreate()">SIGN UP</button>
+
+<div class="links">
+<div><a href="/login">Have an account?</a> <span class="black">Sign In</span></div>
+<div class="note">*All Fields Must Be Completed</div>
+</div>
+
+<div id="msg" style="color:red;font-size:12px;margin-top:10px;text-align:center"></div>
+</div>
+<script>
+async function doCreate(){
+ let name=document.getElementById('regName').value.trim();
+ let surname=document.getElementById('regSurname').value.trim();
+ let email=document.getElementById('regEmail').value.trim();
+ let pwd=document.getElementById('regPass').value;
+ let rep=document.getElementById('regRepeat').value;
+ let agree=document.getElementById('agree').checked;
+ if(!name||!surname||!email||!pwd||!rep){document.getElementById('msg').innerText='All fields required';return;}
+ if(!agree){document.getElementById('msg').innerText='Agree to Terms&Conditions';return;}
+ try{
+  let r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,surname:surname,email:email,password:pwd,repeatPassword:rep})});
+  let j=await r.json();
+  if(!r.ok){document.getElementById('msg').innerText=j.error;return;}
+  alert('Account created! Role: '+j.role+' Please sign in.');
+  window.location.href='/login';
+ }catch(e){document.getElementById('msg').innerText='Server error: '+e;}
+}
+
+function toggle(id){
+ let inp=document.getElementById(id);
+ let btn=null;
+ if(id==='loginPass') btn=document.getElementById('eyeLogin');
+ if(id==='regPass') btn=document.getElementById('eyeReg');
+ if(id==='regRepeat') btn=document.getElementById('eyeRegRep');
+ if(id==='regPass' || id==='regRepeat' || id==='loginPass'){
+   if(!btn){
+     // fallback find by id
+     if(id==='loginPass') btn=document.getElementById('eyeLogin');
+   }
+ }
+ if(!inp) return;
+ if(inp.type==='password'){
+   // make visible -> eye WITHOUT line
+   inp.type='text';
+   if(btn){btn.innerHTML='👁'; btn.classList.remove('slashed');}
+ } else {
+   // make hidden -> eye WITH line
+   inp.type='password';
+   if(btn){btn.innerHTML='👁'; btn.classList.add('slashed');}
+ }
+}
+
+</script>
+</body>
+</html>
